@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Şirket içi ürün: ilan pazaryeri + gerçek zamanlı açık artırma (mezat) + escrow'lu güvenli alışveriş + satıcı yönetimi.
+Şirket içi ürün: B2B inşaat malzemesi pazaryeri (öncelik çelik) — ilan + gerçek zamanlı açık artırma (mezat) + escrow'lu güvenli alışveriş (havale + teminat) + satıcı yönetimi. Alıcı ve satıcı yalnızca şirket.
 Mimari: modüler monolit (TypeScript). Ayrıntılar gerektiğinde okunur, otomatik yüklenmez (token tasarrufu):
 `docs/PRD.md` · `docs/ARCHITECTURE.md` · `docs/AUCTION-RULES.md` · `docs/SECURITY.md` · `docs/DEFINITION-OF-DONE.md`
 
