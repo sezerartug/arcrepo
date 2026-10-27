@@ -5,7 +5,7 @@ Mimari: modüler monolit (TypeScript). Ayrıntılar gerektiğinde okunur, otomat
 `docs/PRD.md` · `docs/ARCHITECTURE.md` · `docs/AUCTION-RULES.md` · `docs/SECURITY.md` · `docs/DEFINITION-OF-DONE.md`
 
 ## Oturum başlangıcı
-1. `docs/ROADMAP.md` içinde ilk işaretlenmemiş görevi bul; yalnızca o faz bölümünü oku.
+1. `docs/ROADMAP.md` "MVP yolu" tablosundaki sırayla ilk işaretlenmemiş görevi bul; yalnızca o görevin satırını ve faz bölümünü oku.
 2. `docs/LOG.md` dosyasının son girişini oku.
 3. Kodlamadan önce 5–10 satırlık plan yaz ve onay iste. Belirsizlik varsa varsayım yapma, sor.
 
