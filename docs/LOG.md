@@ -53,3 +53,10 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: belge değişikliği; `bash scripts/progress.sh` → 0/116.
 - Risk / açık konu: OPEN-AU-01…11 M3 başında karara bağlanacak; OQ-06…09 ilgili dilimde teyit.
 - Sonraki adım: Docker kurulumu → M1 / P1-01 monorepo iskeleti.
+
+### 2026-10-27 — P0-10 (kısmi) — Alan değişikliği: B2B inşaat malzemesi pazaryeri
+- Yapılan: PRD amaç, roller, kapsam, OQ-02…06/09/10 ve FR'ler (FR-ID-05, FR-LS-01/06, FR-AU-08/09, FR-OR-02/07) güncellendi; MVP yolu tablosu buna göre düzenlendi. Önceki "Koleksiyon + Elektronik" kararı geçersiz.
+- Karar / neden: Ürün sahibi — mezat inşaat sektörü odaklı (öncelik çelik). Çok satıcılı pazaryeri; alıcı ve satıcı yalnızca şirket; ileri (artan) mezat; TRY, KDV hariç, kategori birimi başına fiyat (çelik TL/ton); tüm inşaat malzemeleri; ödeme havale/EFT + teminat (kartla ödeme yok).
+- Doğrulama: belge değişikliği.
+- Risk / açık konu: Birim fiyat × miktar yuvarlama kuralı ve lot modeli AUCTION-RULES'a eklenmeli (M3 başı). Havale eşleştirme + escrow hesabının yasal sahibi hukuk konusu. Kimlik modeli artık şirket + üye → P1-07/P1-08 kapsamı büyüdü.
+- Sonraki adım: P1-01.

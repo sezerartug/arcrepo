@@ -15,11 +15,11 @@ Değişmez kurallar (para, zaman, yetki, audit, idempotency, test) MVP'de de kı
 
 | Dilim | Bitti ölçütü | Görevler (sırayla) |
 |---|---|---|
-| M1 Temel | Kayıt/giriş/roller çalışıyor; boş web iskeleti; testler yeşil | P1-01, P1-02, P1-03, P1-04, P1-19, P1-06, P1-07, P1-08, P1-09, P1-10, P1-17 |
-| M2 İlan | Satıcı ilan verir → moderasyon → alıcı arar, bulur, görüntüler | P2-01, P2-02, P2-03, P2-04 (önce yerel depolama adaptörü), P2-06, P2-08, P2-09 (yalnızca favori), P2-11, P2-14 |
-| M3 Mezat | Canlı teklif, tek kazanan, doğru bitiş; eşzamanlılık testleri yeşil | P1-16, P1-11, P1-15, P4-01, P4-02, P4-03, P4-04, P4-05, P4-06, P4-07, P4-11, P4-12, P4-13, P4-14 |
-| M4 Sipariş + ödeme | Sabit fiyat ve mezat kazananı → sipariş → sahte ödeme → escrow → teslim → hakediş | P1-14, P3-01, P3-03, P3-04, P3-05, P3-06 (yalnızca manuel), P4-09, P4-10, P3-09, P3-10 |
-| M5 Paneller | Satıcı paneli + admin dashboard; tohum veriyle demo | P2-13, P5-03, P5-06, P5-07, P6-08 (yalnızca tohum veri) |
+| M1 Temel | Şirket kaydı + üye davet + giriş + roller çalışıyor; boş web iskeleti; testler yeşil | P1-01, P1-02, P1-03, P1-04, P1-19, P1-06, P1-07 (+ şirket hesabı ve üyeler, FR-ID-05), P1-08 (şirket üyeliği + şirket içi rol), P1-09, P1-10, P1-17 |
+| M2 İlan | Doğrulanmış satıcı şirket ilan verir → moderasyon → alıcı arar, bulur, görüntüler | P2-12 (MVP: vergi no format kontrolü + yönetici onayı), P2-01 (inşaat malzemesi ağacı, çelik nitelikleri, satış birimi), P2-02, P2-03, P2-04 (önce yerel depolama; görsel + kalite belgesi), P2-06, P2-08, P2-09 (yalnızca favori), P2-11, P2-14 |
+| M3 Mezat | Lot üzerinde birim fiyatla canlı teklif, teminat kontrolü, tek kazanan, doğru bitiş; eşzamanlılık testleri yeşil | (önce OPEN-AU kararları + birim fiyat/yuvarlama kuralı) P1-16, P1-11, P1-15, P4-01, P4-02, P4-03, P4-04, P4-05, P4-06, P4-07, P4-08 (teminat, sahte havale), P4-11, P4-12, P4-13, P4-14 |
+| M4 Sipariş + ödeme | Sabit fiyat ve mezat kazananı → sipariş → sahte havale (referans eşleştirme) → escrow → teslim → satıcıya hakediş | P1-14, P3-01, P3-03, P3-04, P3-05, P3-06 (yalnızca manuel teslim onayı), P4-09, P4-10, P3-08 (sahte aktarım), P3-09, P3-10 |
+| M5 Paneller | Satıcı paneli + şirket paneli + admin dashboard; çelik tohum verisiyle demo | P2-13, P5-03, P5-06, P5-07, P6-08 (yalnızca tohum veri) |
 
 MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-12, P5-08) → gözlemlenebilirlik + CI + staging (P1-05, P1-13, P1-18) → gerçek PSP sandbox (P0-12, P3-02) → güven/KVKK (Faz 5) → hukuk (P0-11, P3-12) → sertleştirme ve lansman (Faz 6).
 

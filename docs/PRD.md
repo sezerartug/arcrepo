@@ -3,30 +3,31 @@
 Durum: taslak. `P0-10` (Grill oturumu) sonunda açık sorular kapanır ve sürüm 1.0 olur. Gereksinim ID'leri (`FR-…`, `NFR-…`) test, görev ve PR'larda referans verilir.
 
 ## 1. Amaç
-Alıcıların ve satıcıların ilan verip bulabildiği, uygun ilanların canlı açık artırmayla (mezat) satılabildiği, ödemenin escrow ile korunduğu ve satıcıların tek panelden yönetildiği güvenilir bir pazaryeri.
+İnşaat sektörü için **şirketler arası (B2B) inşaat malzemesi pazaryeri** (öncelik: çelik — inşaat demiri, profil, sac, boru). Satıcı şirketler stoklarını ilan eder; ilanlar sabit fiyatla veya canlı açık artırmayla (mezat) satılır; ödeme escrow ile korunur; satıcılar ve platform tek panelden yönetilir.
 Başarı ölçütü, özellik sayısı değil **temel ticari akışların hatasız ve denetlenebilir çalışması**dır: doğru kazanan, doğru bitiş zamanı, tutarlı ödeme/sipariş.
 
 ## 2. Varsayımlar ve açık sorular (P0-10'da kapatılacak)
 | ID | Konu | Mevcut varsayım | Karar sahibi |
 |---|---|---|---|
 | OQ-01 | Ülke/pazar | Türkiye, TRY, Türkçe | Ürün + Hukuk |
-| OQ-02 | Satıcı/alıcı tipi | Bireysel + ticari satıcılar; alıcılar bireysel (C2C + B2C karışık) | Ürün |
-| OQ-03 | Ödeme/escrow modeli | Lisanslı PSP üzerinden alt üye işyeri; fonları şirket tutmaz | Hukuk + Finans |
-| OQ-04 | İlk kategoriler | Seçilecek 2–3 kategori (ör. koleksiyon, elektronik); araç/emlak v1 dışı | Ürün |
-| OQ-05 | Artırma türü | Yalnızca klasik artan fiyatlı; otomatik teklif v2 | Ürün |
-| OQ-06 | Teklif güvencesi | Ön provizyon veya depozito (ADR-014) | Ürün + Finans |
+| OQ-02 | Satıcı/alıcı tipi | **Karar:** yalnızca şirketler (B2B), çok satıcılı pazaryeri. Şirket hesabı + birden çok üye kullanıcı; fatura şirkete | Ürün |
+| OQ-03 | Ödeme/escrow modeli | **Karar (akış):** havale/EFT ile escrow hesabına ödeme, teslimden sonra satıcıya aktarım. Hesabı kim tutar (PSP/banka/lisans) hukukla lansman öncesi; MVP'de sahte sağlayıcı | Hukuk + Finans |
+| OQ-04 | İlk kategoriler | **Karar:** tüm inşaat malzemeleri (kategori ağacı); öncelik ve tohum veri çelik. Her kategori kendi satış birimini tanımlar (ton, m³, adet, palet, torba) | Ürün |
+| OQ-05 | Artırma türü | **Karar:** yalnızca ileri (artan fiyatlı); ters mezat (satın alma ihalesi) ve otomatik teklif v2 | Ürün |
+| OQ-06 | Teklif güvencesi | **Karar:** teminat (depozito, havale ile); tutar/oran kuralı M3'te (ADR-014) | Ürün + Finans |
 | OQ-07 | Komisyon modeli | Satıcıdan yüzde + sabit; kademeli v2 | Finans |
 | OQ-08 | Hedef ölçek (NFR için) | İlk yıl: 50k kayıtlı kullanıcı, aynı artırmada 500 eşzamanlı izleyici, 50 aktif teklif veren | Ürün |
-| OQ-09 | Kargo | Satıcı sorumlu; 1 taşıyıcı entegrasyonu | Operasyon |
+| OQ-09 | Teslimat | Teslim şekli ilan başına: depoda/fabrikada teslim (alıcı nakliyesi) veya satıcı nakliyesi (şantiyeye teslim, ücret ilanda). Nakliye entegrasyonu v2 | Operasyon |
+| OQ-10 | Fiyat ve miktar | **Karar:** TRY, KDV hariç, **birim fiyat** üzerinden (çelikte TL/ton). Miktar en küçük birimde tamsayı (ton → kg). Toplam = birim fiyat × miktar; yuvarlama kuralı tek yerde, M3 başında AUCTION-RULES'a eklenir. KDV oranı kategori bazlı | Ürün + Finans |
 
-**MVP kararları (2026-10-27, ürün sahibi):** OQ-04 → Koleksiyon + Elektronik. OQ-03 → MVP'de sahte ödeme sağlayıcısı (`PaymentPort`); gerçek PSP ve escrow modeli hukukla birlikte lansman öncesi. Diğer OQ'lar MVP için tablodaki varsayımla ilerler; ilgili dilime gelince teyit edilir. Ekip: ürün sahibi + Claude Code. Sıra: `docs/ROADMAP.md` "MVP yolu".
+**MVP kararları (2026-10-27, ürün sahibi):** B2B inşaat malzemesi pazaryeri (OQ-02/04/05/06/10 yukarıda). MVP'de sahte ödeme sağlayıcısı (`PaymentPort`) havale + teminat akışını taklit eder; gerçek hesap/PSP ve hukuk lansman öncesi. Şirket doğrulaması MVP'de vergi no format kontrolü + yönetici onayı (otomatik sorgu sonra). Ekip: ürün sahibi + Claude Code. Sıra: `docs/ROADMAP.md` "MVP yolu".
 
 ## 3. Roller
-Ziyaretçi · Alıcı · Satıcı · Moderatör · Destek · Yönetici · Sistem (zamanlayıcı/worker).
+Ziyaretçi · Şirket (alıcı ve/veya satıcı yetkili) → şirket içi roller: Şirket yöneticisi, Satın almacı (teklif/sipariş), Satış sorumlusu (ilan) · Platform: Moderatör · Destek · Yönetici · Sistem (zamanlayıcı/worker). Yetki kontrolü hem şirket üyeliği hem şirket içi rol üzerinden yapılır.
 
 ## 4. Kapsam
 **v1 içinde:** hesap ve doğrulama, ilan, kategori/nitelik, görsel, arama, favori/bildirim, mesajlaşma, satıcı onboarding/KYC ve paneli, klasik artırma + canlı yayın, escrow'lu ödeme, sipariş/teslimat/itiraz/iade, hakediş, moderasyon ve admin, audit.
-**v1 dışında:** canlı video mezat, otomatik teklif (proxy), kapalı zarf, Hollanda usulü, mobil native uygulama, çoklu para birimi/dil, sadakat sistemi, yapay zekâ fiyat tahmini, reklam/öne çıkarma ürünleri, mağaza vitrini.
+**v1 dışında:** bireysel (tüketici) alıcı, kart ile ödeme, ters mezat (satın alma ihalesi), vadeli/açık hesap satış, nakliye entegrasyonu, canlı video mezat, otomatik teklif (proxy), kapalı zarf, Hollanda usulü, mobil native uygulama, çoklu para birimi/dil, sadakat sistemi, yapay zekâ fiyat tahmini, reklam/öne çıkarma ürünleri, mağaza vitrini.
 
 ## 5. Ana yolculuklar
 1. **Satıcı:** kayıt → doğrulama/KYC → ilan oluştur (sabit fiyat veya artırma) → moderasyon → yayın → teklif/sipariş → kargo → hakediş.
@@ -42,9 +43,11 @@ Ziyaretçi · Alıcı · Satıcı · Moderatör · Destek · Yönetici · Sistem
 - FR-ID-02 (M) Telefon doğrulama (teklif/satış için zorunlu).
 - FR-ID-03 (M) Roller ve nesne düzeyi yetkilendirme (kullanıcı yalnızca kendi ilan/sipariş/tekliflerine erişir).
 - FR-ID-04 (S) Satıcı ve yönetici için MFA.
+- FR-ID-05 (M) Şirket hesabı: unvan, vergi no/dairesi, adres; şirkete üye davet etme, şirket içi rol atama; şirket doğrulanmadan teklif/satış yok.
 
 ### İlan ve katalog
-- FR-LS-01 (M) Kategori ağacı ve kategoriye özel nitelikler.
+- FR-LS-01 (M) Kategori ağacı ve kategoriye özel nitelikler (ör. çelik: ürün tipi, standart/kalite sınıfı B500C/S235JR/S355, çap/kalınlık/boy) ve kategoriye özel satış birimi.
+- FR-LS-06 (M) İlanda miktar, minimum alım miktarı, depo konumu, teslim şekli ve kalite belgesi (fabrika test sertifikası) yükleme.
 - FR-LS-02 (M) İlan oluştur/düzenle/duraklat/kaldır; durum makinesi; yayından önce moderasyon.
 - FR-LS-03 (M) Çoklu görsel yükleme; EXIF/konum temizleme; boyut/tür doğrulama.
 - FR-LS-04 (M) Favoriler; ilan başına şikayet.
@@ -63,11 +66,13 @@ Ziyaretçi · Alıcı · Satıcı · Moderatör · Destek · Yönetici · Sistem
 - FR-AU-05 (M) Aynı istek yeniden gönderilirse çift teklif oluşmaz (idempotency).
 - FR-AU-06 (M) Satıcı kendi ilanına teklif veremez; hız ve davranış sınırları uygulanır.
 - FR-AU-07 (M) Kazanan için ödeme penceresi; ödenmezse tanımlı politika işler.
-- FR-AU-08 (S) Teklif güvencesi (ön provizyon/depozito).
+- FR-AU-08 (M) Teklif güvencesi: teklif vermeden önce teminat yatırılır; kaybeden teminatı iade edilir, kazananınki ödemeye sayılır, ödemeyen kazananın teminatı politika gereği işlenir (OPEN-AU-07).
+- FR-AU-09 (M) Mezat bir lot üzerinedir (sabit miktar); teklif birim fiyat üzerinden verilir, toplam tutar ayrıca gösterilir.
 
 ### Sipariş, ödeme, escrow
 - FR-OR-01 (M) Sipariş durum makinesi (ödeme bekliyor → ödendi/escrow → kargoda → teslim edildi → tamamlandı; iptal/iade/itiraz).
-- FR-OR-02 (M) Kart verisi sistemimize girmez; barındırılan ödeme alanları + 3DS.
+- FR-OR-02 (M) Ödeme havale/EFT ile; her siparişe tekil ödeme referansı, gelen ödemenin referansla eşleştirilmesi, eksik/fazla ödeme durumları. Kart verisi sistemimize hiç girmez.
+- FR-OR-07 (S) E-fatura/e-arşiv entegrasyonu (lansman öncesi).
 - FR-OR-03 (M) Ödeme, PSP webhook'u ile kesinleşir; tekrar eden/sırasız olaylar güvenli işlenir.
 - FR-OR-04 (M) Çift taraflı ledger: komisyon, escrow tutma/serbest bırakma, iade.
 - FR-OR-05 (M) Teslim onayı veya otomatik onay süresi sonunda satıcıya hakediş.
