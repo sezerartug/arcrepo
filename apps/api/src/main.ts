@@ -1,7 +1,13 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
+import { loadEnvFileIfExists, parseEnv } from './modules/platform/index.js';
 
-// PORT is validated by the config schema once P1-04 lands.
+// Local development reads the repo-root .env shared with compose.yaml; deployments inject variables.
+if (process.env.NODE_ENV !== 'production') {
+  loadEnvFileIfExists(new URL('../../../.env', import.meta.url));
+}
+const env = parseEnv(process.env);
+
 const app = await NestFactory.create(AppModule);
-await app.listen(Number(process.env.PORT ?? 3001));
+await app.listen(env.port);

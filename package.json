@@ -12,16 +12,19 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "secrets:scan": "secretlint --maskSecrets \"**/*\"",
     "test:unit": "pnpm -r test:unit"
   },
   "devDependencies": {
     "@arc/config": "workspace:*",
     "@eslint/js": "10.0.1",
     "@next/eslint-plugin-next": "16.4.3",
+    "@secretlint/secretlint-rule-preset-recommend": "13.0.7",
     "eslint": "catalog:",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-hooks": "7.1.1",
     "prettier": "3.9.10",
+    "secretlint": "13.0.7",
     "typescript": "catalog:",
     "typescript-eslint": "8.72.0"
   }
