@@ -19,6 +19,8 @@ Başarı ölçütü, özellik sayısı değil **temel ticari akışların hatas�
 | OQ-08 | Hedef ölçek (NFR için) | İlk yıl: 50k kayıtlı kullanıcı, aynı artırmada 500 eşzamanlı izleyici, 50 aktif teklif veren | Ürün |
 | OQ-09 | Kargo | Satıcı sorumlu; 1 taşıyıcı entegrasyonu | Operasyon |
 
+**MVP kararları (2026-10-27, ürün sahibi):** OQ-04 → Koleksiyon + Elektronik. OQ-03 → MVP'de sahte ödeme sağlayıcısı (`PaymentPort`); gerçek PSP ve escrow modeli hukukla birlikte lansman öncesi. Diğer OQ'lar MVP için tablodaki varsayımla ilerler; ilgili dilime gelince teyit edilir. Ekip: ürün sahibi + Claude Code. Sıra: `docs/ROADMAP.md` "MVP yolu".
+
 ## 3. Roller
 Ziyaretçi · Alıcı · Satıcı · Moderatör · Destek · Yönetici · Sistem (zamanlayıcı/worker).
 

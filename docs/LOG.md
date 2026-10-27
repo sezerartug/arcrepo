@@ -46,3 +46,10 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Maliyet: ölçülmedi (bu oturum Opus; `/usage` kullanıcıda). · Bağlam: ölçülmedi.
 - Risk / açık konu: Uzak depo + dal koruması yok (`gh` kurulu değil). Docker Desktop + WSL2 yok; makinede 7,9 GB RAM → WSL belleği sınırlanmalı. Node 24.12 kurulu (ADR-012 yedek seçeneği); Node 26 Active LTS 28 Ekim'de. Tek geliştirici + Claude ile ROADMAP'in 3–4 kişilik 36 haftalık tahmini geçerli değil.
 - Sonraki adım: Docker Desktop kurulumu → `docker compose up -d` doğrulama; GitHub deposu + dal koruması; taban `/context` ölçümü; P0-10 kapsam kararları.
+
+### 2026-10-27 — P0-10 (kısmi) — MVP yolu ve kapsam kararları
+- Yapılan: ROADMAP'e "MVP yolu" (M1 Temel → M2 İlan → M3 Mezat → M4 Sipariş+ödeme → M5 Paneller) eklendi; PRD'ye MVP kararları yazıldı.
+- Karar / neden: Ürün sahibi kararı — hukuk/PSP/KYC lansman öncesine; MVP sahte ödeme sağlayıcısıyla; kategoriler Koleksiyon + Elektronik; BMAD/Ponytail/Matt Pocock kurulmuyor (taban token maliyeti), yerleşik skill'ler kullanılıyor. Gerçek para/kullanıcı hukuk + PSP tamamlanmadan yok.
+- Doğrulama: belge değişikliği; `bash scripts/progress.sh` → 0/116.
+- Risk / açık konu: OPEN-AU-01…11 M3 başında karara bağlanacak; OQ-06…09 ilgili dilimde teyit.
+- Sonraki adım: Docker kurulumu → M1 / P1-01 monorepo iskeleti.

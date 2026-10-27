@@ -8,10 +8,27 @@ Durum gösterimi: `[ ]` açık · `[x]` bitti. Gate (kapı) maddeleri `G` ile ba
 
 ---
 
+## MVP yolu (2026-10-27 kararı — çalışma sırası bu)
+Ekip: ürün sahibi + Claude Code. Hukuk/PSP/KYC lansman öncesine ertelendi; MVP sahte ödeme sağlayıcısıyla (`PaymentPort`) uçtan uca çalışır. **Gerçek para ve gerçek kullanıcı, P0-11 + P0-12 + P3-12 tamamlanmadan yok.**
+Faz kapıları lansman için geçerlidir; MVP süresince sıra aşağıdaki dilimlerdir. Checkbox'lar aşağıdaki faz bölümlerinde kalır (tek kaynak); burada yalnızca sıra vardır.
+Değişmez kurallar (para, zaman, yetki, audit, idempotency, test) MVP'de de kısılmaz.
+
+| Dilim | Bitti ölçütü | Görevler (sırayla) |
+|---|---|---|
+| M1 Temel | Kayıt/giriş/roller çalışıyor; boş web iskeleti; testler yeşil | P1-01, P1-02, P1-03, P1-04, P1-19, P1-06, P1-07, P1-08, P1-09, P1-10, P1-17 |
+| M2 İlan | Satıcı ilan verir → moderasyon → alıcı arar, bulur, görüntüler | P2-01, P2-02, P2-03, P2-04 (önce yerel depolama adaptörü), P2-06, P2-08, P2-09 (yalnızca favori), P2-11, P2-14 |
+| M3 Mezat | Canlı teklif, tek kazanan, doğru bitiş; eşzamanlılık testleri yeşil | P1-16, P1-11, P1-15, P4-01, P4-02, P4-03, P4-04, P4-05, P4-06, P4-07, P4-11, P4-12, P4-13, P4-14 |
+| M4 Sipariş + ödeme | Sabit fiyat ve mezat kazananı → sipariş → sahte ödeme → escrow → teslim → hakediş | P1-14, P3-01, P3-03, P3-04, P3-05, P3-06 (yalnızca manuel), P4-09, P4-10, P3-09, P3-10 |
+| M5 Paneller | Satıcı paneli + admin dashboard; tohum veriyle demo | P2-13, P5-03, P5-06, P5-07, P6-08 (yalnızca tohum veri) |
+
+MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-12, P5-08) → gözlemlenebilirlik + CI + staging (P1-05, P1-13, P1-18) → gerçek PSP sandbox (P0-12, P3-02) → güven/KVKK (Faz 5) → hukuk (P0-11, P3-12) → sertleştirme ve lansman (Faz 6).
+
+---
+
 ## Faz 0 — Keşif, kurulum, kararlar (Hafta 1–2)
 - [ ] P0-01 Git deposu oluşturuldu, kit eklendi, ilk commit; ana dal koruması ve zorunlu PR/inceleme açık
 - [ ] P0-02 Claude Code güncel sürüm; varsayılan model Sonnet; `/usage` ve `/context` çalışıyor; (API kullanılıyorsa) workspace harcama limiti tanımlı
-- [ ] P0-03 Üçüncü taraf eklentiler (BMAD, Ponytail, Matt Pocock, resmi dizin) için şirket güvenlik onayı alındı; sürümler sabitlendi
+- [ ] P0-03 Üçüncü taraf eklentiler (BMAD, Ponytail, Matt Pocock, resmi dizin) için şirket güvenlik onayı alındı; sürümler sabitlendi — ERTELENDİ (2026-10-27): P0-05…P0-08 eklentileri kurulmuyor; yerleşik `/code-review`, `/simplify`, `/security-review` kullanılıyor
 - [ ] P0-04 CLAUDE.md kuru çalıştırma: küçük bir görevde dört çalışma ilkesi + bitirme protokolü uygulandı
 - [ ] P0-05 BMAD v6.12 (kararlı) kuruldu; yalnızca planlama akışı etkin; `bmad-help` doğrulandı
 - [ ] P0-06 Matt Pocock skill'leri (seçili): `setup-matt-pocock-skills`, `grill-with-docs`, `tdd`, `diagnosing-bugs`, `code-review`, `improve-codebase-architecture` kuruldu ve `setup` çalıştırıldı
@@ -19,8 +36,8 @@ Durum gösterimi: `[ ]` açık · `[x]` bitti. Gate (kapı) maddeleri `G` ile ba
 - [ ] P0-08 A/B deneyi (TOOLING §7): Ponytail açık/kapalı iki görev; maliyet, diff boyutu, test/doğrulama kaybı LOG'a yazıldı; karar verildi
 - [ ] P0-09 MCP: context7 + playwright kuruldu; `/context` ile taban bağlam maliyeti ölçüldü ve LOG'a yazıldı
 - [ ] P0-10 Grill oturumu: PRD'deki açık sorular kapandı (ülke, PSP, escrow modeli, kategoriler, kullanıcı tipleri, teklif güvencesi)
-- [ ] P0-11 Hukuk/uyum ön görüşü alındı (ödeme/escrow lisansı, mesafeli satış, e-ticaret kayıtları, KVKK)
-- [ ] P0-12 PSP seçildi; sandbox hesabı açıldı; marketplace/alt üye işyeri + ön provizyon desteği doğrulandı
+- [ ] P0-11 Hukuk/uyum ön görüşü alındı (ödeme/escrow lisansı, mesafeli satış, e-ticaret kayıtları, KVKK) — ERTELENDİ: lansman öncesi
+- [ ] P0-12 PSP seçildi; sandbox hesabı açıldı; marketplace/alt üye işyeri + ön provizyon desteği doğrulandı — ERTELENDİ: MVP sahte sağlayıcıyla
 - [ ] P0-13 ARCHITECTURE.md ADR-001…014 durumları Kabul/Red olarak güncellendi
 - [ ] P0-14 AUCTION-RULES.md açık kararları (OPEN-AU-xx) ürün sahibince kapatıldı ve onaylandı
 - [ ] P0-15 GLOSSARY.md (ortak alan dili) oluşturuldu
