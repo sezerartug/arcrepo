@@ -1,0 +1,42 @@
+# Local development services only. Never use these credentials outside localhost.
+# Ports are bound to 127.0.0.1 so nothing is exposed to the network.
+# S3 storage, mail catcher and OTel collector are added by their own ROADMAP tasks (P1-03 / P1-07 / P1-13 / P2-04).
+name: arc-global
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-arc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-arc_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-arc}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    # PG 18 images keep data under /var/lib/postgresql/<major>/docker
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    # BullMQ requires noeviction (ARCHITECTURE §2)
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
+  redisdata:

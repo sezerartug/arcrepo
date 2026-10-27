@@ -1,7 +1,7 @@
 # PROMPTS.md — Claude Code için kopyala-yapıştır komutlar
 
 Genel kural: **bir oturum = bir görev.** Bitince `/clear`. Plan modunda başla, onaydan sonra uygula. Skill komut adları kuruluma göre ad alanlı olabilir (`/` yazıp doğrula).
-Model: plan/mimari/inceleme → Claude Opus 5.5; uygulama → Opus 5.5; test koşturma → `test-runner` (Haiku).
+Model: plan/mimari/inceleme → güçlü model; uygulama → Sonnet; test koşturma → `test-runner` (Haiku). Proje varsayılanı `opusplan` (`.claude/settings.json`): plan modunda Opus, uygulamada Sonnet.
 
 ---
 ## P-00 Oturum başlatma (her oturumda)
