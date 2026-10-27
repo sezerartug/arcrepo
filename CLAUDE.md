@@ -31,8 +31,10 @@ Ponytail kuruluysa: çekirdek modüllerde (auction, ledger, payments) `/ponytail
 - Redis hiçbir zaman teklif/sipariş/ödeme için tek doğruluk kaynağı değildir; kaynak PostgreSQL'dir.
 
 ## Komutlar
-İskelet kurulunca doldur (görev P1-01): kur / geliştir / typecheck / lint / test:unit / test:int / test:e2e / migrate.
-`TODO: P1-01 sonrası gerçek komutlarla güncelle.`
+Kökten çalıştır (Node ≥24, pnpm `packageManager` alanından). Tek paket için: `pnpm --filter @arc/api <komut>`.
+- Kur: `pnpm install` · Geliştir: `pnpm dev` (web :3000, api :3001) · Build: `pnpm build`
+- Typecheck: `pnpm typecheck` · Unit test: `pnpm test:unit`
+- Henüz yok: lint (P1-02), test:int + test:e2e (P1-19), migrate (P1-06).
 
 ## Bitirme protokolü (her görevde)
 1. typecheck + lint + ilgili testler yeşil; çıktıyı özetle.

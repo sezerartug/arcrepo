@@ -45,7 +45,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P0-G1 KAPI: PRD kapsamı kilitli, ADR'ler kapalı, PSP+hukuk yönü belli, eklenti kararları verilmiş, taban token maliyeti ölçülmüş
 
 ## Faz 1 — Platform temeli (Hafta 3–6)
-- [ ] P1-01 Monorepo iskeleti (pnpm workspaces; `apps/web`, `apps/api`, `packages/*`); CLAUDE.md "Komutlar" bölümü dolduruldu
+- [x] P1-01 Monorepo iskeleti (pnpm workspaces; `apps/web`, `apps/api`, `packages/*`); CLAUDE.md "Komutlar" bölümü dolduruldu
 - [ ] P1-02 TypeScript strict + lint/format + modül sınır kuralı (derin import yasağı) CI'da zorunlu
 - [ ] P1-03 docker compose geliştirme ortamı (PostgreSQL, Redis, S3-uyumlu depo, e-posta yakalayıcı, OTel collector)
 - [ ] P1-04 Yapılandırma ve sır yönetimi: şema doğrulamalı env, `.env.example`, sır taraması

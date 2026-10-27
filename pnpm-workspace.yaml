@@ -1,0 +1,18 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Supply chain: exact versions, and only releases at least 3 days old (minutes).
+savePrefix: ''
+minimumReleaseAge: 4320
+
+# Security patches for transitive deps (GHSA-27r3-jxmh-p828, GHSA-q7qp-rjg7-q26m).
+# Remove once @nestjs/platform-express ships them.
+overrides:
+  body-parser: 2.4.0
+  multer: 2.5.0
+
+catalog:
+  '@types/node': 24.19.2
+  typescript: 6.0.3
+  vitest: 5.0.4
