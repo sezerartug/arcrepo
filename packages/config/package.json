@@ -1,7 +1,16 @@
 {
   "name": "@arc/config",
   "private": true,
+  "type": "module",
   "exports": {
-    "./tsconfig.base.json": "./tsconfig.base.json"
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./eslint-plugin": "./eslint/plugin.js"
+  },
+  "scripts": {
+    "test:unit": "vitest run"
+  },
+  "devDependencies": {
+    "eslint": "catalog:",
+    "vitest": "catalog:"
   }
 }

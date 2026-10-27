@@ -34,7 +34,8 @@ Ponytail kuruluysa: çekirdek modüllerde (auction, ledger, payments) `/ponytail
 Kökten çalıştır (Node ≥24, pnpm `packageManager` alanından). Tek paket için: `pnpm --filter @arc/api <komut>`.
 - Kur: `pnpm install` · Geliştir: `pnpm dev` (web :3000, api :3001) · Build: `pnpm build`
 - Typecheck: `pnpm typecheck` · Unit test: `pnpm test:unit`
-- Henüz yok: lint (P1-02), test:int + test:e2e (P1-19), migrate (P1-06).
+- Lint: `pnpm lint` (modül sınır kuralı dahil) · Format: `pnpm format` / `pnpm format:check`
+- Henüz yok: test:int + test:e2e (P1-19), migrate (P1-06).
 
 ## Bitirme protokolü (her görevde)
 1. typecheck + lint + ilgili testler yeşil; çıktıyı özetle.
