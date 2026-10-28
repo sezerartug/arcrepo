@@ -3,12 +3,12 @@ import { Empty, LoadError, ctaCls } from '@/components/common';
 import { ListingCard } from '@/components/listing-card';
 import { AuctionCard } from '@/components/auction-card';
 import { loadCategories, serverGet } from '@/lib/server-api';
-import { withUnits, type AuctionSummary, type ListingPage } from '@/lib/types';
+import { withUnits, type AuctionList, type ListingPage } from '@/lib/types';
 
 export default async function HomePage() {
   const [listings, auctions, cats] = await Promise.all([
     serverGet<ListingPage>('/listings?sort=newest'),
-    serverGet<AuctionSummary[]>('/auctions?status=live'),
+    serverGet<AuctionList>('/auctions?status=live'),
     loadCategories(),
   ]);
 
@@ -46,11 +46,11 @@ export default async function HomePage() {
         </div>
         {!auctions.ok ? (
           <LoadError error={auctions.error} />
-        ) : auctions.data.length === 0 ? (
+        ) : auctions.data.items.length === 0 ? (
           <Empty>Şu anda canlı mezat yok.</Empty>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {auctions.data.slice(0, 6).map((a) => (
+            {auctions.data.items.slice(0, 6).map((a) => (
               <AuctionCard key={a.id} auction={a} />
             ))}
           </div>

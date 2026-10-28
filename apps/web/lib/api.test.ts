@@ -11,6 +11,10 @@ describe('formatTry', () => {
     expect(formatTry('100000000000000000')).toBe('1.000.000.000.000.000,00 ₺');
     expect(formatTry('-250')).toBe('-2,50 ₺');
   });
+  it('renders a dash for a missing amount (e.g. no bid yet)', () => {
+    expect(formatTry(null)).toBe('—');
+    expect(formatTry(undefined)).toBe('—');
+  });
 });
 
 describe('quantity and money parsing', () => {

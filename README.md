@@ -2,6 +2,12 @@
 
 Claude Code ile profesyonel, fazlara bölünmüş geliştirme için başlangıç kiti: bağlam dosyaları, backlog/ilerleme takibi, açık artırma motoru kuralları, komut istemleri ve araç seti analizi.
 
+## Yerelde çalıştırma
+1. `pnpm install` (Node >= 24)
+2. `copy .env.example .env`
+3. `pnpm demo` (yerel PostgreSQL'i başlatır, tohum veriyi yükler, web + api'yi açar)
+4. Web: http://localhost:3000 · API: http://localhost:3001
+5. Demo hesaplar: `alici@arc.local` / `satici1@arc.local` / `satici2@arc.local` (parola `Demo!2345`), `admin@arc.local` (parola `Admin!2345`)
 ## İçindekiler
 ```
 CLAUDE.md                      Claude Code'un her oturumda okuduğu kısa kurallar (<150 satır)

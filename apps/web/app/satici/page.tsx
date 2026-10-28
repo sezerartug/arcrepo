@@ -1,9 +1,21 @@
 import Link from 'next/link';
 import { ActionButton } from '@/components/action-button';
 import { Empty, LoadError, PageTitle, StatusBadge, ctaCls } from '@/components/common';
-import { formatTry } from '@/lib/api';
+import { formatDate, formatTry } from '@/lib/api';
 import { loadCategories, requireMe, serverGet } from '@/lib/server-api';
 import { withUnits, type Listing } from '@/lib/types';
+
+type Payouts = {
+  balanceMinor: string;
+  orders: {
+    orderId: string;
+    listingTitle: string;
+    totalMinor: string;
+    commissionMinor: string;
+    netMinor: string;
+    completedAt: string;
+  }[];
+};
 
 export const metadata = { title: 'Satıcı paneli · ARC Global' };
 
@@ -17,9 +29,10 @@ export default async function SellerPage() {
       </>
     );
   }
-  const [res, cats] = await Promise.all([
+  const [res, cats, payouts] = await Promise.all([
     serverGet<Listing[] | { items: Listing[] }>('/seller/listings'),
     loadCategories(),
+    serverGet<Payouts>('/seller/payouts'),
   ]);
   const items = res.ok ? withUnits(Array.isArray(res.data) ? res.data : res.data.items, cats) : [];
 
@@ -82,6 +95,52 @@ export default async function SellerPage() {
           </table>
         </div>
       )}
+
+      <section aria-labelledby="payouts" className="mt-10">
+        <h2 id="payouts" className="mb-2 text-lg font-semibold text-primary">
+          Hakedişlerim
+        </h2>
+        {!payouts.ok ? (
+          <LoadError error={payouts.error} />
+        ) : (
+          <>
+            <p className="mb-2 text-sm">
+              Bekleyen hakediş bakiyesi: <strong>{formatTry(payouts.data.balanceMinor)}</strong>
+            </p>
+            {payouts.data.orders.length === 0 ? (
+              <Empty>Henüz tamamlanan sipariş yok.</Empty>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <caption className="sr-only">Tamamlanan siparişler</caption>
+                  <thead className="text-left text-muted-foreground">
+                    <tr>
+                      <th scope="col" className="py-2">
+                        Sipariş
+                      </th>
+                      <th scope="col">Tutar</th>
+                      <th scope="col">Komisyon</th>
+                      <th scope="col">Net</th>
+                      <th scope="col">Tamamlanma</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payouts.data.orders.map((p) => (
+                      <tr key={p.orderId} className="border-t">
+                        <td className="py-2">{p.listingTitle}</td>
+                        <td>{formatTry(p.totalMinor)}</td>
+                        <td>{formatTry(p.commissionMinor)}</td>
+                        <td className="font-semibold">{formatTry(p.netMinor)}</td>
+                        <td className="text-muted-foreground">{formatDate(p.completedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+      </section>
     </>
   );
 }

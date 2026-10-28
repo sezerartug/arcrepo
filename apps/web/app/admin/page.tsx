@@ -26,12 +26,23 @@ type AdminPayment = {
 type AuditRow = {
   id?: string;
   action: string;
-  entityType?: string;
-  entityId?: string;
-  actorId?: string;
-  at?: string;
-  createdAt?: string;
+  occurred_at?: string;
+  entity_type?: string;
+  entity_id?: string;
+  actor_type?: string;
 };
+
+/** Flattens nested counters ({ orders: { completed: 1 } }) into orders · completed rows. */
+function statRows(d: Record<string, unknown>): [string, string][] {
+  return Object.entries(d).flatMap(([k, v]) =>
+    v !== null && typeof v === 'object'
+      ? Object.entries(v as Record<string, unknown>).map(([k2, v2]): [string, string] => [
+          `${k} · ${k2}`,
+          String(v2),
+        ])
+      : [[k, String(v)] as [string, string]],
+  );
+}
 
 const fmt = (s?: string) => (s ? formatDate(s) : '—');
 const list = <T,>(d: T[] | { items: T[] }): T[] => (Array.isArray(d) ? d : d.items);
@@ -42,12 +53,13 @@ export default async function AdminPage({
   searchParams: Promise<{ entityType?: string; entityId?: string }>;
 }) {
   const me = await requireMe();
-  if (!me.user.isPlatformAdmin) return <Empty>Bu sayfaya erişim yetkiniz yok.</Empty>;
+  if (!me.user.isAdmin) return <Empty>Bu sayfaya erişim yetkiniz yok.</Empty>;
   const sp = await searchParams;
 
-  const [stats, companies, listings, payments, audit] = await Promise.all([
-    serverGet<Record<string, string | number>>('/admin/stats'),
+  const [stats, companies, allCompanies, listings, payments, audit] = await Promise.all([
+    serverGet<Record<string, unknown>>('/admin/stats'),
     serverGet<AdminCompany[] | { items: AdminCompany[] }>('/admin/companies?status=pending'),
+    serverGet<AdminCompany[] | { items: AdminCompany[] }>('/admin/companies?status=verified'),
     serverGet<Listing[] | { items: Listing[] }>('/admin/listings?status=pending_review'),
     serverGet<AdminPayment[] | { items: AdminPayment[] }>('/admin/payments?status=pending'),
     serverGet<AuditRow[] | { items: AuditRow[] }>(
@@ -67,10 +79,10 @@ export default async function AdminPage({
           <LoadError error={stats.error} />
         ) : (
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {Object.entries(stats.data).map(([k, v]) => (
+            {statRows(stats.data).map(([k, v]) => (
               <Card key={k}>
                 <dt className="text-xs text-muted-foreground">{k}</dt>
-                <dd className="text-xl font-semibold">{String(v)}</dd>
+                <dd className="text-xl font-semibold">{v}</dd>
               </Card>
             ))}
           </dl>
@@ -125,7 +137,7 @@ export default async function AdminPage({
                 <div>
                   <p className="font-medium">{l.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {l.sellerCompanyName ?? ''} · {formatTry(l.unitPriceMinor)} ·{' '}
+                    {l.sellerName ?? ''} · {formatTry(l.unitPriceMinor)} ·{' '}
                     {l.saleType === 'auction' ? 'Mezat' : 'Sabit fiyat'}
                   </p>
                 </div>
@@ -179,6 +191,32 @@ export default async function AdminPage({
         )}
       </section>
 
+      <section aria-labelledby="a-payouts">
+        <h2 id="a-payouts" className="mb-2 text-lg font-semibold text-primary">
+          Satıcı hakedişleri
+        </h2>
+        <p className="mb-2 text-xs text-muted-foreground">
+          Teslimi onaylanan siparişlerin satıcı bakiyesini satıcının banka hesabına aktarır (demo).
+        </p>
+        {!allCompanies.ok ? (
+          <LoadError error={allCompanies.error} />
+        ) : (
+          <div className="space-y-2">
+            {list(allCompanies.data).map((c) => (
+              <Card key={c.id} className="flex flex-wrap items-center justify-between gap-3">
+                <p className="font-medium">{c.legalName}</p>
+                <ActionButton
+                  path={`/admin/payouts/${c.id}/transfer`}
+                  label="Hakedişi aktar"
+                  variant="outline"
+                  onDoneMessage="Aktarım işlendi."
+                />
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+
       <section aria-labelledby="a-audit">
         <h2 id="a-audit" className="mb-2 text-lg font-semibold text-primary">
           Denetim kaydı
@@ -220,10 +258,10 @@ export default async function AdminPage({
               <tbody>
                 {list(audit.data).map((a, i) => (
                   <tr key={a.id ?? i} className="border-t">
-                    <td className="py-1 text-muted-foreground">{fmt(a.at ?? a.createdAt)}</td>
+                    <td className="py-1 text-muted-foreground">{fmt(a.occurred_at)}</td>
                     <td>{a.action}</td>
                     <td className="font-mono text-xs">
-                      {a.entityType}:{a.entityId?.slice(0, 8)}
+                      {a.entity_type}:{a.entity_id?.slice(0, 8)}
                     </td>
                   </tr>
                 ))}

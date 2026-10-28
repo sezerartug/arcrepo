@@ -101,6 +101,10 @@ const STATUS_LABELS: Record<string, [string, keyof typeof TONES]> = {
   scheduled: ['Planlandı', 'neutral'],
   live: ['Canlı', 'ok'],
   closed: ['Kapandı', 'neutral'],
+  draft: ['Taslak', 'neutral'],
+  payment_pending: ['Ödeme bekleniyor', 'warn'],
+  settled: ['Sonuçlandı', 'ok'],
+  ended_no_sale: ['Satış olmadı', 'neutral'],
   cancelled: ['İptal', 'bad'],
   awaiting_payment: ['Ödeme bekleniyor', 'warn'],
   paid_escrow: ['Ödendi (emanette)', 'ok'],
@@ -110,12 +114,13 @@ const STATUS_LABELS: Record<string, [string, keyof typeof TONES]> = {
   payment_failed: ['Ödeme başarısız', 'bad'],
 };
 
+// Auction statuses arrive upper-case (LIVE, SCHEDULED, ...); the table is keyed in lower case.
 export function statusLabel(status: string): string {
-  return STATUS_LABELS[status]?.[0] ?? status;
+  return STATUS_LABELS[status.toLowerCase()]?.[0] ?? status;
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  const [label, tone] = STATUS_LABELS[status] ?? [status, 'neutral'];
+  const [label, tone] = STATUS_LABELS[status.toLowerCase()] ?? [status, 'neutral'];
   return <Badge tone={tone}>{label}</Badge>;
 }
 

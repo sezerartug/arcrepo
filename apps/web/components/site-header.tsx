@@ -56,7 +56,7 @@ export function SiteHeader() {
               <Link className={linkCls} href="/satici">
                 Satıcı
               </Link>
-              {me.user.isPlatformAdmin ? (
+              {me.user.isAdmin ? (
                 <Link className={linkCls} href="/admin">
                   Yönetim
                 </Link>

@@ -41,7 +41,12 @@ export default async function OrdersPage() {
                       {o.listingTitle ?? `#${o.id.slice(0, 8)}`}
                     </Link>
                   </td>
-                  <td>{o.buyerCompanyId === me.company?.id ? 'Alıcı' : 'Satıcı'}</td>
+                  <td>
+                    {(o.role ?? (o.buyerCompanyId === me.company?.id ? 'buyer' : 'seller')) ===
+                    'buyer'
+                      ? 'Alıcı'
+                      : 'Satıcı'}
+                  </td>
                   <td>{formatTry(o.totalMinor)}</td>
                   <td>
                     <StatusBadge status={o.status} />

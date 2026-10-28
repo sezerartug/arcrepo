@@ -63,7 +63,8 @@ export const clientApi = {
 // ---- money / quantity -------------------------------------------------------
 
 /** Kuruş (minor units, string) -> "1.234,56 ₺". */
-export function formatTry(minor: string | number | bigint): string {
+export function formatTry(minor: string | number | bigint | null | undefined): string {
+  if (minor === null || minor === undefined || minor === '') return '—';
   const v = BigInt(minor);
   const neg = v < 0n;
   const abs = neg ? -v : v;

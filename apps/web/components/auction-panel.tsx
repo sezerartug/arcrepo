@@ -76,7 +76,8 @@ export function AuctionPanel({
     };
   }, [offset, refresh]);
 
-  const live = snap.status === 'live';
+  const status = snap.status.toLowerCase(); // API sends LIVE / SCHEDULED / ...
+  const live = status === 'live';
   const remaining = Date.parse(snap.endsAt) - now;
   const toStart = Date.parse(snap.startsAt) - now;
   const my = snap.myState;
@@ -129,14 +130,16 @@ export function AuctionPanel({
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <dt className="text-muted-foreground">Güncel fiyat</dt>
-          <dd className="text-2xl font-bold text-primary">{formatTry(snap.currentPriceMinor)}</dd>
+          <dd className="text-2xl font-bold text-primary">
+            {formatTry(snap.currentPriceMinor ?? snap.startPriceMinor)}
+          </dd>
         </div>
         <div>
           <dt className="text-muted-foreground">
-            {snap.status === 'scheduled' ? 'Başlamasına' : 'Kalan süre'}
+            {status === 'scheduled' ? 'Başlamasına' : 'Kalan süre'}
           </dt>
           <dd className="font-mono text-2xl font-bold" aria-live="off">
-            {snap.status === 'scheduled'
+            {status === 'scheduled'
               ? formatRemaining(toStart)
               : live
                 ? formatRemaining(remaining)
@@ -157,8 +160,15 @@ export function AuctionPanel({
       {snap.winner ? (
         <p role="status" className="rounded-lg bg-success/10 p-3 text-sm text-success">
           Kazanan: {snap.winner.bidder ?? '—'}
-          {snap.winner.amountMinor ? ` · ${formatTry(snap.winner.amountMinor)}` : ''}
+          {snap.winner.finalPriceMinor
+            ? ` · ${formatTry(snap.winner.finalPriceMinor)} / birim`
+            : ''}
         </p>
+      ) : null}
+      {my?.isWinner ? (
+        <Link className="text-sm underline" href="/siparisler">
+          Siparişinizi görüntüleyin ve ödeme talimatını alın
+        </Link>
       ) : null}
 
       {!loggedIn ? (

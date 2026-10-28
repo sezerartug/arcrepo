@@ -4,7 +4,7 @@
 export type CompanyStatus = 'pending' | 'verified' | 'rejected' | 'suspended';
 
 export type Me = {
-  user: { id: string; email: string; fullName: string; isPlatformAdmin?: boolean };
+  user: { id: string; email: string; fullName: string; isAdmin?: boolean };
   company: {
     id: string;
     legalName: string;
@@ -22,16 +22,29 @@ export type Category = {
   children?: Category[];
 };
 
+/** Row of GET /auctions ({ serverNow, items }); currentPriceMinor is null until the first bid. */
 export type AuctionSummary = {
   id: string;
   listingId?: string;
   status: string;
-  currentPriceMinor: string;
+  startPriceMinor: string;
+  currentPriceMinor: string | null;
   minNextBidMinor?: string;
   bidCount?: number;
   endsAt: string;
   startsAt?: string;
   title?: string;
+};
+
+export type AuctionList = { serverNow: string; items: AuctionSummary[] };
+
+/** uction block of a listing: the draft parameters (no id, no current price). */
+export type ListingAuction = {
+  startPriceMinor: string;
+  minIncrementMinor?: string;
+  reserveMinor?: string;
+  startsAt: string;
+  endsAt: string;
 };
 
 export type Listing = {
@@ -50,10 +63,10 @@ export type Listing = {
   location?: string;
   deliveryTerms?: string;
   status: string;
-  sellerCompanyName?: string;
+  sellerName?: string;
   companyId?: string;
   images?: (string | { path: string })[];
-  auction?: AuctionSummary | null;
+  auction?: ListingAuction | null;
   isFavorite?: boolean;
 };
 
@@ -65,7 +78,8 @@ export type AuctionSnapshot = {
   id: string;
   listingId: string;
   status: string;
-  currentPriceMinor: string;
+  startPriceMinor: string;
+  currentPriceMinor: string | null;
   minNextBidMinor: string;
   bidCount: number;
   endsAt: string;
@@ -73,8 +87,14 @@ export type AuctionSnapshot = {
   depositMinor: string;
   startsAt: string;
   bids: Bid[];
-  winner?: { bidder?: string; amountMinor?: string } | null;
-  myState?: { eligible: boolean; depositStatus: string | null; isHighBidder: boolean };
+  winner?: { bidder?: string; finalPriceMinor?: string; totalMinor?: string } | null;
+  myState?: {
+    eligible: boolean;
+    depositStatus: string | null;
+    isHighBidder: boolean;
+    isSeller?: boolean;
+    isWinner?: boolean;
+  };
 };
 
 export type DepositInstruction = {
@@ -86,23 +106,29 @@ export type DepositInstruction = {
 
 export type Order = {
   id: string;
+  role?: 'buyer' | 'seller';
   status: string;
   listingTitle?: string;
-  sourceListingId?: string;
+  listingId?: string;
+  auctionId?: string | null;
+  buyerName?: string;
+  sellerName?: string;
   buyerCompanyId: string;
   sellerCompanyId: string;
   unitPriceMinor: string;
   quantityBase: number | string;
   totalMinor: string;
-  commissionMinor?: string;
+  depositAppliedMinor?: string;
+  amountDueMinor?: string;
+  trackingNote?: string | null;
   paymentReference?: string | null;
   paymentDueAt?: string | null;
   iban?: string;
   createdAt?: string;
-  history?: { status: string; at: string }[];
+  history?: { type: string; from: string | null; to: string | null; at: string }[];
 };
 
-export type Member = { email: string; fullName: string; role: string };
+export type Member = { id?: string; email: string; fullName: string; role: string };
 
 export function imageSrc(img: string | { path: string }): string {
   const p = typeof img === 'string' ? img : img.path;

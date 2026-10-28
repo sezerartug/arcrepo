@@ -6,7 +6,10 @@ import type { Database } from './schema.js';
 pg.types.setTypeParser(pg.types.builtins.INT8, (value) => BigInt(value));
 
 export function createDb(connectionString: string): Kysely<Database> {
-  return new Kysely<Database>({
-    dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString }) }),
+  const pool = new pg.Pool({ connectionString });
+  // Without a listener an idle client dropped by the server (restart, failover) crashes the process.
+  pool.on('error', (error) => {
+    console.error('postgres idle client error:', error.message);
   });
+  return new Kysely<Database>({ dialect: new PostgresDialect({ pool }) });
 }

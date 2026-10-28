@@ -6,7 +6,13 @@ import { Card, LoadError, StatusBadge } from '@/components/common';
 import { ListingImage } from '@/components/listing-card';
 import { formatQty, formatTry } from '@/lib/api';
 import { getMe, loadCategories, serverGet } from '@/lib/server-api';
-import { imageSrc, withUnits, type AuctionSnapshot, type Listing } from '@/lib/types';
+import {
+  imageSrc,
+  withUnits,
+  type AuctionList,
+  type AuctionSnapshot,
+  type Listing,
+} from '@/lib/types';
 
 export default async function ListingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,10 +29,14 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
   const bpu = listing.basePerUnit ?? 1;
   const verified = me?.company?.status === 'verified';
   const isOwn = !!me?.company && listing.companyId === me.company.id;
-  const snap =
-    listing.saleType === 'auction' && listing.auction
-      ? await serverGet<AuctionSnapshot>(`/auctions/${listing.auction.id}`)
-      : null;
+  // The listing's uction block carries no id; resolve it through the auctions list.
+  const auctionId =
+    listing.saleType === 'auction'
+      ? await serverGet<AuctionList>('/auctions').then((r) =>
+          r.ok ? r.data.items.find((a) => a.listingId === listing.id)?.id : undefined,
+        )
+      : undefined;
+  const snap = auctionId ? await serverGet<AuctionSnapshot>(`/auctions/${auctionId}`) : null;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_24rem]">
@@ -39,8 +49,8 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
             ) : null}
           </div>
           <h1 className="text-2xl font-semibold text-primary">{listing.title}</h1>
-          {listing.sellerCompanyName ? (
-            <p className="text-sm text-muted-foreground">Satıcı: {listing.sellerCompanyName}</p>
+          {listing.sellerName ? (
+            <p className="text-sm text-muted-foreground">Satıcı: {listing.sellerName}</p>
           ) : null}
         </div>
 

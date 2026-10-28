@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { AuctionCard } from '@/components/auction-card';
 import { Empty, LoadError, PageTitle } from '@/components/common';
 import { serverGet } from '@/lib/server-api';
-import type { AuctionSummary } from '@/lib/types';
+import type { AuctionList } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export const metadata = { title: 'Mezatlar · ARC Global' };
@@ -20,7 +20,7 @@ export default async function AuctionsPage({
 }) {
   const { status } = await searchParams;
   const current = TABS.find(([s]) => s === status)?.[0] ?? 'live';
-  const res = await serverGet<AuctionSummary[]>(`/auctions?status=${current}`);
+  const res = await serverGet<AuctionList>(`/auctions?status=${current}`);
 
   return (
     <>
@@ -42,11 +42,11 @@ export default async function AuctionsPage({
       </nav>
       {!res.ok ? (
         <LoadError error={res.error} />
-      ) : res.data.length === 0 ? (
+      ) : res.data.items.length === 0 ? (
         <Empty>Bu durumda mezat yok.</Empty>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {res.data.map((a) => (
+          {res.data.items.map((a) => (
             <AuctionCard key={a.id} auction={a} />
           ))}
         </div>

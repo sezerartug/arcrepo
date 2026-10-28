@@ -56,17 +56,17 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P1-03 docker compose geliştirme ortamı (PostgreSQL, Redis, S3-uyumlu depo, e-posta yakalayıcı, OTel collector)
 - [x] P1-04 Yapılandırma ve sır yönetimi: şema doğrulamalı env, `.env.example`, sır taraması
 - [ ] P1-05 CI hattı: typecheck, lint, unit, entegrasyon (gerçek PostgreSQL), build, bağımlılık denetimi, sır taraması
-- [ ] P1-06 Prisma (7, sabitlenmiş) şema iskeleti + migration hattı + `FOR UPDATE` raw SQL kalıbı ve testi
+- [x] P1-06 (Kysely + embedded PG; Prisma yerine, 2026-10-28) şema iskeleti + migration hattı + `FOR UPDATE` raw SQL kalıbı ve testi
 - [ ] P1-07 Kimlik: kayıt, giriş, oturum (HttpOnly çerez), argon2id, e-posta doğrulama, parola sıfırlama
 - [ ] P1-08 Yetkilendirme: roller + nesne düzeyi sahiplik politikası + BOLA test matrisi altyapısı
-- [ ] P1-09 Audit log altyapısı (append-only; aktör, eylem, neden, korelasyon id)
-- [ ] P1-10 Idempotency-Key altyapısı (istek özeti doğrulama, saklı yanıtı tekrar verme, reddedilen isteği de kaydetme)
+- [x] P1-09 Audit log altyapısı (append-only; aktör, eylem, neden, korelasyon id)
+- [x] P1-10 Idempotency-Key altyapısı (istek özeti doğrulama, saklı yanıtı tekrar verme, reddedilen isteği de kaydetme)
 - [ ] P1-11 Outbox tablosu + relay + BullMQ worker iskeleti (yeniden deneme, dead-letter)
 - [ ] P1-12 Rate limiting katmanları (IP, kullanıcı, uç nokta) Redis üzerinde
 - [ ] P1-13 Gözlemlenebilirlik: OpenTelemetry (iz/metrik/log), yapısal log + kişisel veri maskeleme, Sentry, health/ready uçları
-- [ ] P1-14 Ledger iskeleti: hesaplar, journal, entries; "toplam = 0" değişmezi + property testi
+- [x] P1-14 Ledger iskeleti: hesaplar, journal, entries; "toplam = 0" değişmezi + property testi
 - [ ] P1-15 Gerçek zamanlı iskelet: WebSocket gateway + kimlik doğrulama + Redis fan-out + sıra numaralı olay zarfı
-- [ ] P1-16 Açık artırma eşzamanlılık spike'ı: ≥200 paralel teklif, tek kazanan, `clock_timestamp()` ile bitiş; rapor `docs/spikes/auction-concurrency.md`
+- [x] P1-16 Açık artırma eşzamanlılık spike'ı: ≥200 paralel teklif, tek kazanan, `clock_timestamp()` ile bitiş; rapor `docs/spikes/auction-concurrency.md`
 - [x] P1-17 Web iskeleti: Next.js App Router + Tailwind + shadcn/ui + temel yerleşim + erişilebilirlik kontrolü
 - [ ] P1-18 Staging'e otomatik dağıtım + geri alma prosedürü
 - [ ] P1-19 Test altyapısı: Testcontainers, fabrikalar, property test (fast-check), Playwright smoke
@@ -94,7 +94,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P2-G1 KAPI: ilan yayınla→bul→görüntüle uçtan uca; yetki matrisi %100; moderasyon çalışıyor; arama/görsel/kuyruk panoları canlı
 
 ## Faz 3 — Ödeme, defter, sipariş, escrow (Hafta 13–18)
-- [ ] P3-01 Sipariş durum makinesi ve veri modeli
+- [x] P3-01 Sipariş durum makinesi ve veri modeli
 - [ ] P3-02 PSP entegrasyonu (barındırılan ödeme alanları/3DS; kart verisi sistemimize girmez)
 - [ ] P3-03 Provizyon/tahsilat akışı + idempotent ödeme niyeti
 - [ ] P3-04 Webhook alıcısı: imza doğrulama, tekilleştirme, sırasız/gecikmeli olay toleransı
@@ -110,10 +110,10 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P3-G1 KAPI: ledger toplamı her zaman 0; çift tahsilat/çift sipariş testleri yeşil; mutabakat sapması 0; hukuk onayı var
 
 ## Faz 4 — Açık artırma motoru (Hafta 19–26)
-- [ ] P4-01 Domain: durum geçiş tablosu + saf kural fonksiyonları (artış, rezerv, uzatma, kazanan) + property testleri
-- [ ] P4-02 Şema ve DB kısıtları: `(auction_id, seq)` unique, tek `auction_results`, artırma başına tek sipariş, CHECK'ler
-- [ ] P4-03 PlaceBid: tek transaction, `FOR UPDATE`, kilit sonrası `clock_timestamp()`, idempotency
-- [ ] P4-04 Bitiş uzatma (anti-sniping) + maksimum uzatma sınırı
+- [x] P4-01 Domain: durum geçiş tablosu + saf kural fonksiyonları (artış, rezerv, uzatma, kazanan) + property testleri
+- [x] P4-02 Şema ve DB kısıtları: `(auction_id, seq)` unique, tek `auction_results`, artırma başına tek sipariş, CHECK'ler
+- [x] P4-03 PlaceBid: tek transaction, `FOR UPDATE`, kilit sonrası `clock_timestamp()`, idempotency
+- [x] P4-04 Bitiş uzatma (anti-sniping) + maksimum uzatma sınırı
 - [ ] P4-05 Rezerv fiyat, "hemen al", iptal kuralları
 - [ ] P4-06 Kapanış: BullMQ gecikmeli iş + süpürücü (`SKIP LOCKED`) + idempotent closer + kayıp zamanlayıcı toleransı
 - [ ] P4-07 Outbox → WebSocket yayını; sıra numarası, snapshot/resync, yeniden bağlanma

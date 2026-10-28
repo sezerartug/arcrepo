@@ -5,15 +5,15 @@ Güncelleme kuralı: bir dilim/görev bitince yalnızca bu dosyadaki tablo + "S�
 ## Dilim durumu (MVP-PLAN §Dilimler)
 | Dilim | Durum | Not |
 |---|---|---|
-| S0 Ortam + DB temeli | ⏳ | git/pnpm kuruldu; DB temeli (migrate, audit, FOR UPDATE testi) önceki PC'den geldi |
-| S1 Kimlik/şirket/admin | ⬜ | |
-| S2 Katalog/ilan/arama | ⬜ | |
-| S3 Ledger + mezat | ⬜ | |
-| S4 Sipariş + sahte havale | ⬜ | |
-| S5 Web ekranları + tohum veri | ⬜ | |
+| S0 Ortam + DB temeli | ✅ | Kysely + embedded PG, audit, FOR UPDATE testi |
+| S1 Kimlik/şirket/admin | ✅ | e-posta doğrulama/parola sıfırlama/rate limit YOK |
+| S2 Katalog/ilan/arama | ✅ | ilan düzenleme arayüzü yok |
+| S3 Ledger + mezat | ✅ | 200 paralel teklif testi geçti; dayanıklılık/k6 yok |
+| S4 Sipariş + sahte havale | ✅ | oto teslim onayı yok |
+| S5 Web ekranları + tohum veri | ✅ | tarayıcıda elle tıklama doğrulanmadı |
 
 ## Sıradaki
-S0'ı doğrula → S1.
+MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; sonra ROADMAP 'MVP sonrası' sırası (mesajlaşma, e-posta/telefon doğrulama, rate limit, ilan düzenleme UI, görsel yükleme denemesi). Çalıştır: `pnpm demo` (web :3000, api :3001). Hesaplar: admin@arc.local/Admin!2345; satici1@, satici2@, alici@arc.local / Demo!2345.
 
 ## Dosya haritası (nerede ne var)
 - `apps/api/src/db/` — `client.ts` (Kysely), `clock.ts` (`dbNow`), `migrate.ts` (liste), `migrations/NNNN_*.ts`, `schema.ts` (tablo tipleri)

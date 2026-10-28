@@ -16,6 +16,8 @@
     "test:unit": "pnpm -r test:unit",
     "test:int": "pnpm -r test:int",
     "db:start": "pnpm --filter @arc/api db:start",
+    "seed": "pnpm --filter @arc/api seed",
+    "demo": "pnpm db:start && pnpm seed && pnpm dev",
     "db:stop": "pnpm --filter @arc/api db:stop"
   },
   "devDependencies": {

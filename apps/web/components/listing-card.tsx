@@ -42,7 +42,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
         </h3>
         <p className="text-lg font-semibold text-primary">
           {isAuction && listing.auction
-            ? formatTry(listing.auction.currentPriceMinor)
+            ? formatTry(listing.auction.startPriceMinor)
             : formatTry(listing.unitPriceMinor)}
           <span className="text-xs font-normal text-muted-foreground"> / {unit}</span>
         </p>

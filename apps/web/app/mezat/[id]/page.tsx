@@ -23,9 +23,7 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <PageTitle
-        sub={listing?.sellerCompanyName ? `Satıcı: ${listing.sellerCompanyName}` : undefined}
-      >
+      <PageTitle sub={listing?.sellerName ? `Satıcı: ${listing.sellerName}` : undefined}>
         {listing?.title ?? 'Mezat'}
       </PageTitle>
       <div className="grid gap-8 lg:grid-cols-[1fr_26rem]">
@@ -39,7 +37,7 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
               <p className="text-sm">{listing.description}</p>
               <p className="text-sm text-muted-foreground">
                 Miktar: {formatQty(listing.quantityBase, listing.basePerUnit ?? 1, unit)} ·
-                Başlangıç fiyatı: {formatTry(listing.unitPriceMinor)} / {unit}
+                Başlangıç fiyatı: {formatTry(snap.data.startPriceMinor)} / {unit}
               </p>
               <Link href={`/ilanlar/${listing.id}`} className="text-sm underline">
                 İlan ayrıntıları

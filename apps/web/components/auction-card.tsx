@@ -15,7 +15,9 @@ export function AuctionCard({ auction }: { auction: AuctionSummary }) {
           {auction.title ?? `Mezat ${auction.id.slice(0, 8)}`}
         </Link>
       </h3>
-      <p className="text-lg font-semibold text-primary">{formatTry(auction.currentPriceMinor)}</p>
+      <p className="text-lg font-semibold text-primary">
+        {formatTry(auction.currentPriceMinor ?? auction.startPriceMinor)}
+      </p>
       <p className="text-xs text-muted-foreground">
         {auction.bidCount ?? 0} teklif · Bitiş: {formatDate(auction.endsAt)}
       </p>

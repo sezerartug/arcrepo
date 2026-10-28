@@ -48,8 +48,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         {o.history?.length ? (
           <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
             {o.history.map((h) => (
-              <li key={h.at + h.status}>
-                {formatDate(h.at)} — {statusLabel(h.status)}
+              <li key={h.at + h.type}>
+                {formatDate(h.at)} — {h.to ? statusLabel(h.to) : h.type}
               </li>
             ))}
           </ul>
@@ -65,10 +65,10 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <dd>{Number(o.quantityBase).toLocaleString('tr-TR')}</dd>
           <dt className="text-muted-foreground">Toplam (KDV hariç)</dt>
           <dd className="font-semibold">{formatTry(o.totalMinor)}</dd>
-          {isSeller && o.commissionMinor ? (
+          {o.depositAppliedMinor && o.depositAppliedMinor !== '0' ? (
             <>
-              <dt className="text-muted-foreground">Komisyon</dt>
-              <dd>{formatTry(o.commissionMinor)}</dd>
+              <dt className="text-muted-foreground">Düşülen teminat</dt>
+              <dd>{formatTry(o.depositAppliedMinor)}</dd>
             </>
           ) : null}
         </dl>
@@ -87,7 +87,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             Açıklama (referans):{' '}
             <span className="font-mono font-semibold">{o.paymentReference ?? '—'}</span>
           </p>
-          <p className="text-sm">Tutar: {formatTry(o.totalMinor)}</p>
+          <p className="text-sm">Ödenecek tutar: {formatTry(o.amountDueMinor ?? o.totalMinor)}</p>
           {o.paymentDueAt ? (
             <p className="text-sm text-muted-foreground">Son ödeme: {formatDate(o.paymentDueAt)}</p>
           ) : null}
