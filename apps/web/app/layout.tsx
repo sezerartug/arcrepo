@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { SiteHeader } from '@/components/site-header';
 import { cn } from '@/lib/utils';
 import './globals.css';
 
@@ -23,13 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           İçeriğe geç
         </a>
-        <header className="border-b">
-          <div className="mx-auto flex h-14 w-full max-w-6xl items-center px-4">
-            <Link href="/" className="font-semibold">
-              ARC Global
-            </Link>
-          </div>
-        </header>
+        <SiteHeader />
         <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
           {children}
         </main>

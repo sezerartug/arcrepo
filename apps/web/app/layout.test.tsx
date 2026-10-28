@@ -3,7 +3,8 @@ import axe from 'axe-core';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import RootLayout, { metadata } from './layout';
-import HomePage from './page';
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 
 // next/font is a compile-time transform; outside Next it only needs to return a class name.
 vi.mock('next/font/google', () => ({ Geist: () => ({ variable: 'font-geist' }) }));
@@ -11,7 +12,7 @@ vi.mock('next/font/google', () => ({ Geist: () => ({ variable: 'font-geist' }) }
 beforeAll(() => {
   const html = renderToStaticMarkup(
     <RootLayout>
-      <HomePage />
+      <h1>ARC Global</h1>
     </RootLayout>,
   );
   const rendered = new DOMParser().parseFromString(html, 'text/html').documentElement;

@@ -33,3 +33,20 @@ export async function recordAudit(db: Kysely<Database>, entry: AuditEntry): Prom
     .executeTakeFirstOrThrow();
   return row.id;
 }
+
+export interface AuditFilter {
+  readonly entityType?: string;
+  readonly entityId?: string;
+  readonly limit?: number;
+}
+
+export async function listAudit(db: Kysely<Database>, filter: AuditFilter) {
+  let q = db
+    .selectFrom('audit_log')
+    .selectAll()
+    .orderBy('occurred_at', 'desc')
+    .orderBy('id', 'desc');
+  if (filter.entityType) q = q.where('entity_type', '=', filter.entityType);
+  if (filter.entityId) q = q.where('entity_id', '=', filter.entityId);
+  return q.limit(Math.min(filter.limit ?? 100, 500)).execute();
+}
