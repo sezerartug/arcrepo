@@ -7,7 +7,7 @@ Mimari: modüler monolit (TypeScript). Ayrıntılar gerektiğinde okunur, otomat
 ## Oturum başlangıcı
 1. `docs/ROADMAP.md` "MVP yolu" tablosundaki sırayla ilk işaretlenmemiş görevi bul; yalnızca o görevin satırını ve faz bölümünü oku.
 2. `docs/LOG.md` dosyasının son girişini oku.
-3. Kodlamadan önce 5–10 satırlık plan yaz ve onay iste. Belirsizlik varsa varsayım yapma, sor.
+3. Kodlamadan önce 5–10 satırlık plan yaz. Ürün sahibi kararı (2026-10-28): rutin/teknik kararlarda onay bekleme, eksik dosyaları oluştur, devam et; yalnızca kritik kararlarda sor (iş kuralı: para/mezat/ödeme, geri alınamaz veya dışa etkili işlem, güvenlik kontrolünü gevşetme). Hedef: yalın, uçtan uca çalışan ürün.
 
 ## Çalışma ilkeleri
 1. **Önce düşün.** Varsayımları açıkça yaz. Birden fazla yorum varsa seçenekleri sun, sessizce seçme.

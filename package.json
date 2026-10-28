@@ -13,7 +13,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "secrets:scan": "secretlint --maskSecrets \"**/*\"",
-    "test:unit": "pnpm -r test:unit"
+    "test:unit": "pnpm -r test:unit",
+    "test:int": "pnpm -r test:int",
+    "db:start": "pnpm --filter @arc/api db:start",
+    "db:stop": "pnpm --filter @arc/api db:stop"
   },
   "devDependencies": {
     "@arc/config": "workspace:*",

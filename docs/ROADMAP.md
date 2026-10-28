@@ -21,6 +21,12 @@ Değişmez kurallar (para, zaman, yetki, audit, idempotency, test) MVP'de de kı
 | M4 Sipariş + ödeme | Sabit fiyat ve mezat kazananı → sipariş → sahte havale (referans eşleştirme) → escrow → teslim → satıcıya hakediş | P1-14, P3-01, P3-03, P3-04, P3-05, P3-06 (yalnızca manuel teslim onayı), P4-09, P4-10, P3-08 (sahte aktarım), P3-09, P3-10 |
 | M5 Paneller | Satıcı paneli + şirket paneli + admin dashboard; çelik tohum verisiyle demo | P2-13, P5-03, P5-06, P5-07, P6-08 (yalnızca tohum veri) |
 
+**Yalın kapsam (2026-10-28, ürün sahibi: "çok kapsamlı olmayan, işimizi gören, çalışan sistem"):** dilimler ve değişmez kurallar aynı; altyapı en sade hâliyle kurulur, gerektiğinde büyütülür.
+- Veritabanı: geliştirme ve testte `embedded-postgres` (gerçek PostgreSQL 18, Docker gerekmez); `compose.yaml` Docker kurulunca alternatif. Testcontainers yerine test başına geçici embedded PG (P1-19).
+- Redis/BullMQ/outbox relay (P1-11, P1-12'nin Redis kısmı) ertelenir: kapanış süpürücüsü API süreci içinde zamanlayıcı + DB; canlı güncelleme tek örnekte SSE/yoklama + `seq` + snapshot (P1-15 sadeleşir). Doğruluk zaten DB'de.
+- E-posta: geliştirmede konsola/dosyaya yazan `MailPort`; gerçek sağlayıcı sonra. Görsel: yerel disk (P2-04 zaten öyle).
+- Ertelenen: gözlemlenebilirlik yığını (P1-13 → yalnızca yapısal log + health), S3, CI/staging, KYC/MFA, mesajlaşma/bildirim.
+
 MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-12, P5-08) → gözlemlenebilirlik + CI + staging (P1-05, P1-13, P1-18) → gerçek PSP sandbox (P0-12, P3-02) → güven/KVKK (Faz 5) → hukuk (P0-11, P3-12) → sertleştirme ve lansman (Faz 6).
 
 ---

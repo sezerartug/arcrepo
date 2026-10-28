@@ -9,6 +9,9 @@ coverage/
 next-env.d.ts
 .turbo/
 
+# local embedded PostgreSQL data (pnpm db:start)
+.data/
+
 # env & secrets (only the example file is committed)
 .env
 .env.*
