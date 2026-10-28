@@ -92,3 +92,9 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Maliyet: ölçülmedi (`/usage` kullanıcıda). · Bağlam: ölçülmedi.
 - Risk / açık konu: jsdom ilk yüklemesi bu makinede ~2 dk (Defender soğuk tarama; ikinci yükleme 3 sn) → Vitest "Timeout waiting for worker to respond" hatasıyla bir toplu çalıştırma düştü, ardından iki çalıştırma geçti; aralıklı (flaky) risk, CI'da (P1-05) izlenmeli. Kontrast ve klavye testleri P1-19 Playwright + axe ile. `next build` Google Fonts'u derleme anında indiriyor (ağ gerekli; çalışma zamanında Google'a istek yok). shadcn tema değişkenleri varsayılan nötr; marka renkleri ürün sahibi kararı.
 - Sonraki adım: Docker kurulumu (P1-03 → P1-19 → P1-06 → P1-07…); `.env.example` eklenince P1-04 `[x]`.
+
+### 2026-10-28 — P1-04 tamamlandı — `.env.example`
+- Yapılan: Kökte `.env.example` (API: `NODE_ENV`, `PORT`; compose: `POSTGRES_USER/PASSWORD/DB/PORT`, `REDIS_PORT`; yalnızca yerel geliştirme değerleri). Ürün sahibinin isteğiyle scratchpad'deki hazır içerik `cp` ile kopyalandı; `.claude/settings.json` içindeki `Read(./.env.*)` engeli değiştirilmedi (Write aracı bu dosyayı da engelliyor).
+- Doğrulama: kopya kaynakla bayt düzeyinde aynı (`cmp`); `.gitignore` dosyayı izlemeye izin veriyor (`!.env.example`); `pnpm secrets:scan` ve `format:check` temiz. Ayrıca `C:\Users\LENOVO\.wslconfig` oluşturuldu (WSL2: 3 GB bellek, 2 çekirdek, 2 GB swap) — depo dışı, Docker kurulumu için.
+- Risk / açık konu: `.env.example` ileride Claude tarafından okunamaz/düzenlenemez; yeni değişken eklendiğinde aynı yol (scratchpad + `cp`) veya elle düzenleme gerekir. Docker kurulumu ürün sahibinde.
+- Sonraki adım: Docker kurulunca P1-03.

@@ -48,7 +48,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] P1-01 Monorepo iskeleti (pnpm workspaces; `apps/web`, `apps/api`, `packages/*`); CLAUDE.md "Komutlar" bölümü dolduruldu
 - [x] P1-02 TypeScript strict + lint/format + modül sınır kuralı (derin import yasağı) CI'da zorunlu — CI'da zorunlu kılma P1-05'e bırakıldı (2026-10-27)
 - [ ] P1-03 docker compose geliştirme ortamı (PostgreSQL, Redis, S3-uyumlu depo, e-posta yakalayıcı, OTel collector)
-- [ ] P1-04 Yapılandırma ve sır yönetimi: şema doğrulamalı env, `.env.example`, sır taraması
+- [x] P1-04 Yapılandırma ve sır yönetimi: şema doğrulamalı env, `.env.example`, sır taraması
 - [ ] P1-05 CI hattı: typecheck, lint, unit, entegrasyon (gerçek PostgreSQL), build, bağımlılık denetimi, sır taraması
 - [ ] P1-06 Prisma (7, sabitlenmiş) şema iskeleti + migration hattı + `FOR UPDATE` raw SQL kalıbı ve testi
 - [ ] P1-07 Kimlik: kayıt, giriş, oturum (HttpOnly çerez), argon2id, e-posta doğrulama, parola sıfırlama
