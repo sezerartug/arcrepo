@@ -44,6 +44,15 @@ export interface SessionsTable {
   expires_at: ColumnType<Date, Date | RawBuilder<Date>, never>;
 }
 
+export interface PasswordResetsTable {
+  id: Generated<string>;
+  user_id: string;
+  token_hash: string;
+  created_at: CreatedAt;
+  expires_at: ColumnType<Date, RawBuilder<Date>, never>;
+  used_at: ColumnType<Date | null, never, RawBuilder<Date>>;
+}
+
 export interface CompaniesTable {
   id: Generated<string>;
   legal_name: string;
@@ -294,6 +303,7 @@ export interface Database {
   audit_log: AuditLogTable;
   users: UsersTable;
   sessions: SessionsTable;
+  password_resets: PasswordResetsTable;
   companies: CompaniesTable;
   company_members: CompanyMembersTable;
   categories: CategoriesTable;

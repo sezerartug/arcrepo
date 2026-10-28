@@ -176,7 +176,9 @@ export class OrdersService implements AuctionOrderPort {
     if (typeof status === 'string' && status !== '') {
       q = q.where('o.status', '=', validate.oneOf({ status }, 'status', STATUSES));
     }
-    return { items: (await q.execute()).map((r) => toView(r, actor.company.id)) };
+    return {
+      items: (await q.execute()).map((r) => toView(r, actor.company.id, this.cfg.autoConfirmDays)),
+    };
   }
 
   async get(actor: CompanyAuthContext, id: string) {
@@ -210,7 +212,7 @@ export class OrdersService implements AuctionOrderPort {
       .orderBy('id')
       .execute();
     return {
-      ...toView(r, viewerCompanyId),
+      ...toView(r, viewerCompanyId, this.cfg.autoConfirmDays),
       history: history.map((h) => ({
         type: h.type,
         from: h.from_status,
@@ -324,43 +326,95 @@ export class OrdersService implements AuctionOrderPort {
   }
 
   // Buyer confirms delivery: shipped -> delivered -> completed at once, escrow is released.
-  // MVP: no automatic delivery confirmation (a timeout rule needs a product decision).
+  // If the buyer does not confirm, sweepAutoConfirm() does it after AUTO_CONFIRM_DAYS (same release path).
   async confirmDelivery(actor: CompanyAuthContext, id: string) {
     return this.db.transaction().execute(async (trx) => {
       const o = await this.lock(trx, id);
       this.assertParty(o, actor.company.id, 'buyer');
       this.assertCan(o, 'delivered');
-      await transitionOrder(trx, o, 'delivered');
-      await transitionOrder(trx, { id, status: 'delivered' }, 'completed');
-      const payout = o.total_minor - o.commission_minor;
-      const entries: EntryInput[] = [
-        { account: { type: 'escrow' }, amountMinor: -o.total_minor },
-        {
-          account: { type: 'seller_payable', companyId: o.seller_company_id },
-          amountMinor: payout,
-        },
-        { account: { type: 'platform_revenue' }, amountMinor: o.commission_minor },
-      ];
-      await postJournal(trx, {
-        reason: 'order.release',
-        ref: { type: 'order', id },
-        entries: entries.filter((e) => e.amountMinor !== 0n),
-      });
-      if (o.source_auction_id) await finishAuctionPayment(trx, o.source_auction_id, 'SETTLED');
-      await recordAudit(trx, {
-        actorType: 'user',
-        actorId: actor.userId,
-        companyId: actor.company.id,
-        action: 'order.delivered',
-        entityType: 'order',
-        entityId: id,
-        data: {
-          totalMinor: o.total_minor.toString(),
-          commissionMinor: o.commission_minor.toString(),
-          sellerPayoutMinor: payout.toString(),
-        },
-      });
+      await this.releaseEscrow(trx, o, { actorType: 'user', actorId: actor.userId });
       return { id, status: 'completed' as const };
+    });
+  }
+
+  // shipped -> delivered -> completed and the escrow release journal. The caller holds the order lock.
+  private async releaseEscrow(
+    trx: Kysely<Database>,
+    o: OrderRow,
+    actor: { actorType: 'user' | 'system'; actorId?: string },
+  ): Promise<void> {
+    const auto = actor.actorType === 'system';
+    await transitionOrder(trx, o, 'delivered', {}, auto ? { auto: true } : {});
+    await transitionOrder(
+      trx,
+      { id: o.id, status: 'delivered' },
+      'completed',
+      {},
+      auto ? { auto: true } : {},
+    );
+    const payout = o.total_minor - o.commission_minor;
+    const entries: EntryInput[] = [
+      { account: { type: 'escrow' }, amountMinor: -o.total_minor },
+      {
+        account: { type: 'seller_payable', companyId: o.seller_company_id },
+        amountMinor: payout,
+      },
+      { account: { type: 'platform_revenue' }, amountMinor: o.commission_minor },
+    ];
+    await postJournal(trx, {
+      reason: 'order.release',
+      ref: { type: 'order', id: o.id },
+      entries: entries.filter((e) => e.amountMinor !== 0n),
+    });
+    if (o.source_auction_id) await finishAuctionPayment(trx, o.source_auction_id, 'SETTLED');
+    await recordAudit(trx, {
+      ...actor,
+      companyId: o.buyer_company_id,
+      action: 'order.delivered',
+      entityType: 'order',
+      entityId: o.id,
+      data: {
+        totalMinor: o.total_minor.toString(),
+        commissionMinor: o.commission_minor.toString(),
+        sellerPayoutMinor: payout.toString(),
+        autoConfirmed: auto,
+      },
+    });
+  }
+
+  // One sweeper pass: shipped orders older than AUTO_CONFIRM_DAYS (DB clock) are confirmed by the system.
+  async sweepAutoConfirm(): Promise<number> {
+    const due = await this.db
+      .selectFrom('orders')
+      .select('id')
+      .where('status', '=', 'shipped')
+      .where(
+        sql<boolean>`shipped_at + make_interval(days => ${this.cfg.autoConfirmDays}) <= clock_timestamp()`,
+      )
+      .orderBy('shipped_at')
+      .limit(100)
+      .execute();
+    let confirmed = 0;
+    for (const { id } of due) if (await this.autoConfirmIfDue(id)) confirmed += 1;
+    return confirmed;
+  }
+
+  private autoConfirmIfDue(id: string): Promise<boolean> {
+    return this.db.transaction().execute(async (trx) => {
+      const o = await trx
+        .selectFrom('orders')
+        .selectAll()
+        .where('id', '=', id)
+        .where('status', '=', 'shipped')
+        .where(
+          sql<boolean>`shipped_at + make_interval(days => ${this.cfg.autoConfirmDays}) <= clock_timestamp()`,
+        )
+        .forUpdate()
+        .skipLocked()
+        .executeTakeFirst();
+      if (!o) return false; // confirmed meanwhile, locked by another transaction, or not due
+      await this.releaseEscrow(trx, o, { actorType: 'system' });
+      return true;
     });
   }
 
@@ -601,7 +655,7 @@ interface ViewRow extends OrderRow {
 }
 
 // Bank details and the reference are for the buyer; the commission is for the seller.
-function toView(r: ViewRow, viewerCompanyId: string) {
+function toView(r: ViewRow, viewerCompanyId: string, autoConfirmDays: number) {
   const buyer = r.buyer_company_id === viewerCompanyId;
   return {
     id: r.id,
@@ -624,6 +678,11 @@ function toView(r: ViewRow, viewerCompanyId: string) {
     createdAt: r.created_at,
     paidAt: r.paid_at,
     shippedAt: r.shipped_at,
+    // Display only; the sweeper decides on the DB clock.
+    autoConfirmAt:
+      r.status === 'shipped' && r.shipped_at
+        ? new Date(r.shipped_at.getTime() + autoConfirmDays * 86_400_000)
+        : null,
     completedAt: r.completed_at,
     ...(buyer
       ? { iban: DEMO_IBAN, paymentReference: r.payment_reference }

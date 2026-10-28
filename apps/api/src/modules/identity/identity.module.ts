@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './application/auth.service.js';
+import { AUTH_LIMITS, AuthService, defaultAuthLimits } from './application/auth.service.js';
 import { CompanyAdminService } from './application/company-admin.service.js';
 import { AdminGuard, AuthGuard, CompanyGuard, OptionalAuthGuard } from './http/guards.js';
 import { IdentityController } from './http/identity.controller.js';
@@ -9,6 +9,7 @@ import { IdentityController } from './http/identity.controller.js';
   providers: [
     AuthService,
     CompanyAdminService,
+    { provide: AUTH_LIMITS, useFactory: () => defaultAuthLimits() },
     AuthGuard,
     OptionalAuthGuard,
     CompanyGuard,

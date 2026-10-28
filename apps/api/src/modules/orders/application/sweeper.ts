@@ -33,6 +33,7 @@ export class OrderSweeper implements OnApplicationBootstrap, OnModuleDestroy {
     this.running = true;
     try {
       await this.orders.sweepExpired();
+      await this.orders.sweepAutoConfirm();
     } catch (error) {
       this.logger.error(error instanceof Error ? error.message : 'sweep failed');
     } finally {

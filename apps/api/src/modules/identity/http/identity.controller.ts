@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { AuthService, parseCookie } from '../application/auth.service.js';
+import { AuthService, clientIp, parseCookie } from '../application/auth.service.js';
 import {
   SESSION_COOKIE,
   SESSION_DAYS,
@@ -23,18 +23,40 @@ export class IdentityController {
   constructor(private readonly auth: AuthService) {}
 
   @Post('auth/register')
-  async register(@Body() body: unknown, @Res({ passthrough: true }) res: Response) {
-    const { token, user, company } = await this.auth.register(body);
+  async register(
+    @Body() body: unknown,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { token, user, company } = await this.auth.register(body, clientIp(req));
     setSession(res, token);
     return { user, company };
   }
 
   @Post('auth/login')
   @HttpCode(200)
-  async login(@Body() body: unknown, @Res({ passthrough: true }) res: Response) {
-    const { token, me } = await this.auth.login(body);
+  async login(
+    @Body() body: unknown,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { token, me } = await this.auth.login(body, clientIp(req));
     setSession(res, token);
     return me;
+  }
+
+  @Post('auth/forgot-password')
+  @HttpCode(202)
+  async forgotPassword(@Body() body: unknown, @Req() req: Request) {
+    await this.auth.forgotPassword(body, clientIp(req));
+    return { ok: true };
+  }
+
+  @Post('auth/reset-password')
+  @HttpCode(200)
+  async resetPassword(@Body() body: unknown, @Req() req: Request) {
+    await this.auth.resetPassword(body, clientIp(req));
+    return { ok: true };
   }
 
   @Post('auth/logout')

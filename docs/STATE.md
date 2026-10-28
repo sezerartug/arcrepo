@@ -6,14 +6,14 @@ Güncelleme kuralı: bir dilim/görev bitince yalnızca bu dosyadaki tablo + "S�
 | Dilim | Durum | Not |
 |---|---|---|
 | S0 Ortam + DB temeli | ✅ | Kysely + embedded PG, audit, FOR UPDATE testi |
-| S1 Kimlik/şirket/admin | ✅ | e-posta doğrulama/parola sıfırlama/rate limit YOK |
-| S2 Katalog/ilan/arama | ✅ | ilan düzenleme arayüzü yok |
+| S1 Kimlik/şirket/admin | ✅ | giriş kilidi (5 hata/15 dk, e-posta+IP, bellek içi) + kayıt/sıfırlama IP sınırı; parola sıfırlama (`password_resets`, migration 0005, `MailPort` → konsol + `.data/mail/`); e-posta doğrulama YOK |
+| S2 Katalog/ilan/arama | ✅ | ilan düzenleme ekranı `/satici/[id]/duzenle` (yayındaki mezat ilanı düzenlenemez: `AUCTION_LISTING_LOCKED`); satıcı/admin rezervi görür |
 | S3 Ledger + mezat | ✅ | 200 paralel teklif testi geçti; dayanıklılık/k6 yok |
-| S4 Sipariş + sahte havale | ✅ | oto teslim onayı yok |
+| S4 Sipariş + sahte havale | ✅ | oto teslim onayı: shipped + `AUTO_CONFIRM_DAYS` (7) → `OrdersService.sweepAutoConfirm` (actor system) |
 | S5 Web ekranları + tohum veri | ✅ | tarayıcıda elle tıklama doğrulanmadı |
 
 ## Sıradaki
-MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; sonra ROADMAP 'MVP sonrası' sırası (mesajlaşma, e-posta/telefon doğrulama, rate limit, ilan düzenleme UI, görsel yükleme denemesi). Çalıştır: `pnpm demo` (web :3000, api :3001). Hesaplar: admin@arc.local/Admin!2345; satici1@, satici2@, alici@arc.local / Demo!2345.
+MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; sonra ROADMAP 'MVP sonrası' sırası (mesajlaşma, e-posta/telefon doğrulama, görsel yükleme denemesi). Not: istemci IP'si `req.ip` (proxy güveni kapalı; Next rewrite arkasında tüm web trafiği tek IP görünür). Env: `AUTO_CONFIRM_DAYS`, `REGISTER_RATE_MAX` (20/sa), `RESET_RATE_MAX` (10/sa), `WEB_BASE_URL`, `MAIL_DIR`. Çalıştır: `pnpm demo` (web :3000, api :3001). Hesaplar: admin@arc.local/Admin!2345; satici1@, satici2@, alici@arc.local / Demo!2345.
 
 ## Dosya haritası (nerede ne var)
 - `apps/api/src/db/` — `client.ts` (Kysely), `clock.ts` (`dbNow`), `migrate.ts` (liste), `migrations/NNNN_*.ts`, `schema.ts` (tablo tipleri)

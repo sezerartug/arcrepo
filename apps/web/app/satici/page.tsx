@@ -81,13 +81,25 @@ export default async function SellerPage() {
                     <StatusBadge status={l.status} />
                   </td>
                   <td className="py-1 text-right">
-                    {['pending_review', 'published'].includes(l.status) ? (
-                      <ActionButton
-                        path={`/listings/${l.id}/remove`}
-                        label="Kaldır"
-                        variant="outline"
-                      />
-                    ) : null}
+                    <div className="flex justify-end gap-2">
+                      {l.status === 'pending_review' ||
+                      l.status === 'rejected' ||
+                      (l.status === 'published' && l.saleType === 'fixed') ? (
+                        <Link
+                          href={`/satici/${l.id}/duzenle`}
+                          className="inline-flex h-8 items-center rounded-lg border px-3 text-sm hover:bg-muted"
+                        >
+                          Düzenle
+                        </Link>
+                      ) : null}
+                      {['pending_review', 'published'].includes(l.status) ? (
+                        <ActionButton
+                          path={`/listings/${l.id}/remove`}
+                          label="Kaldır"
+                          variant="outline"
+                        />
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               ))}

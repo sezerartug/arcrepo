@@ -1,7 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-non-null-assertion --
    HTTP test bodies are untyped JSON. */
+import { readdir, readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { sql } from 'kysely';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createTestApp, makeAdmin, registerCompany, type TestApp } from '../../test/app.js';
+import {
+  createTestApp,
+  makeAdmin,
+  registerCompany,
+  type Client,
+  type TestApp,
+} from '../../test/app.js';
 
 let t: TestApp;
 beforeAll(async () => {
@@ -203,5 +212,112 @@ describe('guards', () => {
     ]);
     expect(log.body.items[0].reason).toBe('fraud check');
     expect((await admin.get('/admin/stats')).body.companies.suspended).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('login lockout', () => {
+  it('locks e-mail + IP after 5 failures with 429, a success resets the counter', async () => {
+    const a = await registerCompany(t.client(), 'lock');
+    const bad = (c: Client) =>
+      c.post('/auth/login', { email: a.user.email, password: 'wrong-pass1' });
+    const c = t.client();
+    for (let i = 0; i < 4; i += 1) expect((await bad(c)).status).toBe(401);
+    // a success before the 5th failure clears the counter
+    expect(
+      (await c.post('/auth/login', { email: a.user.email, password: 'Demo!2345' })).status,
+    ).toBe(200);
+    for (let i = 0; i < 5; i += 1) expect((await bad(c)).status).toBe(401);
+    const locked = await bad(c);
+    expect(locked.status).toBe(429);
+    expect(locked.body.error.code).toBe('RATE_LIMITED');
+    expect(locked.body.error.retryAfterSeconds).toBeGreaterThan(14 * 60);
+    // even the right password is refused while locked
+    expect(
+      (await c.post('/auth/login', { email: a.user.email, password: 'Demo!2345' })).status,
+    ).toBe(429);
+    // another e-mail from the same IP is unaffected
+    const b = await registerCompany(t.client(), 'unlocked');
+    expect(
+      (await c.post('/auth/login', { email: b.user.email, password: 'Demo!2345' })).status,
+    ).toBe(200);
+  });
+});
+
+describe('password reset', () => {
+  const tokenFromMail = async (): Promise<string> => {
+    const files = (await readdir(t.mailDir)).sort();
+    const body = await readFile(path.join(t.mailDir, files[files.length - 1]!), 'utf8');
+    return /parola-sifirla\?token=([\w-]+)/.exec(body)![1]!;
+  };
+
+  it('always answers 202, mails a one-hour single-use link, resets the password and drops sessions', async () => {
+    const a = await registerCompany(t.client(), 'reset');
+    const live = t.client();
+    await live.post('/auth/login', { email: a.user.email, password: 'Demo!2345' });
+    expect((await live.get('/me')).status).toBe(200);
+
+    expect(
+      (await t.client().post('/auth/forgot-password', { email: 'ghost@example.com' })).status,
+    ).toBe(202);
+    const mailsBefore = (await readdir(t.mailDir)).length;
+    expect((await t.client().post('/auth/forgot-password', { email: a.user.email })).status).toBe(
+      202,
+    );
+    expect((await readdir(t.mailDir)).length).toBe(mailsBefore + 1);
+    const token = await tokenFromMail();
+
+    const row = await t.db
+      .selectFrom('password_resets')
+      .select(['token_hash', 'expires_at', 'created_at'])
+      .where('user_id', '=', a.user.id)
+      .executeTakeFirstOrThrow();
+    expect(row.token_hash).not.toBe(token); // only the hash is stored
+    expect(row.expires_at.getTime() - row.created_at.getTime()).toBe(3_600_000);
+
+    const c = t.client();
+    expect((await c.post('/auth/reset-password', { token, password: 'short' })).status).toBe(422);
+    expect(
+      (await c.post('/auth/reset-password', { token: 'x'.repeat(43), password: 'NewPass!234' }))
+        .status,
+    ).toBe(400);
+    expect((await c.post('/auth/reset-password', { token, password: 'NewPass!234' })).status).toBe(
+      200,
+    );
+    // single use
+    const again = await c.post('/auth/reset-password', { token, password: 'Another!234' });
+    expect(again.status).toBe(400);
+    expect(again.body.error.code).toBe('INVALID_RESET_TOKEN');
+
+    expect((await live.get('/me')).status).toBe(401); // old session is gone
+    const fresh = t.client();
+    expect(
+      (await fresh.post('/auth/login', { email: a.user.email, password: 'Demo!2345' })).status,
+    ).toBe(401);
+    expect(
+      (await fresh.post('/auth/login', { email: a.user.email, password: 'NewPass!234' })).status,
+    ).toBe(200);
+
+    const actions = (
+      await t.db
+        .selectFrom('audit_log')
+        .select('action')
+        .where('entity_id', '=', a.user.id)
+        .execute()
+    ).map((r) => r.action);
+    expect(actions).toEqual(
+      expect.arrayContaining(['user.password_reset_requested', 'user.password_reset']),
+    );
+  });
+
+  it('rejects an expired token', async () => {
+    const a = await registerCompany(t.client(), 'expired');
+    await t.client().post('/auth/forgot-password', { email: a.user.email });
+    const token = await tokenFromMail();
+    await sql`update password_resets set expires_at = clock_timestamp() - interval '1 second' where user_id = ${a.user.id}`.execute(
+      t.db,
+    );
+    const res = await t.client().post('/auth/reset-password', { token, password: 'NewPass!234' });
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('INVALID_RESET_TOKEN');
   });
 });

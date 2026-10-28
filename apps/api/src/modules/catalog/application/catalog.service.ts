@@ -380,7 +380,7 @@ export class CatalogService {
   private async lockOwned(trx: Kysely<Database>, actor: CompanyAuthContext, id: string) {
     const row = await trx
       .selectFrom('listings')
-      .select(['id', 'company_id', 'status'])
+      .select(['id', 'company_id', 'status', 'sale_type'])
       .where('id', '=', id)
       .forUpdate()
       .executeTakeFirst();
@@ -401,6 +401,10 @@ export class CatalogService {
       const row = await this.lockOwned(trx, actor, id);
       if (!canTransition(row.status, 'pending_review') && row.status !== 'pending_review') {
         throw conflict('INVALID_TRANSITION', `A ${row.status} listing cannot be edited`);
+      }
+      // The auction row exists from approval on; sending it back to review would clash with it.
+      if (row.sale_type === 'auction' && row.status === 'published') {
+        throw conflict('AUCTION_LISTING_LOCKED', 'A published auction listing cannot be edited');
       }
       if (c.categoryId) {
         const cat = await trx

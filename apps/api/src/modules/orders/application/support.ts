@@ -15,6 +15,8 @@ export const newOrderReference = (): string =>
 export interface OrderConfig {
   readonly commissionBps: number;
   readonly paymentHours: number;
+  // A shipped order is confirmed automatically this many days after shipping (product decision: 7).
+  readonly autoConfirmDays: number;
   // Background sweeper for unpaid orders. Off in NODE_ENV=test unless ORDER_SWEEPER=on.
   readonly sweeperEnabled: boolean;
   readonly sweepIntervalMs: number;
@@ -24,6 +26,7 @@ export const ORDER_CONFIG = Symbol('ORDER_CONFIG');
 export function readOrderConfig(env: NodeJS.ProcessEnv = process.env): OrderConfig {
   const bps = Number(env.COMMISSION_BPS ?? '200');
   const hours = Number(env.ORDER_PAYMENT_HOURS ?? '48');
+  const autoDays = Number(env.AUTO_CONFIRM_DAYS ?? '7');
   const sweep = Number(env.ORDER_SWEEP_MS);
   if (!Number.isInteger(bps) || bps < 0 || bps > 10_000) {
     throw new Error('COMMISSION_BPS must be an integer between 0 and 10000');
@@ -31,9 +34,13 @@ export function readOrderConfig(env: NodeJS.ProcessEnv = process.env): OrderConf
   if (!Number.isInteger(hours) || hours < 1 || hours > 24 * 30) {
     throw new Error('ORDER_PAYMENT_HOURS must be an integer between 1 and 720');
   }
+  if (!Number.isInteger(autoDays) || autoDays < 1 || autoDays > 90) {
+    throw new Error('AUTO_CONFIRM_DAYS must be an integer between 1 and 90');
+  }
   return {
     commissionBps: bps,
     paymentHours: hours,
+    autoConfirmDays: autoDays,
     sweeperEnabled: env.ORDER_SWEEPER ? env.ORDER_SWEEPER === 'on' : env.NODE_ENV !== 'test',
     sweepIntervalMs: Number.isInteger(sweep) && sweep >= 50 ? sweep : 30_000,
   };

@@ -121,6 +121,7 @@ export type Order = {
   depositAppliedMinor?: string;
   amountDueMinor?: string;
   trackingNote?: string | null;
+  autoConfirmAt?: string | null;
   paymentReference?: string | null;
   paymentDueAt?: string | null;
   iban?: string;

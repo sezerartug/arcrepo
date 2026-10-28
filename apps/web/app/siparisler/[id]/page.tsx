@@ -94,6 +94,16 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         </Card>
       ) : null}
 
+      {o.status === 'shipped' && o.autoConfirmAt ? (
+        <p className="text-sm">
+          Otomatik onay tarihi: <strong>{formatDate(o.autoConfirmAt)}</strong>
+          <span className="text-muted-foreground">
+            {' '}
+            — alıcı bu tarihe kadar teslimi onaylamazsa sipariş otomatik onaylanır.
+          </span>
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap gap-3">
         {isSeller && o.status === 'paid_escrow' ? (
           <ActionButton

@@ -39,6 +39,12 @@ export default async function AuctionPage({ params }: { params: Promise<{ id: st
                 Miktar: {formatQty(listing.quantityBase, listing.basePerUnit ?? 1, unit)} ·
                 Başlangıç fiyatı: {formatTry(snap.data.startPriceMinor)} / {unit}
               </p>
+              {listing.auction?.reserveMinor ? (
+                <p className="rounded-lg border bg-muted/40 px-3 py-2 text-sm">
+                  Rezerv fiyat (yalnızca siz görürsünüz):{' '}
+                  <strong>{formatTry(listing.auction.reserveMinor)}</strong> / {unit}
+                </p>
+              ) : null}
               <Link href={`/ilanlar/${listing.id}`} className="text-sm underline">
                 İlan ayrıntıları
               </Link>

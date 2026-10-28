@@ -17,3 +17,7 @@ export { jsonSafe } from './application/json.js';
 export { requireIdempotencyKey, withIdempotency } from './application/idempotency.js';
 export type { StoredResponse } from './application/idempotency.js';
 export * as validate from './application/validate.js';
+export { HitLimiter, LockoutLimiter } from './application/rate-limit.js';
+export type { Clock } from './application/rate-limit.js';
+export { ConsoleMailPort, MAIL_PORT } from './application/mail.js';
+export type { Mail, MailPort } from './application/mail.js';

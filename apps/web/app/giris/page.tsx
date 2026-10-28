@@ -10,6 +10,11 @@ export default function LoginPage() {
       <PageTitle>Giriş yap</PageTitle>
       <LoginForm />
       <p className="mt-4 text-sm">
+        <Link className="underline" href="/parola-unuttum">
+          Parolamı unuttum
+        </Link>
+      </p>
+      <p className="mt-2 text-sm">
         Hesabınız yok mu?{' '}
         <Link className="underline" href="/kayit">
           Şirketinizi kaydedin

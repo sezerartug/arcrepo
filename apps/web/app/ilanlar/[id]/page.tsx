@@ -134,6 +134,12 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
           </Card>
         ) : snap?.ok ? (
           <>
+            {listing.auction?.reserveMinor ? (
+              <p className="rounded-lg border bg-muted/40 px-3 py-2 text-sm">
+                Rezerv fiyat (yalnızca satıcı ve yönetici görür):{' '}
+                <strong>{formatTry(listing.auction.reserveMinor)}</strong> / {unit}
+              </p>
+            ) : null}
             <AuctionPanel initial={snap.data} canBid={verified && !isOwn} loggedIn={!!me} />
             <Link href={`/mezat/${snap.data.id}`} className="block text-sm underline">
               Mezat sayfasına git

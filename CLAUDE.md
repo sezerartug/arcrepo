@@ -10,7 +10,7 @@ Mimari: modüler monolit (TypeScript). Ayrıntılar gerektiğinde okunur, otomat
 3. Kodlamadan önce 5–10 satırlık plan yaz. Ürün sahibi kararı (2026-10-28): rutin/teknik kararlarda onay bekleme, eksik dosyaları oluştur, devam et; yalnızca kritik kararlarda sor (iş kuralı: para/mezat/ödeme, geri alınamaz veya dışa etkili işlem, güvenlik kontrolünü gevşetme). Hedef: yalın, uçtan uca çalışan ürün.
 
 ## Çalışma ilkeleri
-1. **Önce düşün.** Varsayımları açıkça yaz. Birden fazla yorum varsa seçenekleri sun, sessizce seçme.
+1. **Önce düşün.** Eksik veya belirsiz bilgiyi tahmin etme, önce ürün sahibine sor; daha iyi sonuç için hangi bilgilere ihtiyaç olduğunu da sor (2026-10-28 kuralı). Birden fazla yorum varsa seçenekleri sun, sessizce seçme.
 2. **Sadelik.** İsteneni çözen en küçük kod. Tek kullanımlık soyutlama, spekülatif esneklik, istenmemiş özellik yok. Önce mevcut kodu ve standart kütüphaneyi kullan.
 3. **Cerrahi değişiklik.** Yalnızca görevin gerektirdiği satırlara dokun. Komşu kodu "iyileştirme", yeniden biçimlendirme. Kendi değişikliğinin yetim bıraktığı kodu temizle; önceden var olan ölü kodu yalnızca istenirse sil.
 4. **Hedef odaklı.** Görevi doğrulanabilir ölçüte çevir. Önce başarısız test, sonra kod (red → green → refactor). Testi çalıştırmadan "çalışıyor" deme.

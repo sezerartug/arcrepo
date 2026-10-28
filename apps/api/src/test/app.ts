@@ -58,12 +58,17 @@ export class Client {
 export interface TestApp {
   app: INestApplication;
   db: Kysely<Database>;
+  mailDir: string;
   client: () => Client;
   close: () => Promise<void>;
 }
 
 export async function createTestApp(): Promise<TestApp> {
   process.env.UPLOAD_DIR = await mkdtemp(path.join(tmpdir(), 'arc-uploads-'));
+  const mailDir = await mkdtemp(path.join(tmpdir(), 'arc-mail-'));
+  process.env.MAIL_DIR = mailDir;
+  // Tests register many companies from one IP; the limit itself is tested with its own value.
+  process.env.REGISTER_RATE_MAX ??= '100000';
   const db = await createTestDb();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(DB)
@@ -75,6 +80,7 @@ export async function createTestApp(): Promise<TestApp> {
   return {
     app,
     db,
+    mailDir,
     client: () => new Client(base),
     close: async () => {
       await app.close();

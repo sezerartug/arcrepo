@@ -136,6 +136,12 @@ describe('listing lifecycle and state machine', () => {
     const pub = await t.client().get(`/listings/${id}`);
     expect(pub.body.auction.startPriceMinor).toBe('2000000');
     expect(pub.body.auction.reserveMinor).toBeUndefined(); // reserve stays hidden from the public
+    expect((await admin.get(`/listings/${id}`)).body.auction.reserveMinor).toBe('2300000'); // admin sees it
+    expect((await c.get(`/listings/${id}`)).body.auction.reserveMinor).toBe('2300000'); // so does the owner
+    // The auction row exists after approval: such a listing cannot go back to review.
+    const locked = await c.req('PATCH', `/listings/${id}`, { title: 'Yeni baslik burada' });
+    expect(locked.status).toBe(409);
+    expect(locked.body.error.code).toBe('AUCTION_LISTING_LOCKED');
   });
 });
 

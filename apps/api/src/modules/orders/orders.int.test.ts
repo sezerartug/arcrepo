@@ -509,3 +509,64 @@ describe('auction-sourced order', () => {
     expect(await ledgerTotal(t.db)).toBe(0n);
   });
 });
+
+describe('automatic delivery confirmation', () => {
+  it('confirms a shipped order after AUTO_CONFIRM_DAYS through the same ledger path (actor system)', async () => {
+    const [escrow0, revenue0, payable0] = [
+      await bal.escrow(),
+      await bal.revenue(),
+      await bal.payable(seller.companyId),
+    ];
+    const listingId = await fixedListing(seller);
+    const o = (await buy(buyer.c, listingId, '10000')).body;
+    expect((await confirm(o.paymentReference)).status).toBe(200);
+    expect((await seller.c.post(`/orders/${o.id}/ship`, {})).status).toBe(200);
+
+    // shipped just now: not due, and the buyer sees the automatic confirmation date (7 days)
+    expect(await orders.sweepAutoConfirm()).toBe(0);
+    const shipped = (await buyer.c.get(`/orders/${o.id}`)).body;
+    expect(shipped.status).toBe('shipped');
+    const due = new Date(shipped.autoConfirmAt).getTime() - new Date(shipped.shippedAt).getTime();
+    expect(due).toBe(7 * 86_400_000);
+
+    // 6 days 23 hours ago: still not due
+    await sql`update orders set shipped_at = clock_timestamp() - interval '6 days 23 hours' where id = ${o.id}`.execute(
+      t.db,
+    );
+    expect(await orders.sweepAutoConfirm()).toBe(0);
+    expect((await orderRow(o.id)).status).toBe('shipped');
+
+    await sql`update orders set shipped_at = clock_timestamp() - interval '7 days 1 minute' where id = ${o.id}`.execute(
+      t.db,
+    );
+    expect(await orders.sweepAutoConfirm()).toBeGreaterThanOrEqual(1);
+    expect((await orderRow(o.id)).status).toBe('completed');
+    expect(await orders.sweepAutoConfirm()).toBe(0); // idempotent: no second release
+    expect(await journalCount('order.release', o.id)).toBe(1);
+
+    expect(await bal.escrow()).toBe(escrow0);
+    expect(await bal.payable(seller.companyId)).toBe(payable0 + 24_010_000n);
+    expect(await bal.revenue()).toBe(revenue0 + 490_000n);
+    expect(await ledgerTotal(t.db)).toBe(0n);
+    expect((await buyer.c.post(`/orders/${o.id}/confirm-delivery`, {})).status).toBe(409);
+
+    const audit = await t.db
+      .selectFrom('audit_log')
+      .select(['actor_type', 'actor_id'])
+      .where('entity_id', '=', o.id)
+      .where('action', '=', 'order.delivered')
+      .execute();
+    expect(audit).toEqual([{ actor_type: 'system', actor_id: null }]);
+  });
+
+  it('does not touch orders that are not shipped', async () => {
+    const listingId = await fixedListing(seller);
+    const o = (await buy(buyer.c, listingId, '1000')).body;
+    expect((await confirm(o.paymentReference)).status).toBe(200); // paid_escrow, not shipped
+    await sql`update orders set created_at = clock_timestamp() - interval '30 days' where id = ${o.id}`.execute(
+      t.db,
+    );
+    await orders.sweepAutoConfirm();
+    expect((await orderRow(o.id)).status).toBe('paid_escrow');
+  });
+});
