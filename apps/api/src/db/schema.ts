@@ -243,7 +243,54 @@ export interface DepositsTable {
   settled_at: ColumnType<Date | null, never, RawBuilder<Date> | null>;
 }
 
+export type OrderStatus =
+  | 'awaiting_payment'
+  | 'paid_escrow'
+  | 'shipped'
+  | 'delivered'
+  | 'completed'
+  | 'cancelled'
+  | 'payment_failed';
+
+export interface OrdersTable {
+  id: Generated<string>;
+  source_listing_id: string;
+  source_auction_id: string | null;
+  buyer_company_id: string;
+  seller_company_id: string;
+  unit_price_minor: bigint;
+  quantity_base: bigint;
+  base_per_unit: number;
+  total_minor: bigint;
+  commission_minor: bigint;
+  deposit_applied_minor: ColumnType<bigint, bigint | undefined, never>;
+  amount_due_minor: bigint;
+  status: ColumnType<OrderStatus, OrderStatus, OrderStatus>;
+  payment_reference: string;
+  payment_due_at: ColumnType<Date, Date | RawBuilder<Date>, never>;
+  tracking_note: ColumnType<string | null, never, string | null>;
+  cancel_reason: ColumnType<string | null, never, string | null>;
+  created_at: CreatedAt;
+  paid_at: ColumnType<Date | null, never, RawBuilder<Date>>;
+  shipped_at: ColumnType<Date | null, never, RawBuilder<Date>>;
+  delivered_at: ColumnType<Date | null, never, RawBuilder<Date>>;
+  completed_at: ColumnType<Date | null, never, RawBuilder<Date>>;
+  cancelled_at: ColumnType<Date | null, never, RawBuilder<Date>>;
+}
+
+export interface OrderEventsTable {
+  id: Generated<string>;
+  order_id: string;
+  type: string;
+  from_status: OrderStatus | null;
+  to_status: OrderStatus | null;
+  data: ColumnType<Record<string, unknown>, string, never>;
+  at: CreatedAt;
+}
+
 export interface Database {
+  orders: OrdersTable;
+  order_events: OrderEventsTable;
   audit_log: AuditLogTable;
   users: UsersTable;
   sessions: SessionsTable;

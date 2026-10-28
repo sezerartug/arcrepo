@@ -3,7 +3,17 @@ import { AdminModule } from './modules/admin/index.js';
 import { AuctionsModule } from './modules/auctions/index.js';
 import { CatalogModule } from './modules/catalog/index.js';
 import { IdentityModule } from './modules/identity/index.js';
+import { OrdersModule } from './modules/orders/index.js';
 import { PlatformModule } from './modules/platform/index.js';
 
-@Module({ imports: [PlatformModule, IdentityModule, CatalogModule, AuctionsModule, AdminModule] })
+@Module({
+  imports: [
+    PlatformModule,
+    IdentityModule,
+    CatalogModule,
+    AuctionsModule,
+    OrdersModule,
+    AdminModule,
+  ],
+})
 export class AppModule {}

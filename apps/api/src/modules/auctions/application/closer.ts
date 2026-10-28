@@ -91,6 +91,7 @@ export class AuctionCloser {
           winningBidId: winner.id,
           unitPriceMinor: winner.amountMinor,
           quantityBase: a.quantity_base,
+          basePerUnit: a.base_per_unit,
           totalMinor: total,
           depositMinor: a.deposit_minor,
         });

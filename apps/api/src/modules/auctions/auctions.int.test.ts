@@ -387,7 +387,7 @@ describe('concurrency (real PostgreSQL)', () => {
       .where('auction_id', '=', id)
       .execute();
     const byCompany = new Map(deps.map((d) => [d.company_id, d.status]));
-    expect(byCompany.get(bidders[6]!.companyId)).toBe('held');
+    expect(byCompany.get(bidders[6]!.companyId)).toBe('applied'); // winner: the order consumes it
     expect(byCompany.get(bidders[4]!.companyId)).toBe('refunded');
     expect(byCompany.get(bidders[5]!.companyId)).toBe('refunded');
     const refundJournals = await t.db

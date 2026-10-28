@@ -1,9 +1,13 @@
+import { sql } from 'kysely';
 import { createDb } from '../src/db/client.js';
 import { migrateToLatest } from '../src/db/migrate.js';
-import type { Unit } from '../src/db/schema.js';
+import type { OrderStatus, Unit } from '../src/db/schema.js';
 import { createAuctionFromListing } from '../src/modules/auctions/index.js';
 import { hashPassword } from '../src/modules/identity/index.js';
+import { postJournal } from '../src/modules/ledger/index.js';
+import { commissionMinor } from '../src/modules/orders/index.js';
 import { loadEnvFileIfExists, parseEnv } from '../src/modules/platform/index.js';
+import { lineTotalMinor } from '../src/modules/pricing/index.js';
 
 // Demo data for local runs. Safe to run repeatedly: every row is looked up by a natural key first.
 loadEnvFileIfExists(new URL('../../../.env', import.meta.url));
@@ -114,7 +118,7 @@ const sellers = [
     member: ['uye.satici2@arc.local', 'Zeynep Arslan'],
   }),
 ] as const;
-await ensureCompany({
+const buyerCompany = await ensureCompany({
   legalName: 'Yapı Merkezi İnşaat A.Ş.',
   taxNo: '1234567803',
   taxOffice: 'Kadıköy',
@@ -391,8 +395,106 @@ for (const a of auctions) {
   auctionsCreated += 1;
 }
 
+// Demo orders: one completed (money already released to the seller's payable balance) and one waiting for
+// the buyer's wire transfer (confirm it as admin with reference ARC-O-DEMO02). Keyed by payment reference,
+// so re-running the seed creates nothing new.
+const orderDefs = [
+  { reference: 'ARC-O-DEMO01', listing: 0, tons: 5n, completed: true },
+  { reference: 'ARC-O-DEMO02', listing: 1, tons: 10n, completed: false },
+] as const;
+let ordersCreated = 0;
+for (const def of orderDefs) {
+  const title = listings[def.listing][2];
+  const done = await db.transaction().execute(async (trx) => {
+    const exists = await trx
+      .selectFrom('orders')
+      .select('id')
+      .where('payment_reference', '=', def.reference)
+      .executeTakeFirst();
+    if (exists) return false;
+    const listing = await trx
+      .selectFrom('listings')
+      .select(['id', 'unit_price_minor'])
+      .where('company_id', '=', sellers[0])
+      .where('title', '=', title)
+      .forUpdate()
+      .executeTakeFirstOrThrow();
+    const quantity = def.tons * 1000n;
+    const total = lineTotalMinor(listing.unit_price_minor, quantity, 1000n);
+    const commission = commissionMinor(total, 200);
+    const order = await trx
+      .insertInto('orders')
+      .values({
+        source_listing_id: listing.id,
+        source_auction_id: null,
+        buyer_company_id: buyerCompany,
+        seller_company_id: sellers[0],
+        unit_price_minor: listing.unit_price_minor,
+        quantity_base: quantity,
+        base_per_unit: 1000,
+        total_minor: total,
+        commission_minor: commission,
+        amount_due_minor: total,
+        status: def.completed ? 'completed' : 'awaiting_payment',
+        payment_reference: def.reference,
+        payment_due_at: sql<Date>`clock_timestamp() + interval '48 hours'`,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    await trx
+      .updateTable('listings')
+      .set({ quantity_base: sql<bigint>`quantity_base - ${quantity}` })
+      .where('id', '=', listing.id)
+      .execute();
+    const events: [string, OrderStatus | null, OrderStatus][] = def.completed
+      ? [
+          ['order.created', null, 'awaiting_payment'],
+          ['order.paid_escrow', 'awaiting_payment', 'paid_escrow'],
+          ['order.shipped', 'paid_escrow', 'shipped'],
+          ['order.delivered', 'shipped', 'delivered'],
+          ['order.completed', 'delivered', 'completed'],
+        ]
+      : [['order.created', null, 'awaiting_payment']];
+    for (const [type, from, to] of events) {
+      await trx
+        .insertInto('order_events')
+        .values({ order_id: order.id, type, from_status: from, to_status: to, data: '{}' })
+        .execute();
+    }
+    if (def.completed) {
+      await sql`
+        update orders set paid_at = clock_timestamp(), shipped_at = clock_timestamp(),
+          delivered_at = clock_timestamp(), completed_at = clock_timestamp()
+        where id = ${order.id}
+      `.execute(trx);
+      await postJournal(trx, {
+        reason: 'order.payment',
+        ref: { type: 'order', id: order.id },
+        entries: [
+          { account: { type: 'bank_clearing' }, amountMinor: -total },
+          { account: { type: 'escrow' }, amountMinor: total },
+        ],
+      });
+      await postJournal(trx, {
+        reason: 'order.release',
+        ref: { type: 'order', id: order.id },
+        entries: [
+          { account: { type: 'escrow' }, amountMinor: -total },
+          {
+            account: { type: 'seller_payable', companyId: sellers[0] },
+            amountMinor: total - commission,
+          },
+          { account: { type: 'platform_revenue' }, amountMinor: commission },
+        ],
+      });
+    }
+    return true;
+  });
+  if (done) ordersCreated += 1;
+}
+
 console.log(
-  `seed done: ${String(created)} new listings (${String(listings.length)} defined), ${String(auctionsCreated)} new auctions.`,
+  `seed done: ${String(created)} new listings (${String(listings.length)} defined), ${String(auctionsCreated)} new auctions, ${String(ordersCreated)} new orders.`,
 );
 console.log(
   `admin: ${ADMIN.email} / ${ADMIN.password} · demo users (password ${DEMO_PASSWORD}): satici1@arc.local, satici2@arc.local, alici@arc.local`,

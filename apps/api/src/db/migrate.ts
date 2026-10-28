@@ -2,12 +2,14 @@ import { Migrator, type Kysely, type Migration, type MigrationResult } from 'kys
 import * as m0001 from './migrations/0001_init.js';
 import * as m0002 from './migrations/0002_identity_catalog.js';
 import * as m0003 from './migrations/0003_ledger_auctions.js';
+import * as m0004 from './migrations/0004_orders.js';
 
 // Listed explicitly so the build and the tests run the same set; append new migrations in order.
 const migrations: Record<string, Migration> = {
   '0001_init': m0001,
   '0002_identity_catalog': m0002,
   '0003_ledger_auctions': m0003,
+  '0004_orders': m0004,
 };
 
 // Kysely holds a lock table while migrating, so concurrent API boots are safe.

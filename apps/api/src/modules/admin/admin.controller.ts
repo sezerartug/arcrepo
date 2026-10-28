@@ -24,6 +24,7 @@ import {
   type AuthContext,
   type CompanyAction,
 } from '../identity/index.js';
+import { ORDER_REF_PREFIX, OrdersService } from '../orders/index.js';
 import { DB, invalid, listAudit, notFound, validate } from '../platform/index.js';
 
 const uuid = (v: string): string => {
@@ -39,6 +40,7 @@ export class AdminController {
     private readonly companies: CompanyAdminService,
     private readonly catalog: CatalogService,
     private readonly auctions: AuctionsService,
+    private readonly orders: OrdersService,
     @Inject(DB) private readonly db: Kysely<Database>,
   ) {}
 
@@ -85,20 +87,29 @@ export class AdminController {
     });
   }
 
-  // Pending bank transfers awaiting reconciliation. S3: auction deposits; S4 adds order payments.
+  // Pending bank transfers awaiting reconciliation: auction deposits and order payments.
   @Get('payments')
   async payments(@Query('status') status: unknown) {
     if (status !== undefined && status !== 'pending') throw invalid('status must be pending');
-    return { items: await this.auctions.pendingDeposits() };
+    const [deposits, orders] = await Promise.all([
+      this.auctions.pendingDeposits(),
+      this.orders.pendingPayments(),
+    ]);
+    return { items: [...deposits, ...orders] };
   }
 
   // Fake bank reconciliation by payment reference. Dispatches on the reference prefix.
+  // Body: { reference, amountMinor? }; an amount that differs from the order's amount due is rejected.
   @Post('payments/confirm')
   @HttpCode(200)
   confirmPayment(@CurrentAuth() a: AuthContext, @Body() body: unknown) {
-    const reference = validate.str(validate.asObject(body), 'reference', 4, 40);
+    const o = validate.asObject(body);
+    const reference = validate.str(o, 'reference', 4, 40);
     if (reference.startsWith(DEPOSIT_REF_PREFIX)) {
       return this.auctions.confirmDepositPayment(a, reference);
+    }
+    if (reference.startsWith(ORDER_REF_PREFIX)) {
+      return this.orders.confirmPayment(a, reference, validate.optBigint(o, 'amountMinor'));
     }
     throw notFound('Unknown payment reference');
   }
@@ -124,7 +135,11 @@ export class AdminController {
 
   @Get('stats')
   async stats() {
-    const [c, listings] = await Promise.all([this.companies.stats(), this.catalog.stats()]);
-    return { ...c, listings };
+    const [c, listings, orders] = await Promise.all([
+      this.companies.stats(),
+      this.catalog.stats(),
+      this.orders.stats(),
+    ]);
+    return { ...c, listings, orders };
   }
 }
