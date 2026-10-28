@@ -61,7 +61,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P1-14 Ledger iskeleti: hesaplar, journal, entries; "toplam = 0" değişmezi + property testi
 - [ ] P1-15 Gerçek zamanlı iskelet: WebSocket gateway + kimlik doğrulama + Redis fan-out + sıra numaralı olay zarfı
 - [ ] P1-16 Açık artırma eşzamanlılık spike'ı: ≥200 paralel teklif, tek kazanan, `clock_timestamp()` ile bitiş; rapor `docs/spikes/auction-concurrency.md`
-- [ ] P1-17 Web iskeleti: Next.js App Router + Tailwind + shadcn/ui + temel yerleşim + erişilebilirlik kontrolü
+- [x] P1-17 Web iskeleti: Next.js App Router + Tailwind + shadcn/ui + temel yerleşim + erişilebilirlik kontrolü
 - [ ] P1-18 Staging'e otomatik dağıtım + geri alma prosedürü
 - [ ] P1-19 Test altyapısı: Testcontainers, fabrikalar, property test (fast-check), Playwright smoke
 - [ ] P1-20 GLOSSARY.md ve ADR'ler güncel
