@@ -19,7 +19,9 @@ describe('migrateToLatest', () => {
   });
 
   it('runs the server in UTC', async () => {
-    const { rows } = await sql<{ tz: string }>`select current_setting('TimeZone') as tz`.execute(db);
+    const { rows } = await sql<{ tz: string }>`select current_setting('TimeZone') as tz`.execute(
+      db,
+    );
     expect(rows[0]?.tz).toBe('UTC');
   });
 });

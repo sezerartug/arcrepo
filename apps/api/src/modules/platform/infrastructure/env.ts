@@ -5,7 +5,11 @@ export type NodeEnv = (typeof NODE_ENVS)[number];
 export interface Env {
   readonly nodeEnv: NodeEnv;
   readonly port: number;
+  readonly databaseUrl: string;
 }
+
+// Local development database started by `pnpm db:start` (same defaults as .env.example).
+const DEV_DATABASE_URL = 'postgres://arc:arc_dev@127.0.0.1:5432/arc';
 
 export class EnvError extends Error {
   override readonly name = 'EnvError';
@@ -27,10 +31,18 @@ export function parseEnv(source: Readonly<Record<string, string | undefined>>): 
     problems.push('PORT must be an integer between 1 and 65535');
   }
 
+  let databaseUrl = source.DATABASE_URL;
+  if (databaseUrl === undefined) {
+    if (nodeEnv === 'production') problems.push('DATABASE_URL is required in production');
+    databaseUrl = DEV_DATABASE_URL;
+  } else if (!/^postgres(ql)?:\/\/\S+$/.test(databaseUrl)) {
+    problems.push('DATABASE_URL must be a postgres:// or postgresql:// URL');
+  }
+
   if (problems.length > 0 || !isNodeEnv(nodeEnv)) {
     throw new EnvError(`Invalid environment: ${problems.join('; ')}`);
   }
-  return { nodeEnv, port };
+  return { nodeEnv, port, databaseUrl };
 }
 
 // Existing process variables win over the file (Node's loadEnvFile semantics).

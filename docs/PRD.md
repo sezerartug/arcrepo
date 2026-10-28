@@ -16,7 +16,7 @@ Başarı ölçütü, özellik sayısı değil **temel ticari akışların hatas�
 | OQ-05 | Artırma türü | **Karar:** yalnızca ileri (artan fiyatlı); ters mezat (satın alma ihalesi) ve otomatik teklif v2 | Ürün |
 | OQ-06 | Teklif güvencesi | **Karar:** teminat (depozito, havale ile); tutar/oran kuralı M3'te (ADR-014) | Ürün + Finans |
 | OQ-07 | Komisyon modeli | Satıcıdan yüzde + sabit; kademeli v2 | Finans |
-| OQ-08 | Hedef ölçek (NFR için) | İlk yıl: 50k kayıtlı kullanıcı, aynı artırmada 500 eşzamanlı izleyici, 50 aktif teklif veren | Ürün |
+| OQ-08 | Hedef ölçek (NFR için) | **Karar (2026-10-28):** ilk yıl 500 kayıtlı şirket kullanıcısı, aynı artırmada ~50 eşzamanlı izleyici, ~10 aktif teklif veren; tek sunucu/tek API örneği yeterli. Büyürse (Redis, ayrı worker, arama motoru) ROADMAP "MVP sonrası" sırasıyla eklenir | Ürün |
 | OQ-09 | Teslimat | Teslim şekli ilan başına: depoda/fabrikada teslim (alıcı nakliyesi) veya satıcı nakliyesi (şantiyeye teslim, ücret ilanda). Nakliye entegrasyonu v2 | Operasyon |
 | OQ-10 | Fiyat ve miktar | **Karar:** TRY, KDV hariç, **birim fiyat** üzerinden (çelikte TL/ton). Miktar en küçük birimde tamsayı (ton → kg). Toplam = birim fiyat × miktar; yuvarlama kuralı tek yerde, M3 başında AUCTION-RULES'a eklenir. KDV oranı kategori bazlı | Ürün + Finans |
 

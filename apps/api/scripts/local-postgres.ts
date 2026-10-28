@@ -24,7 +24,12 @@ export interface LocalPostgres {
 
 // ICU tr-TR gives correct Turkish casing and ordering (İ/ı). `--locale=C` keeps initdb away from
 // the non-ASCII Windows locale name ("Turkish_Türkiye.1254"), which it rejects.
-const INITDB_FLAGS = ['--encoding=UTF8', '--locale=C', '--locale-provider=icu', '--icu-locale=tr-TR'];
+const INITDB_FLAGS = [
+  '--encoding=UTF8',
+  '--locale=C',
+  '--locale-provider=icu',
+  '--icu-locale=tr-TR',
+];
 const SERVER_OPTIONS = '-c timezone=UTC -c log_timezone=UTC -c listen_addresses=127.0.0.1';
 const NON_DURABLE_OPTIONS = '-c fsync=off -c synchronous_commit=off -c full_page_writes=off';
 
@@ -84,7 +89,9 @@ export async function startLocalPostgres(options: LocalPostgresOptions): Promise
   if (existsSync(join(options.dataDir, 'postmaster.pid'))) await server.stop();
 
   const log = join(options.dataDir, 'server.log');
-  const serverOptions = options.durable ? SERVER_OPTIONS : `${SERVER_OPTIONS} ${NON_DURABLE_OPTIONS}`;
+  const serverOptions = options.durable
+    ? SERVER_OPTIONS
+    : `${SERVER_OPTIONS} ${NON_DURABLE_OPTIONS}`;
   const code = await run(bin.pg_ctl, [
     'start',
     '-w',

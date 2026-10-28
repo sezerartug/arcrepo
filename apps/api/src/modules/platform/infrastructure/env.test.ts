@@ -37,7 +37,11 @@ describe('parseEnv', () => {
 
   it('reports every invalid variable by name without echoing values', () => {
     const run = () =>
-      parseEnv({ NODE_ENV: 'leaked-value-1', PORT: 'leaked-value-2', DATABASE_URL: 'leaked-value-3' });
+      parseEnv({
+        NODE_ENV: 'leaked-value-1',
+        PORT: 'leaked-value-2',
+        DATABASE_URL: 'leaked-value-3',
+      });
 
     expect(run).toThrow(/NODE_ENV.*PORT.*DATABASE_URL/);
     expect(run).not.toThrow(/leaked-value/);

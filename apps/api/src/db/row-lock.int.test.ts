@@ -30,14 +30,17 @@ describe('SELECT ... FOR UPDATE + clock_timestamp()', () => {
       ),
     );
 
-    const { rows } = await sql<{ value: number }>`select value from counter where id = 1`.execute(db);
+    const { rows } = await sql<{ value: number }>`select value from counter where id = 1`.execute(
+      db,
+    );
     expect(rows[0]?.value).toBe(writers);
 
     // Each writer saw a distinct value, and the DB clock read after the lock grows with it.
     const ordered = [...results].sort((a, b) => a.next - b.next);
     expect(ordered.map((r) => r.next)).toEqual(Array.from({ length: writers }, (_, i) => i + 1));
     for (let i = 1; i < ordered.length; i++) {
-      expect(ordered[i]!.at.getTime()).toBeGreaterThanOrEqual(ordered[i - 1]!.at.getTime());
+      const [prev, cur] = [ordered[i - 1]?.at.getTime() ?? 0, ordered[i]?.at.getTime() ?? -1];
+      expect(cur).toBeGreaterThanOrEqual(prev);
     }
   });
 });

@@ -30,7 +30,9 @@ if (process.argv[2] === 'stop') {
   const admin = new pg.Client({ connectionString: server.url('postgres') });
   await admin.connect();
   try {
-    const { rowCount } = await admin.query('select 1 from pg_database where datname = $1', [database]);
+    const { rowCount } = await admin.query('select 1 from pg_database where datname = $1', [
+      database,
+    ]);
     if (rowCount === 0) await admin.query(`create database "${database.replaceAll('"', '""')}"`);
   } finally {
     await admin.end();
