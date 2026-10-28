@@ -31,6 +31,7 @@
     "@types/node": "catalog:",
     "@types/pg": "8.23.1",
     "embedded-postgres": "18.4.0-beta.17",
+    "fast-check": "4.10.2",
     "tsx": "4.23.15",
     "typescript": "catalog:",
     "unplugin-swc": "2.0.0",

@@ -1,6 +1,7 @@
 import { createDb } from '../src/db/client.js';
 import { migrateToLatest } from '../src/db/migrate.js';
 import type { Unit } from '../src/db/schema.js';
+import { createAuctionFromListing } from '../src/modules/auctions/index.js';
 import { hashPassword } from '../src/modules/identity/index.js';
 import { loadEnvFileIfExists, parseEnv } from '../src/modules/platform/index.js';
 
@@ -312,7 +313,87 @@ for (const [
   created += 1;
 }
 
-console.log(`seed done: ${String(created)} new listings (${String(listings.length)} defined).`);
+// Demo auctions: one LIVE (ends in 20 minutes, with a hidden reserve) and one starting in 2 hours.
+// Created once per title; re-running the seed does not duplicate them (an ended demo auction stays ended).
+const minute = 60_000;
+const auctions = [
+  {
+    seller: 0,
+    title: 'MEZAT: B500C Ø14 inşaat demiri 40 ton (canlı)',
+    attrs: { grade: 'B500C', diameter: 14, length: '12 m' },
+    startPriceTl: 23_000,
+    incrementTl: 100,
+    reserveTl: 23_800,
+    startsInMs: -2 * 60 * minute,
+    endsInMs: 20 * minute,
+    location: 'Gebze, Kocaeli',
+  },
+  {
+    seller: 1,
+    title: 'MEZAT: S235JR sac 6 mm 25 ton (2 saat sonra)',
+    attrs: { grade: 'S235JR', thickness: '6 mm', size: '1500x6000' },
+    startPriceTl: 26_500,
+    incrementTl: 100,
+    reserveTl: null,
+    startsInMs: 120 * minute,
+    endsInMs: 240 * minute,
+    location: 'Aliağa, İzmir',
+  },
+] as const;
+let auctionsCreated = 0;
+for (const a of auctions) {
+  const companyId = sellers[a.seller];
+  const exists = await db
+    .selectFrom('listings')
+    .select('id')
+    .where('company_id', '=', companyId)
+    .where('title', '=', a.title)
+    .executeTakeFirst();
+  if (exists) continue;
+  const tons = a.title.includes('40 ton') ? 40n : 25n;
+  const now = Date.now();
+  const draft: Record<string, string> = {
+    startPriceMinor: (BigInt(a.startPriceTl) * 100n).toString(),
+    minIncrementMinor: (BigInt(a.incrementTl) * 100n).toString(),
+    startsAt: new Date(now + a.startsInMs).toISOString(),
+    endsAt: new Date(now + a.endsInMs).toISOString(),
+    ...(a.reserveTl ? { reserveMinor: (BigInt(a.reserveTl) * 100n).toString() } : {}),
+  };
+  await db.transaction().execute(async (trx) => {
+    const listing = await trx
+      .insertInto('listings')
+      .values({
+        company_id: companyId,
+        category_id: a.seller === 0 ? cat.demir : cat.sac,
+        title: a.title,
+        description: "Açık artırma ile satış. Teminat: başlangıç bedelinin %5'i.",
+        attrs: JSON.stringify(a.attrs),
+        sale_type: 'auction',
+        unit_price_minor: BigInt(a.startPriceTl) * 100n,
+        quantity_base: tons * 1000n,
+        min_order_base: tons * 1000n,
+        location: a.location,
+        delivery_terms: 'Fabrika teslim, nakliye alıcıya aittir.',
+        auction_draft: JSON.stringify(draft),
+        status: 'published',
+        review_reason: null,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    await createAuctionFromListing(trx, {
+      listingId: listing.id,
+      companyId,
+      quantityBase: tons * 1000n,
+      basePerUnit: 1000,
+      draft,
+    });
+  });
+  auctionsCreated += 1;
+}
+
+console.log(
+  `seed done: ${String(created)} new listings (${String(listings.length)} defined), ${String(auctionsCreated)} new auctions.`,
+);
 console.log(
   `admin: ${ADMIN.email} / ${ADMIN.password} · demo users (password ${DEMO_PASSWORD}): satici1@arc.local, satici2@arc.local, alici@arc.local`,
 );

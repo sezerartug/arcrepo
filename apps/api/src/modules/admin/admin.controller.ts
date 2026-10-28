@@ -11,6 +11,11 @@ import {
 } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import type { Database } from '../../db/schema.js';
+import {
+  AuctionsService,
+  DEPOSIT_REF_PREFIX,
+  createAuctionFromListing,
+} from '../auctions/index.js';
 import { CatalogService } from '../catalog/index.js';
 import {
   AdminGuard,
@@ -19,7 +24,7 @@ import {
   type AuthContext,
   type CompanyAction,
 } from '../identity/index.js';
-import { DB, listAudit, notFound, validate } from '../platform/index.js';
+import { DB, invalid, listAudit, notFound, validate } from '../platform/index.js';
 
 const uuid = (v: string): string => {
   if (!validate.isUuid(v)) throw notFound();
@@ -33,6 +38,7 @@ export class AdminController {
   constructor(
     private readonly companies: CompanyAdminService,
     private readonly catalog: CatalogService,
+    private readonly auctions: AuctionsService,
     @Inject(DB) private readonly db: Kysely<Database>,
   ) {}
 
@@ -67,7 +73,40 @@ export class AdminController {
     @Body() body: unknown,
   ) {
     if (decision !== 'approve' && decision !== 'reject') throw notFound();
-    return this.catalog.moderate(a, uuid(id), decision, body);
+    return this.catalog.moderate(a, uuid(id), decision, body, async (trx, l) => {
+      if (!l.auctionDraft) return;
+      await createAuctionFromListing(trx, {
+        listingId: l.id,
+        companyId: l.companyId,
+        quantityBase: l.quantityBase,
+        basePerUnit: l.basePerUnit,
+        draft: l.auctionDraft,
+      });
+    });
+  }
+
+  // Pending bank transfers awaiting reconciliation. S3: auction deposits; S4 adds order payments.
+  @Get('payments')
+  async payments(@Query('status') status: unknown) {
+    if (status !== undefined && status !== 'pending') throw invalid('status must be pending');
+    return { items: await this.auctions.pendingDeposits() };
+  }
+
+  // Fake bank reconciliation by payment reference. Dispatches on the reference prefix.
+  @Post('payments/confirm')
+  @HttpCode(200)
+  confirmPayment(@CurrentAuth() a: AuthContext, @Body() body: unknown) {
+    const reference = validate.str(validate.asObject(body), 'reference', 4, 40);
+    if (reference.startsWith(DEPOSIT_REF_PREFIX)) {
+      return this.auctions.confirmDepositPayment(a, reference);
+    }
+    throw notFound('Unknown payment reference');
+  }
+
+  @Post('auctions/:id/cancel')
+  @HttpCode(200)
+  cancelAuction(@CurrentAuth() a: AuthContext, @Param('id') id: string, @Body() body: unknown) {
+    return this.auctions.adminCancel(a, uuid(id), body);
   }
 
   @Get('audit')

@@ -19,6 +19,15 @@ import {
 import { MAX_IMAGE_BYTES, MIME_BY_EXT, detectImage } from './images.js';
 import { LISTING_STATUSES, canTransition } from './listing-status.js';
 
+export interface ApprovedListing {
+  readonly id: string;
+  readonly companyId: string;
+  readonly quantityBase: bigint;
+  readonly basePerUnit: number;
+  readonly auctionDraft: Record<string, string> | null;
+}
+export type OnListingApproved = (trx: Kysely<Database>, listing: ApprovedListing) => Promise<void>;
+
 const PAGE_SIZE = 20;
 const MAX_IMAGES = 8;
 const SORTS = ['newest', 'price_asc', 'price_desc', 'ending'] as const;
@@ -556,7 +565,15 @@ export class CatalogService {
     return { items: await this.toDtos(await q.execute(), { isAdmin: true } as AuthContext) };
   }
 
-  async moderate(admin: AuthContext, id: string, decision: 'approve' | 'reject', body: unknown) {
+  // onApproved runs inside the moderation transaction (e.g. the auctions module creates the auction
+  // row), so listing approval and auction creation commit or roll back together.
+  async moderate(
+    admin: AuthContext,
+    id: string,
+    decision: 'approve' | 'reject',
+    body: unknown,
+    onApproved?: OnListingApproved,
+  ) {
     const o = validate.asObject(body ?? {});
     const reason =
       decision === 'reject' ? validate.str(o, 'reason', 3, 500) : validate.optStr(o, 'reason', 500);
@@ -564,7 +581,7 @@ export class CatalogService {
     return this.db.transaction().execute(async (trx) => {
       const row = await trx
         .selectFrom('listings')
-        .select(['id', 'company_id', 'status'])
+        .select(['id', 'company_id', 'status', 'category_id', 'quantity_base', 'auction_draft'])
         .where('id', '=', id)
         .forUpdate()
         .executeTakeFirst();
@@ -591,6 +608,20 @@ export class CatalogService {
         ...(reason ? { reason } : {}),
         data: { from: row.status, to },
       });
+      if (decision === 'approve' && onApproved) {
+        const cat = await trx
+          .selectFrom('categories')
+          .select('base_per_unit')
+          .where('id', '=', row.category_id)
+          .executeTakeFirstOrThrow();
+        await onApproved(trx, {
+          id,
+          companyId: row.company_id,
+          quantityBase: row.quantity_base,
+          basePerUnit: cat.base_per_unit,
+          auctionDraft: row.auction_draft,
+        });
+      }
       return { id, status: to };
     });
   }

@@ -116,6 +116,133 @@ export interface IdempotencyKeysTable {
   created_at: CreatedAt;
 }
 
+type Ts = ColumnType<Date, Date | RawBuilder<Date>, Date | RawBuilder<Date>>;
+
+export type LedgerAccountType =
+  | 'bank_clearing'
+  | 'deposit_held'
+  | 'escrow'
+  | 'seller_payable'
+  | 'platform_revenue'
+  | 'buyer_credit';
+
+export interface LedgerAccountsTable {
+  id: Generated<string>;
+  type: LedgerAccountType;
+  company_id: string | null;
+  currency: Generated<string>;
+  created_at: CreatedAt;
+}
+
+export interface LedgerJournalsTable {
+  id: Generated<string>;
+  reason: string;
+  ref_type: string | null;
+  ref_id: string | null;
+  created_at: CreatedAt;
+}
+
+export interface LedgerEntriesTable {
+  id: Generated<string>;
+  journal_id: string;
+  account_id: string;
+  amount_minor: bigint;
+  created_at: CreatedAt;
+}
+
+export type AuctionStatus =
+  | 'DRAFT'
+  | 'SCHEDULED'
+  | 'LIVE'
+  | 'PAYMENT_PENDING'
+  | 'SETTLED'
+  | 'ENDED_NO_SALE'
+  | 'PAYMENT_FAILED'
+  | 'CANCELLED';
+
+export interface AuctionsTable {
+  id: Generated<string>;
+  listing_id: string;
+  seller_company_id: string;
+  status: ColumnType<AuctionStatus, AuctionStatus, AuctionStatus>;
+  start_price_minor: bigint;
+  min_increment_minor: bigint;
+  reserve_minor: bigint | null;
+  quantity_base: bigint;
+  base_per_unit: number;
+  deposit_minor: bigint;
+  starts_at: Ts;
+  ends_at: Ts;
+  original_ends_at: ColumnType<Date, Date, never>;
+  hard_end_cap: ColumnType<Date, Date, never>;
+  extension_window_secs: Generated<number>;
+  extension_secs: Generated<number>;
+  max_extensions: Generated<number>;
+  extension_count: Generated<number>;
+  last_seq: Generated<number>;
+  bid_count: Generated<number>;
+  current_price_minor: ColumnType<bigint | null, bigint | null | undefined, bigint | null>;
+  high_bid_id: ColumnType<string | null, string | null | undefined, string | null>;
+  version: Generated<number>;
+  closed_at: ColumnType<Date | null, never, Date | RawBuilder<Date> | null>;
+  cancel_reason: ColumnType<string | null, never, string | null>;
+  created_at: CreatedAt;
+}
+
+export interface BidsTable {
+  id: Generated<string>;
+  auction_id: string;
+  seq: number;
+  bidder_company_id: string;
+  bidder_user_id: string;
+  amount_minor: bigint;
+  accepted_at: Generated<Date>;
+}
+
+export interface BidAttemptsTable {
+  id: Generated<string>;
+  auction_id: string;
+  bidder_company_id: string;
+  bidder_user_id: string;
+  amount_minor: bigint;
+  reason_code: string;
+  at: CreatedAt;
+}
+
+export interface AuctionEventsTable {
+  id: Generated<string>;
+  auction_id: string;
+  seq: number;
+  type: string;
+  payload: ColumnType<Record<string, unknown>, string, never>;
+  at: CreatedAt;
+}
+
+export interface AuctionResultsTable {
+  id: Generated<string>;
+  auction_id: string;
+  outcome: 'sold' | 'no_sale';
+  winner_company_id: string | null;
+  winning_bid_id: string | null;
+  final_price_minor: bigint | null;
+  total_minor: bigint | null;
+  at: CreatedAt;
+}
+
+export type DepositStatus = 'pending' | 'held' | 'refunded' | 'applied' | 'forfeited' | 'cancelled';
+
+export interface DepositsTable {
+  id: Generated<string>;
+  auction_id: string;
+  company_id: string;
+  amount_minor: bigint;
+  reference: string;
+  status: ColumnType<DepositStatus, DepositStatus | undefined, DepositStatus>;
+  created_at: CreatedAt;
+  confirmed_at: ColumnType<Date | null, never, RawBuilder<Date> | null>;
+  settled_at: ColumnType<Date | null, never, RawBuilder<Date> | null>;
+}
+
 export interface Database {
   audit_log: AuditLogTable;
   users: UsersTable;
@@ -127,4 +254,13 @@ export interface Database {
   listing_images: ListingImagesTable;
   favorites: FavoritesTable;
   idempotency_keys: IdempotencyKeysTable;
+  ledger_accounts: LedgerAccountsTable;
+  ledger_journals: LedgerJournalsTable;
+  ledger_entries: LedgerEntriesTable;
+  auctions: AuctionsTable;
+  bids: BidsTable;
+  bid_attempts: BidAttemptsTable;
+  auction_events: AuctionEventsTable;
+  auction_results: AuctionResultsTable;
+  deposits: DepositsTable;
 }
