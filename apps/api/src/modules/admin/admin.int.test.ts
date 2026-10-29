@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/restrict-template-expressions --
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/restrict-template-expressions --
    HTTP test bodies are untyped JSON. */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -183,7 +183,17 @@ describe('user directory', () => {
     expect(all.body.items.length).toBeGreaterThan(1);
     expect(JSON.stringify(all.body)).not.toMatch(/password|token|hash|\$argon|\$2[aby]\$/i);
     expect(Object.keys(all.body.items[0]).sort()).toEqual(
-      ['companies', 'createdAt', 'email', 'fullName', 'id', 'isAdmin'].sort(),
+      [
+        'companies',
+        'createdAt',
+        'email',
+        'fullName',
+        'id',
+        'isAdmin',
+        'suspendReason',
+        'suspended',
+        'suspendedAt',
+      ].sort(),
     );
   });
 });

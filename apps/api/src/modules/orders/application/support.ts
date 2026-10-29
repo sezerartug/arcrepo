@@ -1,6 +1,7 @@
 import { randomInt } from 'node:crypto';
 import { sql, type Kysely, type RawBuilder } from 'kysely';
 import type { Database, OrderStatus } from '../../../db/schema.js';
+import { notifyCompany } from '../../notifications/index.js';
 import { recordAudit } from '../../platform/index.js';
 import { assertTransition } from '../domain/rules.js';
 
@@ -88,6 +89,58 @@ export async function transitionOrder(
     .executeTakeFirst();
   if (r.numUpdatedRows !== 1n) throw new Error('order status changed concurrently');
   await addOrderEvent(trx, o.id, `order.${to}`, o.status, to, data);
+  await notifyOrderParties(trx, o.id, o.status, to);
+}
+
+// Status changes that someone must hear about; the only status path, so the one place to notify.
+async function notifyOrderParties(
+  trx: Kysely<Database>,
+  orderId: string,
+  from: OrderStatus,
+  to: OrderStatus,
+): Promise<void> {
+  const resolved = from === 'disputed' && (to === 'completed' || to === 'refunded');
+  let toBuyer: [string, string] | null = null;
+  let toSeller: [string, string] | null = null;
+  if (to === 'paid_escrow')
+    toSeller = ['Ödeme onaylandı', 'Sipariş ödemesi onaylandı, ürünü kargolayabilirsiniz.'];
+  else if (to === 'shipped') toBuyer = ['Siparişiniz kargolandı', 'Siparişiniz kargoya verildi.'];
+  else if (to === 'delivered')
+    toSeller = ['Sipariş teslim edildi', 'Alıcı teslimatı onayladı veya süre doldu.'];
+  else if (to === 'completed' && !resolved) return;
+  else if (to === 'disputed')
+    toSeller = ['Siparişe itiraz açıldı', 'Alıcı sipariş için itiraz açtı.'];
+  else if (resolved) {
+    toBuyer = toSeller = ['İtiraz çözüldü', 'Sipariş itirazı yönetici tarafından sonuçlandırıldı.'];
+  } else if (to === 'payment_failed') {
+    toBuyer = ['Ödeme süresi aşıldı', 'Sipariş ödeme süresi içinde ödenmediği için iptal edildi.'];
+  } else return;
+
+  const o = await trx
+    .selectFrom('orders')
+    .select(['buyer_company_id', 'seller_company_id'])
+    .where('id', '=', orderId)
+    .executeTakeFirstOrThrow();
+  const link = `/siparisler/${orderId}`;
+  const type = `order.${to}`;
+  if (toBuyer) {
+    await notifyCompany(trx, {
+      companyId: o.buyer_company_id,
+      type,
+      title: toBuyer[0],
+      body: toBuyer[1],
+      link,
+    });
+  }
+  if (toSeller) {
+    await notifyCompany(trx, {
+      companyId: o.seller_company_id,
+      type,
+      title: toSeller[0],
+      body: toSeller[1],
+      link,
+    });
+  }
 }
 
 export async function addOrderEvent(

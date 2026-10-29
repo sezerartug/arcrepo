@@ -33,6 +33,8 @@ export interface UsersTable {
   password_hash: string;
   full_name: string;
   is_platform_admin: Generated<boolean>;
+  suspended_at: ColumnType<Date | null, never, RawBuilder<Date> | null>;
+  suspend_reason: ColumnType<string | null, never, string | null>;
   created_at: CreatedAt;
 }
 
@@ -42,6 +44,18 @@ export interface SessionsTable {
   token_hash: string;
   created_at: CreatedAt;
   expires_at: ColumnType<Date, Date | RawBuilder<Date>, never>;
+}
+
+export interface NotificationsTable {
+  id: Generated<string>;
+  user_id: string;
+  company_id: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  created_at: CreatedAt;
+  read_at: ColumnType<Date | null, never, RawBuilder<Date>>;
 }
 
 export interface PasswordResetsTable {
@@ -322,6 +336,7 @@ export interface Database {
   users: UsersTable;
   sessions: SessionsTable;
   password_resets: PasswordResetsTable;
+  notifications: NotificationsTable;
   companies: CompaniesTable;
   company_members: CompanyMembersTable;
   categories: CategoriesTable;

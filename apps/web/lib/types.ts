@@ -13,6 +13,16 @@ export type Me = {
   } | null;
 };
 
+export type AppNotification = {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  createdAt: string;
+  read: boolean;
+};
+
 export type Category = {
   id: string;
   name: string;

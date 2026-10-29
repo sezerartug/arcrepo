@@ -1,4 +1,4 @@
-﻿import { ApiError, formatTry } from './api';
+import { ApiError, formatTry } from './api';
 
 const MESSAGES: Record<string, string> = {
   NETWORK: 'Sunucuya ulaşılamadı. Lütfen tekrar deneyin.',
@@ -40,6 +40,10 @@ const MESSAGES: Record<string, string> = {
   IDEMPOTENCY_KEY_INVALID: 'İstek anahtarı geçersiz. Sayfayı yenileyip tekrar deneyin.',
   BAD_REQUEST: 'İstek geçersiz.',
   INTERNAL: 'Sunucuda bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
+  USER_SUSPENDED: 'Hesabınız askıya alındı. Lütfen yönetici ile iletişime geçin.',
+  ALREADY_SUSPENDED: 'Kullanıcı zaten askıda.',
+  NOT_SUSPENDED: 'Kullanıcı askıda değil.',
+  CANNOT_SUSPEND_SELF: 'Kendi hesabınızı askıya alamazsınız.',
   IDEMPOTENCY_MISMATCH: 'İstek anahtarı çakıştı. Sayfayı yenileyip tekrar deneyin.',
 };
 

@@ -60,6 +60,8 @@ export class AdminDirectoryService {
           'u.email',
           'm.role',
           'm.created_at as joined_at',
+          'u.suspended_at',
+          'u.suspend_reason',
           eb
             .selectFrom('sessions as s')
             .select((e) => e.fn.max('s.created_at').as('t'))
@@ -161,6 +163,9 @@ export class AdminDirectoryService {
         role: m.role,
         joinedAt: m.joined_at,
         lastLoginAt: m.last_login_at,
+        suspended: m.suspended_at !== null,
+        suspendedAt: m.suspended_at,
+        suspendReason: m.suspend_reason,
       })),
       listings: listings.map((l) => ({
         id: l.id,
@@ -218,7 +223,15 @@ export class AdminDirectoryService {
       .select((eb) => eb.fn.countAll<string>().as('n'))
       .executeTakeFirstOrThrow();
     const users = await base
-      .select(['u.id', 'u.full_name', 'u.email', 'u.is_platform_admin', 'u.created_at'])
+      .select([
+        'u.id',
+        'u.full_name',
+        'u.email',
+        'u.is_platform_admin',
+        'u.created_at',
+        'u.suspended_at',
+        'u.suspend_reason',
+      ])
       .orderBy('u.created_at', 'desc')
       .orderBy('u.id')
       .limit(PAGE_SIZE)
@@ -242,6 +255,9 @@ export class AdminDirectoryService {
         email: u.email,
         isAdmin: u.is_platform_admin,
         createdAt: u.created_at,
+        suspended: u.suspended_at !== null,
+        suspendedAt: u.suspended_at,
+        suspendReason: u.suspend_reason,
         companies: memberships
           .filter((m) => m.user_id === u.id)
           .map((m) => ({

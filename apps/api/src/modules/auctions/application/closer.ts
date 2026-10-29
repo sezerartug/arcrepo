@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { sql, type Kysely } from 'kysely';
 import { dbNow } from '../../../db/clock.js';
 import type { Database } from '../../../db/schema.js';
+import { notifyCompany } from '../../notifications/index.js';
 import { DB, recordAudit } from '../../platform/index.js';
 import { lineTotalMinor } from '../../pricing/index.js';
 import { pickWinner, reserveMet } from '../domain/rules.js';
@@ -96,6 +97,13 @@ export class AuctionCloser {
           depositMinor: a.deposit_minor,
         });
       }
+      await this.notifyClosed(
+        trx,
+        id,
+        a.listing_id,
+        a.seller_company_id,
+        sold ? winner.companyId : null,
+      );
       const data = {
         outcome: sold ? 'sold' : 'no_sale',
         finalPriceMinor: winner?.amountMinor.toString() ?? null,
@@ -112,6 +120,61 @@ export class AuctionCloser {
         data,
       });
       return true;
+    });
+  }
+
+  // Winner, losing depositors and seller each hear about the result (same transaction as the close).
+  private async notifyClosed(
+    trx: Kysely<Database>,
+    auctionId: string,
+    listingId: string,
+    sellerCompanyId: string,
+    winnerCompanyId: string | null,
+  ): Promise<void> {
+    const listing = await trx
+      .selectFrom('listings')
+      .select('title')
+      .where('id', '=', listingId)
+      .executeTakeFirstOrThrow();
+    const deposits = await trx
+      .selectFrom('deposits')
+      .select('company_id')
+      .distinct()
+      .where('auction_id', '=', auctionId)
+      .execute();
+    const link = `/mezat/${auctionId}`;
+    if (winnerCompanyId) {
+      const order = await trx
+        .selectFrom('orders')
+        .select('id')
+        .where('source_auction_id', '=', auctionId)
+        .executeTakeFirst();
+      await notifyCompany(trx, {
+        companyId: winnerCompanyId,
+        type: 'auction.won',
+        title: 'Mezatı kazandınız',
+        body: `"${listing.title}" mezatını kazandınız, siparişiniz oluştu. Ödemeyi süresi içinde yapın.`,
+        link: order ? `/siparisler/${order.id}` : '/siparisler',
+      });
+    }
+    for (const { company_id: companyId } of deposits) {
+      if (companyId === winnerCompanyId) continue;
+      await notifyCompany(trx, {
+        companyId,
+        type: 'auction.lost',
+        title: 'Mezat sonuçlandı',
+        body: `"${listing.title}" mezatı sonuçlandı, teminatınız iade edildi.`,
+        link,
+      });
+    }
+    await notifyCompany(trx, {
+      companyId: sellerCompanyId,
+      type: 'auction.closed_seller',
+      title: winnerCompanyId ? 'Mezatınız satıldı' : 'Mezatınız satışsız bitti',
+      body: winnerCompanyId
+        ? `"${listing.title}" mezatı satışla sonuçlandı.`
+        : `"${listing.title}" mezatı satış olmadan sona erdi.`,
+      link,
     });
   }
 

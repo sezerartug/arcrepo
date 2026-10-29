@@ -163,7 +163,7 @@ export class AuthService {
     if (locked > 0) throw rateLimited(locked);
     const user = await this.db
       .selectFrom('users')
-      .select(['id', 'password_hash'])
+      .select(['id', 'password_hash', 'suspended_at'])
       .where('email', '=', email)
       .executeTakeFirst();
     this.dummyHash ??= hashPassword('dummy-password-for-timing');
@@ -173,6 +173,13 @@ export class AuthService {
       throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid e-mail or password');
     }
     this.limits.login.reset(key);
+    if (user.suspended_at) {
+      throw new AppError(
+        403,
+        'USER_SUSPENDED',
+        'Hesabınız askıya alındı. Lütfen yönetici ile iletişime geçin.',
+      );
+    }
     const token = await this.newSession(this.db, user.id);
     const ctx = await this.byToken(token);
     if (!ctx) throw new AppError(500, 'INTERNAL', 'Session could not be created');
@@ -190,22 +197,32 @@ export class AuthService {
       .where('email', '=', email)
       .executeTakeFirst();
     if (!user) return;
+    await this.issueReset(user.id, email, { actorType: 'user', actorId: user.id });
+  }
+
+  // Creates a single-use reset token and mails the link (never returned to the caller).
+  async issueReset(
+    userId: string,
+    email: string,
+    actor: { actorType: 'user' | 'admin'; actorId: string },
+  ): Promise<void> {
     const token = randomBytes(32).toString('base64url');
     await this.db.transaction().execute(async (trx) => {
       await trx
         .insertInto('password_resets')
         .values({
-          user_id: user.id,
+          user_id: userId,
           token_hash: sha256(token),
           expires_at: sql<Date>`clock_timestamp() + ${sql.lit(RESET_TTL_HOURS)} * interval '1 hour'`,
         })
         .execute();
       await recordAudit(trx, {
-        actorType: 'user',
-        actorId: user.id,
-        action: 'user.password_reset_requested',
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        action:
+          actor.actorType === 'admin' ? 'admin.user.send_reset' : 'user.password_reset_requested',
         entityType: 'user',
-        entityId: user.id,
+        entityId: userId,
       });
     });
     const base = process.env.WEB_BASE_URL ?? 'http://localhost:3000';
@@ -280,6 +297,7 @@ export class AuthService {
         'm.role',
       ])
       .where('s.token_hash', '=', sha256(token))
+      .where('u.suspended_at', 'is', null)
       .where('s.expires_at', '>', sql<Date>`clock_timestamp()`)
       .executeTakeFirst();
     if (!r) return null;

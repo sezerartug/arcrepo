@@ -1,5 +1,6 @@
 export { IdentityModule } from './identity.module.js';
 export { AuthService } from './application/auth.service.js';
+export { UserAdminService } from './application/user-admin.service.js';
 export { CompanyAdminService } from './application/company-admin.service.js';
 export type { CompanyAction } from './application/company-admin.service.js';
 export { hashPassword, verifyPassword } from './application/password.js';

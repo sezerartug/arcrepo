@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { clientApi } from '@/lib/api';
 import type { Me } from '@/lib/types';
 import { Logo } from './illustrations';
+import { NotificationBell } from './notification-bell';
 
 const linkCls =
   'rounded-lg px-3 py-1.5 text-sm font-medium text-primary-foreground/90 transition-colors hover:bg-primary-foreground/10 hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-brand outline-none';
@@ -102,6 +103,7 @@ export function SiteHeader() {
           <div className="flex flex-col gap-1 md:ml-auto md:flex-row md:items-center">
             {me ? (
               <>
+                <NotificationBell />
                 <Link className={linkCls} href="/hesap">
                   {me.company?.legalName ?? me.user.fullName}
                 </Link>

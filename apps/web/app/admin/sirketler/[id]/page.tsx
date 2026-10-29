@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { AdminActionDialog } from '@/components/admin-action-dialog';
 import { AdminAuditTable } from '@/components/admin-audit-table';
 import { AdminTabs } from '@/components/admin-tabs';
+import { UserAdminActions } from '@/components/user-admin-actions';
 import { Card, Empty, LoadError, PageTitle, StatusBadge } from '@/components/common';
 import { formatDate, formatTry } from '@/lib/api';
 import type { AdminCompanyDetail } from '@/lib/admin-types';
@@ -132,6 +133,7 @@ export default async function AdminCompanyPage({ params }: { params: Promise<{ i
                   <th scope="col">E-posta</th>
                   <th scope="col">Rol</th>
                   <th scope="col">Son giriş</th>
+                  <th scope="col">Hesap</th>
                 </tr>
               </thead>
               <tbody>
@@ -141,6 +143,13 @@ export default async function AdminCompanyPage({ params }: { params: Promise<{ i
                     <td>{m.email}</td>
                     <td>{roleLabel(m.role)}</td>
                     <td className="text-muted-foreground">{fmt(m.lastLoginAt)}</td>
+                    <td>
+                      <UserAdminActions
+                        userId={m.id}
+                        suspended={m.suspended}
+                        suspendReason={m.suspendReason}
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>

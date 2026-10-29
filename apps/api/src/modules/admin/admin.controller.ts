@@ -27,6 +27,7 @@ import {
   CurrentAuth,
   type AuthContext,
   type CompanyAction,
+  UserAdminService,
 } from '../identity/index.js';
 import { ORDER_REF_PREFIX, OrdersService } from '../orders/index.js';
 import { AdminDirectoryService } from './admin-directory.service.js';
@@ -54,6 +55,7 @@ export class AdminController {
     private readonly auctions: AuctionsService,
     private readonly orders: OrdersService,
     private readonly directory: AdminDirectoryService,
+    private readonly users: UserAdminService,
     @Inject(DB) private readonly db: Kysely<Database>,
   ) {}
 
@@ -70,6 +72,24 @@ export class AdminController {
   @Get('users')
   listUsers(@Query() q: Record<string, unknown>) {
     return this.directory.listUsers(q);
+  }
+
+  @Post('users/:id/suspend')
+  @HttpCode(200)
+  suspendUser(@CurrentAuth() a: AuthContext, @Param('id') id: string, @Body() body: unknown) {
+    return this.users.suspend(a, uuid(id), body);
+  }
+
+  @Post('users/:id/unsuspend')
+  @HttpCode(200)
+  unsuspendUser(@CurrentAuth() a: AuthContext, @Param('id') id: string, @Body() body: unknown) {
+    return this.users.unsuspend(a, uuid(id), body);
+  }
+
+  @Post('users/:id/send-reset')
+  @HttpCode(200)
+  sendReset(@CurrentAuth() a: AuthContext, @Param('id') id: string) {
+    return this.users.sendReset(a, uuid(id));
   }
 
   @Post('companies/:id/:action')

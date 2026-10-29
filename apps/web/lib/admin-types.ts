@@ -1,4 +1,4 @@
-﻿export type AdminCompanyRow = {
+export type AdminCompanyRow = {
   id: string;
   legalName: string;
   taxNo: string;
@@ -17,6 +17,9 @@ export type AdminUserRow = {
   email: string;
   isAdmin: boolean;
   createdAt: string;
+  suspended: boolean;
+  suspendedAt: string | null;
+  suspendReason: string | null;
   companies: { id: string; legalName: string; status: string; role: string }[];
 };
 
@@ -48,6 +51,9 @@ export type AdminCompanyDetail = {
     role: string;
     joinedAt: string;
     lastLoginAt: string | null;
+    suspended: boolean;
+    suspendedAt: string | null;
+    suspendReason: string | null;
   }[];
   listings: {
     id: string;

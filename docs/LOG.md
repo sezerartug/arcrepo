@@ -125,3 +125,9 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: typecheck, lint, format:check yeşil; test:unit (api 10 dosya + yeni splitDispute testleri); test:int 12 dosya / 89 test, 2 kez yeşil (disputes.int.test.ts 10 test: yetki, durum, oto onay atlama, kısmi/tam/mezat iade, reddet, çift ve eşzamanlı resolve, geçersiz tutar, I7/I8). Canlı API'de itiraz→kısmi iade akışı denendi (9.150.000 → iade 2.287.500, komisyon 137.250, satıcı 6.725.250); admin ve alıcı/satıcı sayfaları 200.
 - Risk: arayüz tarayıcıda elle tıklanmadı (dev HTML gövdesi akışlı); itiraz için ek kanıt/dosya, satıcı yanıtı ve destek talebi yok; itiraz süresi sınırı yok (shipped süresince açık); iade gerçek bankaya gitmez (bank_clearing kaydı).
 - Sonraki adım: P3-07 kalan kısmı (destek talebi) ve tarayıcıda elle gezinti.
+### 2026-10-29 — X-10 + X-11 — Kullanıcı askıya alma, uygulama içi bildirimler
+- Yapılan: migration 0007; `UserAdminService` + admin uç noktaları; `notifications` modülü (`notifyCompany` tek INSERT...SELECT, olayla aynı transaction); teklif/kapanış/sipariş geçişlerine bildirim çağrısı; web: zil, `/bildirimler`, kullanıcı askı diyalogları.
+- Karar: bildirim üye başına satır (okunma `read_at` sütunu; ayrı okunma tablosu yok); teklif geçildi bildirimi yalnız önceki liderin şirketine.
+- Doğrulama: typecheck, lint, format:check yeşil; test:unit yeşil; test:int 14 dosya / 103 test, 2 kez yeşil (yeni: user-suspend 5, notifications 9). 200 paralel teklif testi süresi değişmedi (~2,6–2,9 sn). Canlı API: askıya alma (eski çerez 401, login 403, kaldırma), sipariş akışında bildirimler; admin ve alıcı sayfaları 200.
+- Risk: zil/diyaloglar tarayıcıda elle tıklanmadı; bildirim metinlerinde ilan adı yalnız mezat sonucunda var; eski bildirimler için temizlik/saklama süresi yok; canlı denemede demo veride bir sipariş (kargolandı) kaldı.
+- Sonraki adım: e-posta bildirimi (P2-09 kalanı), tarayıcıda elle gezinti.

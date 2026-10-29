@@ -3,6 +3,7 @@ import { ActionButton } from '@/components/action-button';
 import { AdminAuditTable } from '@/components/admin-audit-table';
 import { AdminDisputeActions } from '@/components/admin-dispute-actions';
 import { AdminTabs } from '@/components/admin-tabs';
+import { UserAdminActions } from '@/components/user-admin-actions';
 import {
   Card,
   Empty,
@@ -310,6 +311,7 @@ async function UsersTab({ sp }: { sp: SP }) {
                   <th scope="col">E-posta</th>
                   <th scope="col">Şirket</th>
                   <th scope="col">Durum</th>
+                  <th scope="col">Hesap</th>
                 </tr>
               </thead>
               <tbody>
@@ -336,6 +338,13 @@ async function UsersTab({ sp }: { sp: SP }) {
                           <StatusBadge status={c.status} />
                         </div>
                       ))}
+                    </td>
+                    <td>
+                      <UserAdminActions
+                        userId={u.id}
+                        suspended={u.suspended}
+                        suspendReason={u.suspendReason}
+                      />
                     </td>
                   </tr>
                 ))}

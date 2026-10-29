@@ -1,4 +1,4 @@
-﻿// Turkish labels for codes that reach admin screens. Unknown codes fall back to the raw value.
+// Turkish labels for codes that reach admin screens. Unknown codes fall back to the raw value.
 
 const AUDIT_ACTIONS: Record<string, string> = {
   'admin.company.view': 'Şirket detayı görüntülendi',
@@ -8,6 +8,9 @@ const AUDIT_ACTIONS: Record<string, string> = {
   'admin.company.verify': 'Şirket onaylandı',
   'admin.company.reject': 'Şirket reddedildi',
   'admin.company.suspend': 'Şirket askıya alındı',
+  'admin.user.suspend': 'Kullanıcı askıya alındı',
+  'admin.user.unsuspend': 'Kullanıcının askısı kaldırıldı',
+  'admin.user.send_reset': 'Parola sıfırlama bağlantısı gönderildi',
   'company.registered': 'Şirket kaydoldu',
   'company.verified': 'Şirket onaylandı',
   'company.rejected': 'Şirket reddedildi',

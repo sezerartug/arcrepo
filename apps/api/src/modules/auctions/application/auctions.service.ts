@@ -5,6 +5,7 @@ import { dbNow } from '../../../db/clock.js';
 import type { AuctionStatus, Database } from '../../../db/schema.js';
 import type { AuthContext, CompanyAuthContext } from '../../identity/index.js';
 import { postJournal } from '../../ledger/index.js';
+import { notifyCompany } from '../../notifications/index.js';
 import {
   AppError,
   DB,
@@ -420,6 +421,16 @@ export class AuctionsService {
       entityId: auctionId,
       data: { seq, amountMinor: amount.toString(), extended: ext.extended },
     });
+    // Only the company that was just outbid hears about it.
+    if (high) {
+      await notifyCompany(trx, {
+        companyId: high.bidder_company_id,
+        type: 'auction.outbid',
+        title: 'Teklifiniz geçildi',
+        body: 'Takip ettiğiniz mezatta teklifiniz geçildi. Yeni teklif verebilirsiniz.',
+        link: `/mezat/${auctionId}`,
+      });
+    }
     return { status: 201, body: { seq, ...(await buildSnapshot(trx, auctionId, actor)) } };
   }
 
