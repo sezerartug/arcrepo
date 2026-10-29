@@ -44,6 +44,7 @@ const MESSAGES: Record<string, string> = {
   ALREADY_SUSPENDED: 'Kullanıcı zaten askıda.',
   NOT_SUSPENDED: 'Kullanıcı askıda değil.',
   CANNOT_SUSPEND_SELF: 'Kendi hesabınızı askıya alamazsınız.',
+  INVALID_CURRENT_PASSWORD: 'Mevcut parolanız hatalı.',
   IDEMPOTENCY_MISMATCH: 'İstek anahtarı çakıştı. Sayfayı yenileyip tekrar deneyin.',
 };
 

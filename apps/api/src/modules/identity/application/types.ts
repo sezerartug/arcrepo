@@ -5,6 +5,9 @@ export interface AuthContext {
   readonly email: string;
   readonly fullName: string;
   readonly isAdmin: boolean;
+  readonly phone: string | null;
+  readonly createdAt: Date;
+  readonly sessionId: string;
   readonly company: {
     readonly id: string;
     readonly legalName: string;

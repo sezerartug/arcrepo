@@ -53,6 +53,8 @@ export class Client {
   get = (url: string) => this.req('GET', url);
   post = (url: string, body?: unknown, headers?: Record<string, string>) =>
     this.req('POST', url, body ?? {}, headers);
+  patch = (url: string, body?: unknown) => this.req('PATCH', url, body ?? {});
+  del = (url: string) => this.req('DELETE', url);
 }
 
 export interface TestApp {

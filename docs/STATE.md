@@ -55,3 +55,7 @@ MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; s
 
 ## Ana sayfa + satıcı özeti (X-16, X-17)
 - Ana sayfa: `HomeSearch`, `TrustCenter` (5 kart), `HomeTabs` (`?sekme=` → `lib/home.ts` HOME_TABS → /listings saleType/condition), `LiveDot`; kartlarda Doğrulanmış şirket (status published) ve %5 teminatlı rozetleri. `/satici` üstünde `SellerSummaryCards` (`computeSellerSummary`: canlı mezat = /auctions?status=live ∩ satıcı ilanları; bekleyen sipariş = awaiting_payment + paid_escrow). API değişmedi. Tarayıcıda görsel doğrulama yapılmadı.
+
+
+## Hesap sayfası (X-18)
+- Migration 0009 `users.phone`. `AuthContext` artık `sessionId/phone/createdAt` taşır. `AuthService`: `changePassword` (limiter `passwordChange` kullanıcı başına 5/15 dk, bellek içi), `updateProfile`, `listSessions`, `revokeSession`, `revokeOtherSessions`. Admin: `GET /admin/pending-counts` (`AdminDirectoryService.pendingCounts`). Web: `components/account-forms.tsx`, `admin-shortcuts.tsx`, `lib/account.ts` (doğrulama + bölüm mantığı).

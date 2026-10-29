@@ -57,6 +57,7 @@ export const clientApi = {
   get: <T>(path: string) => request<T>('/api', path),
   post: <T>(path: string, json?: unknown, idempotent = true) =>
     request<T>('/api', path, { method: 'POST', json, idempotent }),
+  patch: <T>(path: string, json: unknown) => request<T>('/api', path, { method: 'PATCH', json }),
   del: <T>(path: string) => request<T>('/api', path, { method: 'DELETE' }),
 };
 

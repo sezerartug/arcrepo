@@ -1,4 +1,16 @@
-import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService, clientIp, parseCookie } from '../application/auth.service.js';
 import {
@@ -71,6 +83,38 @@ export class IdentityController {
   @UseGuards(AuthGuard)
   me(@CurrentAuth() a: AuthContext) {
     return this.auth.toMe(a);
+  }
+
+  @Patch('me')
+  @UseGuards(AuthGuard)
+  updateProfile(@CurrentAuth() a: AuthContext, @Body() body: unknown) {
+    return this.auth.updateProfile(a, body);
+  }
+
+  @Post('me/password')
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
+  changePassword(@CurrentAuth() a: AuthContext, @Body() body: unknown) {
+    return this.auth.changePassword(a, body);
+  }
+
+  @Get('me/sessions')
+  @UseGuards(AuthGuard)
+  sessions(@CurrentAuth() a: AuthContext) {
+    return this.auth.listSessions(a);
+  }
+
+  @Post('me/sessions/revoke-others')
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
+  revokeOthers(@CurrentAuth() a: AuthContext) {
+    return this.auth.revokeOtherSessions(a);
+  }
+
+  @Delete('me/sessions/:id')
+  @UseGuards(AuthGuard)
+  revokeSession(@CurrentAuth() a: AuthContext, @Param('id') id: string) {
+    return this.auth.revokeSession(a, id);
   }
 
   @Post('company/members')

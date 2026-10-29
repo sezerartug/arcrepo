@@ -4,13 +4,31 @@
 export type CompanyStatus = 'pending' | 'verified' | 'rejected' | 'suspended';
 
 export type Me = {
-  user: { id: string; email: string; fullName: string; isAdmin?: boolean };
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+    isAdmin?: boolean;
+    phone?: string | null;
+    createdAt?: string;
+  };
   company: {
     id: string;
     legalName: string;
     status: CompanyStatus;
     memberRole: 'owner' | 'member';
   } | null;
+};
+
+/** Row of GET /me/sessions (never carries token material). */
+export type AccountSession = { id: string; createdAt: string; expiresAt: string; current: boolean };
+
+/** GET /admin/pending-counts. */
+export type PendingCounts = {
+  companies: number;
+  listings: number;
+  disputes: number;
+  payments: number;
 };
 
 export type AppNotification = {

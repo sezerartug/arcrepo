@@ -61,6 +61,11 @@ export class AdminController {
     @Inject(DB) private readonly db: Kysely<Database>,
   ) {}
 
+  @Get('pending-counts')
+  pendingCounts() {
+    return this.directory.pendingCounts();
+  }
+
   @Get('companies')
   listCompanies(@Query() q: Record<string, unknown>) {
     return this.companies.list(q);

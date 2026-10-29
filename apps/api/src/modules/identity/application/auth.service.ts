@@ -12,6 +12,7 @@ import {
   conflict,
   forbidden,
   invalid,
+  notFound,
   recordAudit,
   validate,
   type MailPort,
@@ -30,6 +31,7 @@ export interface AuthLimits {
   readonly login: LockoutLimiter; // 5 failures per e-mail + IP -> 15 min lock
   readonly register: HitLimiter; // per IP
   readonly reset: HitLimiter; // per IP (forgot / reset requests)
+  readonly passwordChange: LockoutLimiter; // 5 wrong current passwords per user -> 15 min lock
 }
 
 export function defaultAuthLimits(env: NodeJS.ProcessEnv = process.env): AuthLimits {
@@ -38,6 +40,7 @@ export function defaultAuthLimits(env: NodeJS.ProcessEnv = process.env): AuthLim
     login: new LockoutLimiter(5, 15 * 60_000),
     register: new HitLimiter(num(env.REGISTER_RATE_MAX, 20), 60 * 60_000),
     reset: new HitLimiter(num(env.RESET_RATE_MAX, 10), 60 * 60_000),
+    passwordChange: new LockoutLimiter(5, 15 * 60_000),
   };
 }
 
@@ -291,6 +294,9 @@ export class AuthService {
         'u.email',
         'u.full_name',
         'u.is_platform_admin',
+        'u.phone',
+        'u.created_at as user_created_at',
+        's.id as session_id',
         'c.id as company_id',
         'c.legal_name',
         'c.status',
@@ -306,6 +312,9 @@ export class AuthService {
       email: r.email,
       fullName: r.full_name,
       isAdmin: r.is_platform_admin,
+      phone: r.phone,
+      createdAt: r.user_created_at,
+      sessionId: r.session_id,
       company:
         r.company_id && r.legal_name && r.status && r.role
           ? { id: r.company_id, legalName: r.legal_name, status: r.status, memberRole: r.role }
@@ -320,7 +329,14 @@ export class AuthService {
 
   toMe(ctx: AuthContext) {
     return {
-      user: { id: ctx.userId, email: ctx.email, fullName: ctx.fullName, isAdmin: ctx.isAdmin },
+      user: {
+        id: ctx.userId,
+        email: ctx.email,
+        fullName: ctx.fullName,
+        isAdmin: ctx.isAdmin,
+        phone: ctx.phone,
+        createdAt: ctx.createdAt,
+      },
       company: ctx.company
         ? {
             id: ctx.company.id,
@@ -330,6 +346,140 @@ export class AuthService {
           }
         : null,
     };
+  }
+
+  // Current password is verified first (5 wrong tries per user -> 15 min lock); on success every
+  // other session of the user is dropped and the current one stays.
+  async changePassword(ctx: AuthContext, input: unknown): Promise<{ ok: true }> {
+    const o = validate.asObject(input);
+    const current = validate.str(o, 'currentPassword', 1, 128);
+    const next = validate.str(o, 'newPassword', 8, 128);
+    const locked = this.limits.passwordChange.lockedForMs(ctx.userId);
+    if (locked > 0) throw rateLimited(locked);
+    const row = await this.db
+      .selectFrom('users')
+      .select('password_hash')
+      .where('id', '=', ctx.userId)
+      .executeTakeFirstOrThrow();
+    if (!(await verifyPassword(current, row.password_hash))) {
+      this.limits.passwordChange.fail(ctx.userId);
+      throw new AppError(422, 'INVALID_CURRENT_PASSWORD', 'Current password is incorrect');
+    }
+    this.limits.passwordChange.reset(ctx.userId);
+    const passwordHash = await hashPassword(next);
+    await this.db.transaction().execute(async (trx) => {
+      await trx
+        .updateTable('users')
+        .set({ password_hash: passwordHash })
+        .where('id', '=', ctx.userId)
+        .execute();
+      await trx
+        .deleteFrom('sessions')
+        .where('user_id', '=', ctx.userId)
+        .where('id', '<>', ctx.sessionId)
+        .execute();
+      await recordAudit(trx, {
+        actorType: 'user',
+        actorId: ctx.userId,
+        action: 'user.password.change',
+        entityType: 'user',
+        entityId: ctx.userId,
+      });
+    });
+    return { ok: true };
+  }
+
+  // fullName required; phone optional (absent = unchanged, ''/null = cleared). Phone is stored only:
+  // never logged or audited.
+  async updateProfile(ctx: AuthContext, input: unknown) {
+    const o = validate.asObject(input);
+    const fullName = validate.str(o, 'fullName', 2, 120);
+    let phone: string | null | undefined;
+    if (o.phone !== undefined) {
+      const raw = o.phone === null ? '' : validate.str(o, 'phone', 0, 20);
+      if (raw !== '' && !/^[0-9+ ]{7,20}$/.test(raw)) throw invalid('phone format is invalid');
+      phone = raw === '' ? null : raw;
+    }
+    await this.db.transaction().execute(async (trx) => {
+      await trx
+        .updateTable('users')
+        .set(phone === undefined ? { full_name: fullName } : { full_name: fullName, phone })
+        .where('id', '=', ctx.userId)
+        .execute();
+      await recordAudit(trx, {
+        actorType: 'user',
+        actorId: ctx.userId,
+        action: 'user.profile.update',
+        entityType: 'user',
+        entityId: ctx.userId,
+      });
+    });
+    return this.toMe({
+      ...ctx,
+      fullName,
+      phone: phone === undefined ? ctx.phone : phone,
+    });
+  }
+
+  // Never returns the token or its hash: only ids and timestamps.
+  async listSessions(ctx: AuthContext) {
+    const rows = await this.db
+      .selectFrom('sessions')
+      .select(['id', 'created_at', 'expires_at'])
+      .where('user_id', '=', ctx.userId)
+      .where('expires_at', '>', sql<Date>`clock_timestamp()`)
+      .orderBy('created_at', 'desc')
+      .execute();
+    return {
+      items: rows.map((r) => ({
+        id: r.id,
+        createdAt: r.created_at,
+        expiresAt: r.expires_at,
+        current: r.id === ctx.sessionId,
+      })),
+    };
+  }
+
+  // Own sessions only: someone else's id looks exactly like a missing one (404).
+  async revokeSession(ctx: AuthContext, id: string): Promise<{ ok: true }> {
+    if (!validate.isUuid(id)) throw notFound();
+    await this.db.transaction().execute(async (trx) => {
+      const gone = await trx
+        .deleteFrom('sessions')
+        .where('id', '=', id)
+        .where('user_id', '=', ctx.userId)
+        .returning('id')
+        .executeTakeFirst();
+      if (!gone) throw notFound();
+      await recordAudit(trx, {
+        actorType: 'user',
+        actorId: ctx.userId,
+        action: 'user.session.revoke',
+        entityType: 'session',
+        entityId: id,
+      });
+    });
+    return { ok: true };
+  }
+
+  async revokeOtherSessions(ctx: AuthContext): Promise<{ revoked: number }> {
+    return this.db.transaction().execute(async (trx) => {
+      const gone = await trx
+        .deleteFrom('sessions')
+        .where('user_id', '=', ctx.userId)
+        .where('id', '<>', ctx.sessionId)
+        .returning('id')
+        .execute();
+      await recordAudit(trx, {
+        actorType: 'user',
+        actorId: ctx.userId,
+        action: 'user.session.revoke_others',
+        entityType: 'user',
+        entityId: ctx.userId,
+        data: { count: gone.length },
+      });
+      return { revoked: gone.length };
+    });
   }
 
   async addMember(

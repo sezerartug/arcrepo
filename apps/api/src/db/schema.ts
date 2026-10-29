@@ -35,6 +35,7 @@ export interface UsersTable {
   is_platform_admin: Generated<boolean>;
   suspended_at: ColumnType<Date | null, never, RawBuilder<Date> | null>;
   suspend_reason: ColumnType<string | null, never, string | null>;
+  phone: ColumnType<string | null, string | null | undefined, string | null>;
   created_at: CreatedAt;
 }
 

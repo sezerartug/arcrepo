@@ -7,6 +7,7 @@ import * as m0005 from './migrations/0005_password_resets.js';
 import * as m0006 from './migrations/0006_order_disputes.js';
 import * as m0007 from './migrations/0007_suspend_notifications.js';
 import * as m0008 from './migrations/0008_category_tree_condition.js';
+import * as m0009 from './migrations/0009_user_phone.js';
 
 // Listed explicitly so the build and the tests run the same set; append new migrations in order.
 const migrations: Record<string, Migration> = {
@@ -18,6 +19,7 @@ const migrations: Record<string, Migration> = {
   '0006_order_disputes': m0006,
   '0007_suspend_notifications': m0007,
   '0008_category_tree_condition': m0008,
+  '0009_user_phone': m0009,
 };
 
 // Kysely holds a lock table while migrating, so concurrent API boots are safe.

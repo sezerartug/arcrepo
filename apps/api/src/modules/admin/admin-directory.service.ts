@@ -23,6 +23,44 @@ const AUCTION_STATUSES = [
 export class AdminDirectoryService {
   constructor(@Inject(DB) private readonly db: Kysely<Database>) {}
 
+  // Read-only work-queue sizes for the admin shortcuts (same filters as the admin lists).
+  async pendingCounts() {
+    const n = (r: { n: string | number | bigint } | undefined) => Number(r?.n ?? 0);
+    const [companies, listings, disputes, deposits, orders] = await Promise.all([
+      this.db
+        .selectFrom('companies')
+        .select(sql<string>`count(*)`.as('n'))
+        .where('status', '=', 'pending')
+        .executeTakeFirst(),
+      this.db
+        .selectFrom('listings')
+        .select(sql<string>`count(*)`.as('n'))
+        .where('status', '=', 'pending_review')
+        .executeTakeFirst(),
+      this.db
+        .selectFrom('order_disputes')
+        .select(sql<string>`count(*)`.as('n'))
+        .where('status', '=', 'open')
+        .executeTakeFirst(),
+      this.db
+        .selectFrom('deposits')
+        .select(sql<string>`count(*)`.as('n'))
+        .where('status', '=', 'pending')
+        .executeTakeFirst(),
+      this.db
+        .selectFrom('orders')
+        .select(sql<string>`count(*)`.as('n'))
+        .where('status', '=', 'awaiting_payment')
+        .executeTakeFirst(),
+    ]);
+    return {
+      companies: n(companies),
+      listings: n(listings),
+      disputes: n(disputes),
+      payments: n(deposits) + n(orders),
+    };
+  }
+
   async companyDetail(admin: AuthContext, id: string) {
     const c = await this.db
       .selectFrom('companies')
