@@ -194,3 +194,31 @@ export type AdminDisputeRow = {
   openedAt: string;
   resolvedAt: string | null;
 };
+
+type FinanceScope = 'range' | 'now';
+export type AdminFinanceSummary = {
+  currency: string;
+  range: { from: string | null; to: string | null };
+  commission: { amountMinor: string; scope: FinanceScope; kaynak: string };
+  forfeitedDeposits: { amountMinor: string; scope: FinanceScope; kaynak: string };
+  escrow: { amountMinor: string; scope: FinanceScope; kaynak: string };
+  pendingPayables: {
+    amountMinor: string;
+    scope: FinanceScope;
+    kaynak: string;
+    companies: { companyId: string; companyName: string; amountMinor: string }[];
+  };
+  depositHeld: { amountMinor: string; scope: FinanceScope; kaynak: string };
+  bankClearing: { amountMinor: string; scope: FinanceScope; kaynak: string };
+  completedOrders: { count: string; totalMinor: string; scope: FinanceScope; kaynak: string };
+  refunds: { count: string; amountMinor: string; scope: FinanceScope; kaynak: string };
+  disputes: { count: string; scope: FinanceScope; kaynak: string };
+  consistency: {
+    ok: boolean;
+    ledgerTotalMinor: string;
+    escrowMinor: string;
+    openOrdersEscrowMinor: string;
+    diffMinor: string;
+    kaynak: string;
+  };
+};

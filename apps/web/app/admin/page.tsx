@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ActionButton } from '@/components/action-button';
 import { AdminAuditTable } from '@/components/admin-audit-table';
 import { AdminDisputeActions } from '@/components/admin-dispute-actions';
+import { FinanceReport } from '@/components/admin-finance-report';
 import { AdminTabs } from '@/components/admin-tabs';
 import { UserAdminActions } from '@/components/user-admin-actions';
 import {
@@ -40,6 +41,9 @@ type SP = {
   status?: string;
   entityType?: string;
   entityId?: string;
+  range?: string;
+  from?: string;
+  to?: string;
 };
 type AdminPayment = {
   reference: string;
@@ -769,6 +773,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <DisputesTab sp={sp} />
       ) : tab === 'havaleler' ? (
         <PaymentsTab />
+      ) : tab === 'mali-rapor' ? (
+        <FinanceReport sp={sp} />
       ) : tab === 'denetim' ? (
         <AuditTab sp={sp} />
       ) : (

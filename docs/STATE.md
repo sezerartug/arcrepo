@@ -42,3 +42,6 @@ MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; s
 ## Kullanıcı askıya alma + bildirimler (X-10, X-11)
 - `users.suspended_at/suspend_reason` (migration 0007). `UserAdminService` (identity): `POST /admin/users/:id/suspend|unsuspend {reason}`, `/send-reset`. Askıdaki kullanıcı: oturumlar silinir, `byToken` null döner (401), login 403 `USER_SUSPENDED`. Web: `UserAdminActions` (admin Kullanıcılar sekmesi + şirket detayı).
 - Bildirim: `notifications` (user_id başına satır + company_id, `read_at`). Yazım yalnız `notifyCompany(trx, ...)` (modules/notifications/index.ts) ile, olayın transaction'ında: teklif geçildi (`placeBidTx`), mezat sonucu (`AuctionCloser.notifyClosed`), sipariş durumu (`transitionOrder` → `notifyOrderParties`). API `/notifications*`; web `NotificationBell` (site-header, 20 sn yoklama) + `/bildirimler`. E-posta bildirimi yok.
+
+## Mali rapor (X-12)
+- Salt okunur: `GET /admin/finance/summary?range=|from=&to=` (+ `orders.csv`, `payouts.csv`; CSV `;` ayraçlı, BOM'lu, audit `admin.finance.export`). Aralık metrikleri (komisyon, forfeit, ciro, iade, itiraz) tarihle süzülür; bakiyeler (escrow, hakediş, teminat, bank_clearing) her zaman anlık. `consistency.ok` = ledger toplamı 0 ve escrow = açık siparişlerin toplamı. Kod: `modules/admin/admin-finance.service.ts`; web: `components/admin-finance-report.tsx`.

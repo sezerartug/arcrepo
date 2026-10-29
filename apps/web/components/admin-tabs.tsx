@@ -10,6 +10,7 @@ export const ADMIN_TABS = [
   ['siparisler', 'Siparişler', '/admin?tab=siparisler'],
   ['itirazlar', 'İtirazlar', '/admin?tab=itirazlar'],
   ['havaleler', 'Havaleler', '/admin?tab=havaleler'],
+  ['mali-rapor', 'Mali rapor', '/admin?tab=mali-rapor'],
   ['denetim', 'Denetim', '/admin?tab=denetim'],
   ['ilan-ekle', 'İlan ekle', '/admin/ilan-ekle'],
 ] as const;

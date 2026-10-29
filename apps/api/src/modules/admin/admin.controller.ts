@@ -31,6 +31,7 @@ import {
 } from '../identity/index.js';
 import { ORDER_REF_PREFIX, OrdersService } from '../orders/index.js';
 import { AdminDirectoryService } from './admin-directory.service.js';
+import { AdminFinanceService } from './admin-finance.service.js';
 import {
   DB,
   invalid,
@@ -55,6 +56,7 @@ export class AdminController {
     private readonly auctions: AuctionsService,
     private readonly orders: OrdersService,
     private readonly directory: AdminDirectoryService,
+    private readonly finance: AdminFinanceService,
     private readonly users: UserAdminService,
     @Inject(DB) private readonly db: Kysely<Database>,
   ) {}
@@ -216,8 +218,38 @@ export class AdminController {
     return this.auctions.adminCancel(a, uuid(id), body);
   }
 
-  @Get('audit')
-  async audit(@Query() q: Record<string, unknown>) {
+  // Read-only finance report (ledger + orders). Date range is UTC and resolved on the database clock.
+  @Get('finance/summary')
+  async financeSummary(@Query() q: Record<string, unknown>) {
+    return this.finance.summary(await this.finance.parseRange(q));
+  }
+
+  @Get('finance/orders.csv')
+  async financeOrdersCsv(
+    @CurrentAuth() a: AuthContext,
+    @Query() q: Record<string, unknown>,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const csv = await this.finance.ordersCsv(a, await this.finance.parseRange(q));
+    return this.sendCsv(res, 'siparisler.csv', csv);
+  }
+
+  @Get('finance/payouts.csv')
+  async financePayoutsCsv(
+    @CurrentAuth() a: AuthContext,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.sendCsv(res, 'hakedisler.csv', await this.finance.payoutsCsv(a));
+  }
+
+  private sendCsv(res: Response, filename: string, csv: string): string {
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return csv;
+  }
+
+  @Get('audit') async audit(@Query() q: Record<string, unknown>) {
     const entityId = typeof q.entityId === 'string' && q.entityId !== '' ? q.entityId : undefined;
     if (entityId && !validate.isUuid(entityId)) throw notFound();
     const entityType =
