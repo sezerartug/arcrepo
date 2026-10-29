@@ -1,4 +1,4 @@
-﻿# ROADMAP.md — Tek doğruluk kaynağı (backlog + ilerleme)
+# ROADMAP.md — Tek doğruluk kaynağı (backlog + ilerleme)
 
 Kural: Bir görev yalnızca **doğrulandığında** `[x]` olur (test/çıktı kanıtı `docs/LOG.md`'de). Görev ID'leri (`P4-03`) PRD, LOG, commit ve PR başlıklarında kullanılır.
 İlerleme özeti: `scripts/progress.sh` · Süre tahminleri 3–4 mühendis + Claude Code varsayımıyla planlama tahminidir; dış bağımlılıklar (hukuk, PSP, KYC) takvimi kaydırabilir.
@@ -57,8 +57,8 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] P1-04 Yapılandırma ve sır yönetimi: şema doğrulamalı env, `.env.example`, sır taraması
 - [ ] P1-05 CI hattı: typecheck, lint, unit, entegrasyon (gerçek PostgreSQL), build, bağımlılık denetimi, sır taraması
 - [x] P1-06 (Kysely + embedded PG; Prisma yerine, 2026-10-28) şema iskeleti + migration hattı + `FOR UPDATE` raw SQL kalıbı ve testi
-- [ ] P1-07 Kimlik: kayıt, giriş, oturum (HttpOnly çerez), argon2id, e-posta doğrulama, parola sıfırlama
-- [ ] P1-08 Yetkilendirme: roller + nesne düzeyi sahiplik politikası + BOLA test matrisi altyapısı
+- [ ] P1-07 Kimlik: kayıt, giriş, oturum (HttpOnly çerez), argon2id, e-posta doğrulama, parola sıfırlama — KISMİ (2026-10-29): e-posta doğrulama yok; kayıt/giriş/oturum/argon2id/parola sıfırlama + hız sınırı var
+- [ ] P1-08 Yetkilendirme: roller + nesne düzeyi sahiplik politikası + BOLA test matrisi altyapısı — KISMİ (2026-10-29): şirket üyeliği + owner/member + nesne yetkisi var; merkezi BOLA matrisi tam değil
 - [x] P1-09 Audit log altyapısı (append-only; aktör, eylem, neden, korelasyon id)
 - [x] P1-10 Idempotency-Key altyapısı (istek özeti doğrulama, saklı yanıtı tekrar verme, reddedilen isteği de kaydetme)
 - [ ] P1-11 Outbox tablosu + relay + BullMQ worker iskeleti (yeniden deneme, dead-letter)
@@ -74,19 +74,19 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P1-G1 KAPI: CI yeşil; spike raporu kabul edildi (çift kazanan = 0); BOLA harness çalışıyor; taban maliyet/bağlam raporu LOG'da
 
 ## Faz 2 — İlan pazaryeri + satıcı temeli (Hafta 7–12)
-- [ ] P2-01 Kategori ağacı + kategoriye özel nitelik şeması
-- [ ] P2-02 İlan veri modeli ve durum makinesi (taslak → incelemede → yayında → duraklatıldı → satıldı/süresi doldu/kaldırıldı)
-- [ ] P2-03 İlan oluştur/düzenle/yayınla API + doğrulama + sahiplik yetkisi
-- [ ] P2-04 Görsel yükleme: presigned yükleme, sunucuda içerik türü/boyut doğrulama, asenkron türev üretimi, EXIF/konum temizleme
+- [x] P2-01 Kategori ağacı + kategoriye özel nitelik şeması
+- [x] P2-02 İlan veri modeli ve durum makinesi (taslak → incelemede → yayında → duraklatıldı → satıldı/süresi doldu/kaldırıldı)
+- [x] P2-03 İlan oluştur/düzenle/yayınla API + doğrulama + sahiplik yetkisi
+- [x] P2-04 Görsel yükleme: presigned yükleme, sunucuda içerik türü/boyut doğrulama, asenkron türev üretimi, EXIF/konum temizleme
 - [ ] P2-05 CDN + özel/herkese açık nesne politikaları + yaşam döngüsü kuralları
-- [ ] P2-06 Arama v1: Türkçe tam metin (PostgreSQL), kategori/fiyat/konum filtreleri, sıralama; `SearchPort` arayüzü
+- [x] P2-06 Arama v1: Türkçe tam metin (PostgreSQL), kategori/fiyat/konum filtreleri, sıralama; `SearchPort` arayüzü
 - [ ] P2-07 Arama kalite seti: 30+ gerçek sorguyla ilgililik testi; OpenSearch'e geçiş ölçütleri yazıldı
-- [ ] P2-08 İlan listeleme/detay sayfaları (SSR, SEO, site haritası, yapılandırılmış veri)
-- [ ] P2-09 Favoriler ve bildirimler (e-posta + uygulama içi, kuyruk üzerinden)
+- [ ] P2-08 İlan listeleme/detay sayfaları (SSR, SEO, site haritası, yapılandırılmış veri) — KISMİ (2026-10-29): sayfalar var; site haritası/yapılandırılmış veri/SEO yok
+- [ ] P2-09 Favoriler ve bildirimler (e-posta + uygulama içi, kuyruk üzerinden) — KISMİ (2026-10-29): yalnızca favori; bildirim yok
 - [ ] P2-10 Mesajlaşma (iletişim bilgisi maskeleme, spam sınırı, engelleme/şikayet)
-- [ ] P2-11 Şikayet akışı + moderasyon kuyruğu + admin paneli v0 (audit'li)
-- [ ] P2-12 Satıcı onboarding + KYC akışı + satıcı profili/doğrulama durumu
-- [ ] P2-13 Satıcı paneli: ilanlarım, durum değişiklikleri, görseller
+- [ ] P2-11 Şikayet akışı + moderasyon kuyruğu + admin paneli v0 (audit'li) — KISMİ (2026-10-29): admin moderasyon + audit var; şikayet akışı yok
+- [ ] P2-12 Satıcı onboarding + KYC akışı + satıcı profili/doğrulama durumu — KISMİ (2026-10-29): MVP kapsamı vergi no format kontrolü + admin onayı var; KYC/belge doğrulama yok
+- [ ] P2-13 Satıcı paneli: ilanlarım, durum değişiklikleri, görseller — KISMİ (2026-10-29): ilan listesi/durum/düzenleme/hakediş var; satıcı analitiği yok
 - [ ] P2-14 Tüm uç noktalar için BOLA/yetki test matrisi tamam
 - [ ] P2-15 Panolar: arama gecikmesi, görsel işleme kuyruğu, kuyruk derinliği, hata oranı
 - [ ] P2-16 Yük testi: arama ve ilan detay p95 hedefi doğrulandı
@@ -98,12 +98,12 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P3-02 PSP entegrasyonu (barındırılan ödeme alanları/3DS; kart verisi sistemimize girmez)
 - [ ] P3-03 Provizyon/tahsilat akışı + idempotent ödeme niyeti
 - [ ] P3-04 Webhook alıcısı: imza doğrulama, tekilleştirme, sırasız/gecikmeli olay toleransı
-- [ ] P3-05 Ledger: komisyon, escrow tutma, serbest bırakma, iade girişleri + değişmez testleri
-- [ ] P3-06 Teslimat/kargo durumu (manuel + 1 entegrasyon), teslim onayı, otomatik onay süresi
+- [x] P3-05 Ledger: komisyon, escrow tutma, serbest bırakma, iade girişleri + değişmez testleri
+- [x] P3-06 Teslimat/kargo durumu (manuel + 1 entegrasyon), teslim onayı, otomatik onay süresi
 - [ ] P3-07 İtiraz, iade ve destek talebi akışları
-- [ ] P3-08 Satıcı hakediş/ödeme (alt üye işyeri) + günlük mutabakat işi
-- [ ] P3-09 Sabit fiyatlı satın alma uçtan uca (Playwright)
-- [ ] P3-10 Ödeme kaos testleri: webhook tekrarı/kaybı/gecikmesi, süreç çökmesi, çift tıklama
+- [ ] P3-08 Satıcı hakediş/ödeme (alt üye işyeri) + günlük mutabakat işi — KISMİ (2026-10-29): sahte hakediş transferi + audit var; günlük mutabakat/alt üye işyeri yok
+- [ ] P3-09 Sabit fiyatlı satın alma uçtan uca (Playwright) — KISMİ (2026-10-29): API düzeyinde uçtan uca doğrulandı; Playwright testi yok
+- [ ] P3-10 Ödeme kaos testleri: webhook tekrarı/kaybı/gecikmesi, süreç çökmesi, çift tıklama — KISMİ (2026-10-29): çift tıklama/çift onay/kapanış çökmesi testleri var; webhook yok (sahte sağlayıcı)
 - [ ] P3-11 Mutabakat sapma alarmı (PSP ↔ ledger ↔ sipariş)
 - [ ] P3-12 Belgeler: fatura/makbuz, mesafeli satış bilgilendirmeleri (hukuk onaylı)
 - [ ] P3-13 Dahili kapalı beta (gerçek, düşük tutarlı işlemler)
@@ -114,16 +114,16 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] P4-02 Şema ve DB kısıtları: `(auction_id, seq)` unique, tek `auction_results`, artırma başına tek sipariş, CHECK'ler
 - [x] P4-03 PlaceBid: tek transaction, `FOR UPDATE`, kilit sonrası `clock_timestamp()`, idempotency
 - [x] P4-04 Bitiş uzatma (anti-sniping) + maksimum uzatma sınırı
-- [ ] P4-05 Rezerv fiyat, "hemen al", iptal kuralları
-- [ ] P4-06 Kapanış: BullMQ gecikmeli iş + süpürücü (`SKIP LOCKED`) + idempotent closer + kayıp zamanlayıcı toleransı
+- [ ] P4-05 Rezerv fiyat, "hemen al", iptal kuralları — KISMİ (2026-10-29): rezerv + admin iptali var; hemen al yok (v2)
+- [ ] P4-06 Kapanış: BullMQ gecikmeli iş + süpürücü (`SKIP LOCKED`) + idempotent closer + kayıp zamanlayıcı toleransı — KISMİ (2026-10-29): API içi süpürücü + idempotent closer + tembel kapanış var; BullMQ yok (yalın kapsam)
 - [ ] P4-07 Outbox → WebSocket yayını; sıra numarası, snapshot/resync, yeniden bağlanma
-- [ ] P4-08 Teklif güvencesi (ön provizyon/depozito) ve teklif yetkinliği kontrolleri
-- [ ] P4-09 Kazanan ödeme penceresi + başarısız ödeme politikası (OPEN-AU kararına göre)
-- [ ] P4-10 Kazanan → sipariş entegrasyonu (tek sipariş garantisi; ledger/escrow ile tutarlı)
-- [ ] P4-11 Canlı artırma arayüzü (sunucu ofsetli geri sayım, bekleyen/ret durumları, erişilebilirlik)
-- [ ] P4-12 Kötüye kullanım: teklif hız sınırları, kendi ilanına teklif engeli, şişirme sinyalleri v1
-- [ ] P4-13 Audit: tüm yönetici müdahaleleri ve teklif iptali nedenleri
-- [ ] P4-14 Eşzamanlılık testleri: N paralel teklif, aynı tutar yarışı, kapanış-teklif yarışı
+- [x] P4-08 Teklif güvencesi (ön provizyon/depozito) ve teklif yetkinliği kontrolleri
+- [x] P4-09 Kazanan ödeme penceresi + başarısız ödeme politikası (OPEN-AU kararına göre)
+- [x] P4-10 Kazanan → sipariş entegrasyonu (tek sipariş garantisi; ledger/escrow ile tutarlı)
+- [ ] P4-11 Canlı artırma arayüzü (sunucu ofsetli geri sayım, bekleyen/ret durumları, erişilebilirlik) — KISMİ (2026-10-29): arayüz var (yoklama, sunucu saati ofseti); tarayıcıda gözle doğrulanmadı
+- [ ] P4-12 Kötüye kullanım: teklif hız sınırları, kendi ilanına teklif engeli, şişirme sinyalleri v1 — KISMİ (2026-10-29): teklif hız sınırı + kendi ilanına teklif engeli var; şişirme sinyalleri yok
+- [x] P4-13 Audit: tüm yönetici müdahaleleri ve teklif iptali nedenleri
+- [x] P4-14 Eşzamanlılık testleri: N paralel teklif, aynı tutar yarışı, kapanış-teklif yarışı
 - [x] P4-15 Dayanıklılık testleri: süreç ortada ölür, DB bağlantısı kopar, worker çift çalışır, saat sapması
 - [ ] P4-16 k6 yük testi (son 10 saniye yoğunluğu) + p95 hedefi
 - [ ] P4-17 Değişmez denetçisi işi (I1–I10) üretimde periyodik koşar ve alarm üretir
