@@ -1,8 +1,9 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { formatTry } from '@/lib/api';
 import { imageSrc, type AuctionSummary } from '@/lib/types';
 import { CardCountdown } from './card-countdown';
-import { StatusBadge } from './common';
+import { Badge, StatusBadge } from './common';
+import { LiveDot } from './live-dot';
 import { PlaceholderArt } from './illustrations';
 
 export function AuctionCard({ auction }: { auction: AuctionSummary }) {
@@ -21,9 +22,15 @@ export function AuctionCard({ auction }: { auction: AuctionSummary }) {
       )}
       <div className="space-y-2 p-4">
         <div className="flex items-center justify-between gap-2">
-          <StatusBadge status={auction.status} />
-          {live ? <CardCountdown endsAt={auction.endsAt} /> : null}
+          {live ? <LiveDot /> : <StatusBadge status={auction.status} />}
+          {live ? (
+            <span className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">Kalan süre</span>
+              <CardCountdown endsAt={auction.endsAt} />
+            </span>
+          ) : null}
         </div>
+        <Badge tone="ok">%5 teminatlı</Badge>
         <h3 className="line-clamp-2 font-medium">
           <Link
             href={`/mezat/${auction.id}`}

@@ -52,3 +52,6 @@ MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; s
 
 ## Hero slider + tema (X-14, X-15)
 - Hero: `components/hero-slider.tsx` (istemci; kategori ağacını prop alır, birincil bağlantı kategori ADIYLA çözülür) + `components/illustrations/hero-scenes.tsx`. Tema: `lib/theme.ts` (anahtar `arc-theme`, <head> betiği) + `components/theme-toggle.tsx`; renkler `globals.css` içinde `[data-theme='dark']`. Üst menü/alt bilgi/hero `bg-chrome text-chrome-foreground` (her iki temada koyu lacivert); `text-brand-text` = turuncu vurgu metni. Yeni arayüzde sabit renk (bg-white, #hex) kullanma, token kullan.
+
+## Ana sayfa + satıcı özeti (X-16, X-17)
+- Ana sayfa: `HomeSearch`, `TrustCenter` (5 kart), `HomeTabs` (`?sekme=` → `lib/home.ts` HOME_TABS → /listings saleType/condition), `LiveDot`; kartlarda Doğrulanmış şirket (status published) ve %5 teminatlı rozetleri. `/satici` üstünde `SellerSummaryCards` (`computeSellerSummary`: canlı mezat = /auctions?status=live ∩ satıcı ilanları; bekleyen sipariş = awaiting_payment + paid_escrow). API değişmedi. Tarayıcıda görsel doğrulama yapılmadı.

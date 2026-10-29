@@ -208,3 +208,8 @@ export function withUnits<T extends Listing>(items: T[], tree: Category[]): T[] 
     };
   });
 }
+
+/** Every node of the category tree (parents and leaves). */
+export function flattenAll(tree: Category[]): Category[] {
+  return tree.flatMap((c) => [c, ...flattenAll(c.children ?? [])]);
+}

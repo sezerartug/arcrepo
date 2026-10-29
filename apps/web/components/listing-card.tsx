@@ -1,9 +1,10 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { formatQty, formatTry } from '@/lib/api';
 import { CONDITION_LABELS, imageSrc, type Listing } from '@/lib/types';
 import { Badge } from './common';
 import { CardCountdown } from './card-countdown';
 import { PlaceholderArt } from './illustrations';
+import { LiveDot } from './live-dot';
 
 export function ListingImage({ listing, className }: { listing: Listing; className?: string }) {
   const first = listing.images?.[0];
@@ -42,6 +43,10 @@ export function ListingCard({ listing }: { listing: Listing }) {
             <span className="text-xs text-muted-foreground">{listing.location}</span>
           ) : null}
         </div>
+        <div className="flex flex-wrap gap-1">
+          {listing.status === 'published' ? <Badge tone="ok">Doğrulanmış şirket</Badge> : null}
+          {isAuction ? <Badge tone="ok">%5 teminatlı</Badge> : null}
+        </div>
         <h3 className="line-clamp-2 font-medium">
           <Link
             href={`/ilanlar/${listing.id}`}
@@ -62,7 +67,9 @@ export function ListingCard({ listing }: { listing: Listing }) {
             : null}
         </p>
         {isAuction && listing.auction ? (
-          <div className="pt-1">
+          <div className="flex items-center gap-1.5 pt-1">
+            <LiveDot />
+            <span className="text-xs text-muted-foreground">Kalan süre</span>
             <CardCountdown endsAt={listing.auction.endsAt} />
           </div>
         ) : null}

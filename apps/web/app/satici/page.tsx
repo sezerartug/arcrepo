@@ -3,7 +3,9 @@ import { ActionButton } from '@/components/action-button';
 import { Empty, LoadError, PageTitle, StatusBadge, ctaCls } from '@/components/common';
 import { formatDate, formatTry } from '@/lib/api';
 import { loadCategories, requireMe, serverGet } from '@/lib/server-api';
-import { withUnits, type Listing } from '@/lib/types';
+import { SellerSummaryCards } from '@/components/seller-summary';
+import { computeSellerSummary } from '@/lib/home';
+import { withUnits, type AuctionList, type Listing, type Order } from '@/lib/types';
 
 type Payouts = {
   balanceMinor: string;
@@ -29,16 +31,30 @@ export default async function SellerPage() {
       </>
     );
   }
-  const [res, cats, payouts] = await Promise.all([
+  const [res, cats, payouts, ordersRes, liveRes] = await Promise.all([
     serverGet<Listing[] | { items: Listing[] }>('/seller/listings'),
     loadCategories(),
     serverGet<Payouts>('/seller/payouts'),
+    serverGet<Order[] | { items: Order[] }>('/orders'),
+    serverGet<AuctionList>('/auctions?status=live'),
   ]);
+  const summary = computeSellerSummary({
+    listings: res.ok ? (Array.isArray(res.data) ? res.data : res.data.items) : null,
+    liveAuctions: liveRes.ok ? liveRes.data.items : null,
+    orders: ordersRes.ok
+      ? Array.isArray(ordersRes.data)
+        ? ordersRes.data
+        : ordersRes.data.items
+      : null,
+    payoutBalanceMinor: payouts.ok ? payouts.data.balanceMinor : null,
+    companyId: me.company.id,
+  });
   const items = res.ok ? withUnits(Array.isArray(res.data) ? res.data : res.data.items, cats) : [];
 
   return (
     <>
-      <div className="flex items-start justify-between gap-4">
+      <SellerSummaryCards summary={summary} />
+      <div id="ilanlarim" className="flex items-start justify-between gap-4">
         <PageTitle sub="İlanlarınız ve durumları">İlanlarım</PageTitle>
         <Link href="/satici/yeni" className={ctaCls}>
           Yeni ilan
