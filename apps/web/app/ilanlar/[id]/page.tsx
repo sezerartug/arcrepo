@@ -96,7 +96,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
           <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1 text-sm">
             <dt className="text-muted-foreground">Stok</dt>
             <dd>{formatQty(listing.quantityBase, bpu, unit)}</dd>
-            {listing.minOrderBase ? (
+            {listing.minOrderBase && listing.saleType !== 'auction' ? (
               <>
                 <dt className="text-muted-foreground">Minimum sipariş</dt>
                 <dd>{formatQty(listing.minOrderBase, bpu, unit)}</dd>
