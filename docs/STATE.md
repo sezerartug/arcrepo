@@ -13,7 +13,7 @@ Güncelleme kuralı: bir dilim/görev bitince yalnızca bu dosyadaki tablo + "S�
 | S5 Web ekranları + tohum veri | ✅ | tarayıcıda elle tıklama doğrulanmadı |
 
 ## Sıradaki
-MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; sonra ROADMAP 'MVP sonrası' sırası (mesajlaşma, e-posta/telefon doğrulama, görsel yükleme denemesi). Not: istemci IP'si `req.ip` (proxy güveni kapalı; Next rewrite arkasında tüm web trafiği tek IP görünür). Env: `AUTO_CONFIRM_DAYS`, `REGISTER_RATE_MAX` (20/sa), `RESET_RATE_MAX` (10/sa), `WEB_BASE_URL`, `MAIL_DIR`. Çalıştır: `pnpm demo` (web :3000, api :3001). Hesaplar: admin@arc.local/Admin!2345; satici1@, satici2@, alici@arc.local / Demo!2345.
+MVP + yönetim/itiraz/bildirim/mali rapor/çok sektörlü kategori/slider/koyu mod/hesap sayfası TAMAM (yerel demo; ROADMAP X-01…X-19). Bekleyenler (sırasız, ürün sahibi seçer): demo temizliği tamamlandı (2026-10-29, DB sıfırlandı); para koduna bağımsız inceleme (P4-19); sır taraması dev parolası ayarı (onay gerekir); mesajlaşma (P2-10); e-posta/telefon doğrulama (sağlayıcı kararı); destek talebi; tarayıcıda görsel doğrulama (slider, koyu mod, yeni sayfalar) kullanıcıda. Modeller: Fable/Opus 5 yok; Sonnet (kod), Haiku (basit). Not: istemci IP'si `req.ip` (proxy güveni kapalı; Next rewrite arkasında tüm web trafiği tek IP görünür). Env: `AUTO_CONFIRM_DAYS`, `REGISTER_RATE_MAX` (20/sa), `RESET_RATE_MAX` (10/sa), `WEB_BASE_URL`, `MAIL_DIR`. Çalıştır: `pnpm demo` (web :3000, api :3001). Hesaplar: admin@arc.local/Admin!2345; satici1@, satici2@, alici@arc.local / Demo!2345.
 
 ## Dosya haritası (nerede ne var)
 - `apps/api/src/db/` — `client.ts` (Kysely), `clock.ts` (`dbNow`), `migrate.ts` (liste), `migrations/NNNN_*.ts`, `schema.ts` (tablo tipleri)

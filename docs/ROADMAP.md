@@ -32,7 +32,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 ---
 
 ## Faz 0 — Keşif, kurulum, kararlar (Hafta 1–2)
-- [ ] P0-01 Git deposu oluşturuldu, kit eklendi, ilk commit; ana dal koruması ve zorunlu PR/inceleme açık
+- [ ] P0-01 Git deposu oluşturuldu, kit eklendi, ilk commit; ana dal koruması ve zorunlu PR/inceleme açık — KISMİ (2026-10-29): git deposu + commit geçmişi var (yerel); uzak depo, dal koruması ve zorunlu PR yok
 - [ ] P0-02 Claude Code güncel sürüm; varsayılan model Sonnet; `/usage` ve `/context` çalışıyor; (API kullanılıyorsa) workspace harcama limiti tanımlı
 - [ ] P0-03 Üçüncü taraf eklentiler (BMAD, Ponytail, Matt Pocock, resmi dizin) için şirket güvenlik onayı alındı; sürümler sabitlendi — ERTELENDİ (2026-10-27): P0-05…P0-08 eklentileri kurulmuyor; yerleşik `/code-review`, `/simplify`, `/security-review` kullanılıyor
 - [ ] P0-04 CLAUDE.md kuru çalıştırma: küçük bir görevde dört çalışma ilkesi + bitirme protokolü uygulandı
@@ -45,7 +45,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P0-11 Hukuk/uyum ön görüşü alındı (ödeme/escrow lisansı, mesafeli satış, e-ticaret kayıtları, KVKK) — ERTELENDİ: lansman öncesi
 - [ ] P0-12 PSP seçildi; sandbox hesabı açıldı; marketplace/alt üye işyeri + ön provizyon desteği doğrulandı — ERTELENDİ: MVP sahte sağlayıcıyla
 - [ ] P0-13 ARCHITECTURE.md ADR-001…014 durumları Kabul/Red olarak güncellendi
-- [ ] P0-14 AUCTION-RULES.md açık kararları (OPEN-AU-xx) ürün sahibince kapatıldı ve onaylandı
+- [ ] P0-14 AUCTION-RULES.md açık kararları (OPEN-AU-xx) ürün sahibince kapatıldı ve onaylandı — KISMİ (2026-10-29): OPEN-AU varsayılanları ürün sahibince onaylandı (teminat %5, 60 sn uzatma, komisyon %2, 48 sa) ve docs/MVP-PLAN.md'de; AUCTION-RULES.md metni henüz güncellenmedi
 - [ ] P0-15 GLOSSARY.md (ortak alan dili) oluşturuldu
 - [ ] P0-16 SECURITY.md tehdit modeli ilk sürüm gözden geçirildi
 - [ ] P0-G1 KAPI: PRD kapsamı kilitli, ADR'ler kapalı, PSP+hukuk yönü belli, eklenti kararları verilmiş, taban token maliyeti ölçülmüş
@@ -53,7 +53,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 ## Faz 1 — Platform temeli (Hafta 3–6)
 - [x] P1-01 Monorepo iskeleti (pnpm workspaces; `apps/web`, `apps/api`, `packages/*`); CLAUDE.md "Komutlar" bölümü dolduruldu
 - [x] P1-02 TypeScript strict + lint/format + modül sınır kuralı (derin import yasağı) CI'da zorunlu — CI'da zorunlu kılma P1-05'e bırakıldı (2026-10-27)
-- [ ] P1-03 docker compose geliştirme ortamı (PostgreSQL, Redis, S3-uyumlu depo, e-posta yakalayıcı, OTel collector)
+- [ ] P1-03 docker compose geliştirme ortamı (PostgreSQL, Redis, S3-uyumlu depo, e-posta yakalayıcı, OTel collector) — GEREKSİZ/ERTELENDİ (2026-10-29): Docker/Redis/S3/OTel yerel ölçekte gerekmiyor; gömülü PostgreSQL kullanılıyor
 - [x] P1-04 Yapılandırma ve sır yönetimi: şema doğrulamalı env, `.env.example`, sır taraması
 - [ ] P1-05 CI hattı: typecheck, lint, unit, entegrasyon (gerçek PostgreSQL), build, bağımlılık denetimi, sır taraması
 - [x] P1-06 (Kysely + embedded PG; Prisma yerine, 2026-10-28) şema iskeleti + migration hattı + `FOR UPDATE` raw SQL kalıbı ve testi
@@ -61,15 +61,15 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P1-08 Yetkilendirme: roller + nesne düzeyi sahiplik politikası + BOLA test matrisi altyapısı — KISMİ (2026-10-29): şirket üyeliği + owner/member + nesne yetkisi var; merkezi BOLA matrisi tam değil
 - [x] P1-09 Audit log altyapısı (append-only; aktör, eylem, neden, korelasyon id)
 - [x] P1-10 Idempotency-Key altyapısı (istek özeti doğrulama, saklı yanıtı tekrar verme, reddedilen isteği de kaydetme)
-- [ ] P1-11 Outbox tablosu + relay + BullMQ worker iskeleti (yeniden deneme, dead-letter)
-- [ ] P1-12 Rate limiting katmanları (IP, kullanıcı, uç nokta) Redis üzerinde
-- [ ] P1-13 Gözlemlenebilirlik: OpenTelemetry (iz/metrik/log), yapısal log + kişisel veri maskeleme, Sentry, health/ready uçları
+- [ ] P1-11 Outbox tablosu + relay + BullMQ worker iskeleti (yeniden deneme, dead-letter) — ERTELENDİ (2026-10-29): outbox + BullMQ yok; ölçek 500, süpürücü API içinde
+- [ ] P1-12 Rate limiting katmanları (IP, kullanıcı, uç nokta) Redis üzerinde — KISMİ (2026-10-29): giriş/kayıt/teklif/parola için bellek içi hız sınırı var; Redis katmanı yok (ölçek 500: gerek yok)
+- [ ] P1-13 Gözlemlenebilirlik: OpenTelemetry (iz/metrik/log), yapısal log + kişisel veri maskeleme, Sentry, health/ready uçları — KISMİ (2026-10-29): /health ve audit log var; OpenTelemetry/Sentry/yapılandırılmış log yok
 - [x] P1-14 Ledger iskeleti: hesaplar, journal, entries; "toplam = 0" değişmezi + property testi
-- [ ] P1-15 Gerçek zamanlı iskelet: WebSocket gateway + kimlik doğrulama + Redis fan-out + sıra numaralı olay zarfı
+- [ ] P1-15 Gerçek zamanlı iskelet: WebSocket gateway + kimlik doğrulama + Redis fan-out + sıra numaralı olay zarfı — ERTELENDİ (2026-10-29): WebSocket/Redis yok; mezat 1 sn yoklama + sunucu saati ile çalışıyor
 - [x] P1-16 Açık artırma eşzamanlılık spike'ı: ≥200 paralel teklif, tek kazanan, `clock_timestamp()` ile bitiş; rapor `docs/spikes/auction-concurrency.md`
 - [x] P1-17 Web iskeleti: Next.js App Router + Tailwind + shadcn/ui + temel yerleşim + erişilebilirlik kontrolü
-- [ ] P1-18 Staging'e otomatik dağıtım + geri alma prosedürü
-- [ ] P1-19 Test altyapısı: Testcontainers, fabrikalar, property test (fast-check), Playwright smoke
+- [ ] P1-18 Staging'e otomatik dağıtım + geri alma prosedürü — ERTELENDİ (2026-10-29): hosting kararından sonra
+- [ ] P1-19 Test altyapısı: Testcontainers, fabrikalar, property test (fast-check), Playwright smoke — KISMİ (2026-10-29): gerçek PG ile geçici veritabanlı entegrasyon testleri (Docker yok), fast-check property testleri, test yardımcıları var; Playwright smoke yok
 - [ ] P1-20 GLOSSARY.md ve ADR'ler güncel
 - [ ] P1-G1 KAPI: CI yeşil; spike raporu kabul edildi (çift kazanan = 0); BOLA harness çalışıyor; taban maliyet/bağlam raporu LOG'da
 
@@ -78,7 +78,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] P2-02 İlan veri modeli ve durum makinesi (taslak → incelemede → yayında → duraklatıldı → satıldı/süresi doldu/kaldırıldı)
 - [x] P2-03 İlan oluştur/düzenle/yayınla API + doğrulama + sahiplik yetkisi
 - [x] P2-04 Görsel yükleme: presigned yükleme, sunucuda içerik türü/boyut doğrulama, asenkron türev üretimi, EXIF/konum temizleme
-- [ ] P2-05 CDN + özel/herkese açık nesne politikaları + yaşam döngüsü kuralları
+- [ ] P2-05 CDN + özel/herkese açık nesne politikaları + yaşam döngüsü kuralları — GEREKSİZ/ERTELENDİ (2026-10-29): CDN yok; görseller yerel diskte
 - [x] P2-06 Arama v1: Türkçe tam metin (PostgreSQL), kategori/fiyat/konum filtreleri, sıralama; `SearchPort` arayüzü
 - [ ] P2-07 Arama kalite seti: 30+ gerçek sorguyla ilgililik testi; OpenSearch'e geçiş ölçütleri yazıldı
 - [ ] P2-08 İlan listeleme/detay sayfaları (SSR, SEO, site haritası, yapılandırılmış veri) — KISMİ (2026-10-29): sayfalar var; site haritası/yapılandırılmış veri/SEO yok
@@ -88,9 +88,9 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P2-12 Satıcı onboarding + KYC akışı + satıcı profili/doğrulama durumu — KISMİ (2026-10-29): MVP kapsamı vergi no format kontrolü + admin onayı var; KYC/belge doğrulama yok
 - [ ] P2-13 Satıcı paneli: ilanlarım, durum değişiklikleri, görseller — KISMİ (2026-10-29): ilan listesi/durum/düzenleme/hakediş var; satıcı analitiği yok
 - [ ] P2-14 Tüm uç noktalar için BOLA/yetki test matrisi tamam
-- [ ] P2-15 Panolar: arama gecikmesi, görsel işleme kuyruğu, kuyruk derinliği, hata oranı
+- [ ] P2-15 Panolar: arama gecikmesi, görsel işleme kuyruğu, kuyruk derinliği, hata oranı — ERTELENDİ (2026-10-29): panolar gözlemlenebilirlik (P1-13) ile birlikte
 - [ ] P2-16 Yük testi: arama ve ilan detay p95 hedefi doğrulandı
-- [ ] P2-17 Önbellek: kategori ağacı/ilan detayı için cache-aside + olayla geçersiz kılma; artırma durumu asla tek kaynak olarak önbellekte tutulmaz
+- [ ] P2-17 Önbellek: kategori ağacı/ilan detayı için cache-aside + olayla geçersiz kılma; artırma durumu asla tek kaynak olarak önbellekte tutulmaz — GEREKSİZ (2026-10-29): 500 kullanıcı ölçeğinde önbellek gerekmiyor
 - [ ] P2-G1 KAPI: ilan yayınla→bul→görüntüle uçtan uca; yetki matrisi %100; moderasyon çalışıyor; arama/görsel/kuyruk panoları canlı
 
 ## Faz 3 — Ödeme, defter, sipariş, escrow (Hafta 13–18)
@@ -116,7 +116,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] P4-04 Bitiş uzatma (anti-sniping) + maksimum uzatma sınırı
 - [ ] P4-05 Rezerv fiyat, "hemen al", iptal kuralları — KISMİ (2026-10-29): rezerv + admin iptali var; hemen al yok (v2)
 - [ ] P4-06 Kapanış: BullMQ gecikmeli iş + süpürücü (`SKIP LOCKED`) + idempotent closer + kayıp zamanlayıcı toleransı — KISMİ (2026-10-29): API içi süpürücü + idempotent closer + tembel kapanış var; BullMQ yok (yalın kapsam)
-- [ ] P4-07 Outbox → WebSocket yayını; sıra numarası, snapshot/resync, yeniden bağlanma
+- [ ] P4-07 Outbox → WebSocket yayını; sıra numarası, snapshot/resync, yeniden bağlanma — ERTELENDİ (2026-10-29): outbox/WebSocket yok; istemci yoklaması (1 sn) + snapshot yeterli
 - [x] P4-08 Teklif güvencesi (ön provizyon/depozito) ve teklif yetkinliği kontrolleri
 - [x] P4-09 Kazanan ödeme penceresi + başarısız ödeme politikası (OPEN-AU kararına göre)
 - [x] P4-10 Kazanan → sipariş entegrasyonu (tek sipariş garantisi; ledger/escrow ile tutarlı)
@@ -127,7 +127,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] P4-15 Dayanıklılık testleri: süreç ortada ölür, DB bağlantısı kopar, worker çift çalışır, saat sapması
 - [ ] P4-16 k6 yük testi (son 10 saniye yoğunluğu) + p95 hedefi
 - [ ] P4-17 Değişmez denetçisi işi (I1–I10) üretimde periyodik koşar ve alarm üretir
-- [ ] P4-18 Gözlemlenebilirlik: teklif gecikmesi, kilit bekleme, kapanış gecikmesi, ret nedenleri panosu + alarmlar
+- [ ] P4-18 Gözlemlenebilirlik: teklif gecikmesi, kilit bekleme, kapanış gecikmesi, ret nedenleri panosu + alarmlar — ERTELENDİ (2026-10-29): gözlemlenebilirlik yığını kurulunca
 - [ ] P4-19 `auction-invariant-reviewer` ile bağımsız inceleme; bulgular kapandı
 - [ ] P4-20 Dahili "artırma günü" (gerçek kullanıcılarla) + sonuç raporu
 - [ ] P4-G1 KAPI: değişmez ihlali = 0 (tüm testlerde ve artırma gününde); kapanış gecikmesi hedefte; bağımsız inceleme Kritik/Yüksek bulgusu yok
@@ -135,11 +135,11 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 ## Faz 5 — Güven, satıcı yönetimi, admin (Hafta 27–31)
 - [ ] P5-01 Satıcı performans puanı ve metrikleri
 - [ ] P5-02 Toplu ilan yükleme (CSV) + doğrulama raporu
-- [ ] P5-03 Satıcı analitiği ve hakediş raporları
-- [ ] P5-04 Ceza/uyarı/askıya alma akışları (itirazlı, audit'li)
+- [ ] P5-03 Satıcı analitiği ve hakediş raporları — KISMİ (2026-10-29): hakediş görünümü + satıcı özet kartları (X-17) var; satıcı analitiği/rapor yok
+- [ ] P5-04 Ceza/uyarı/askıya alma akışları (itirazlı, audit'li) — KISMİ (2026-10-29): şirket ve kullanıcı askıya alma (neden + audit) var (X-10); uyarı/ceza ve itiraz akışı yok
 - [ ] P5-05 Sahtecilik ve kötüye kullanım kuralları (hesap yaşı, cihaz/IP kümeleme, şişirme teklif sinyalleri v2)
-- [ ] P5-06 Tam admin paneli: kullanıcı/ilan/artırma/sipariş/iade; rol bazlı; tüm eylemler audit'li
-- [ ] P5-07 Destek araçları: sipariş/artırma zaman çizelgesi (olay günlüğünden)
+- [ ] P5-06 Tam admin paneli: kullanıcı/ilan/artırma/sipariş/iade; rol bazlı; tüm eylemler audit'li — KISMİ (2026-10-29): kullanıcı/şirket/ilan/mezat/sipariş/itiraz/mali rapor yönetimi + audit var (X-01…X-12); rol bazlı yetki yok (tek admin rolü)
+- [ ] P5-07 Destek araçları: sipariş/artırma zaman çizelgesi (olay günlüğünden) — KISMİ (2026-10-29): mezat izleme (X-06) + sipariş olay geçmişi var; birleşik destek zaman çizelgesi yok
 - [ ] P5-08 Yönetici ve satıcı için MFA; ödeme hesabı değişikliğinde ek doğrulama + bekleme süresi
 - [ ] P5-09 KVKK: aydınlatma, rıza kayıtları, silme/anonimleştirme akışı, saklama süreleri
 - [ ] P5-10 Erişilebilirlik (WCAG 2.2 AA) denetimi ve düzeltmeler
@@ -149,13 +149,13 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 
 ## Faz 6 — Sertleştirme ve lansman (Hafta 32–36)
 - [ ] P6-01 Yük testi: PRD NFR hedef eşzamanlılığı ile k6 senaryoları
-- [ ] P6-02 Soak testi (24–48 saat)
-- [ ] P6-03 Kaos/hata enjeksiyonu: DB failover, Redis kaybı, worker çökmesi, ağ gecikmesi
+- [ ] P6-02 Soak testi (24–48 saat) — ERTELENDİ (2026-10-29): ölçek 500; canlıya çıkışa yakın tek kısa soak yeterli
+- [ ] P6-03 Kaos/hata enjeksiyonu: DB failover, Redis kaybı, worker çökmesi, ağ gecikmesi — KISMİ-GEREKSİZ (2026-10-29): Redis/worker yok; DB bağlantı kopması ve çökme senaryoları P4-15 ile test edildi
 - [ ] P6-04 Yedekten geri dönme tatbikatı (RPO/RTO ölçüldü)
 - [ ] P6-05 Bağımsız sızma testi + bulguların kapatılması
 - [ ] P6-06 SLO'lar, alarmlar, nöbet düzeni ve runbook'lar
 - [ ] P6-07 Üretim ortamı, IaC, sır yönetimi, ağ sınırları
-- [ ] P6-08 Seed verisi (kategoriler, şablonlar) ve yasal metinler
+- [ ] P6-08 Seed verisi (kategoriler, şablonlar) ve yasal metinler — KISMİ (2026-10-29): kategori ağacı + tohum veri var (seed); yasal metinler yok
 - [ ] P6-09 Pilot (sınırlı kullanıcı) + geri bildirim
 - [ ] P6-10 Kademeli açılış (feature flag) + yakın izleme
 - [ ] P6-11 Lansman sonrası retro + v2 backlog (otomatik teklif, mobil vb.)
@@ -182,3 +182,5 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] X-17 Satıcı paneli özet kartları (açık ilan, canlı mezat, bekleyen sipariş, bekleyen hakediş; mevcut uç noktalardan, hata/boşta —; `computeSellerSummary`) (birim test; tarayıcıda görsel doğrulama yapılmadı)
 
 - [x] X-18 Hesap sayfası (/hesap): parola değiştirme (`POST /me/password`, mevcut parola argon2id ile doğrulanır, 5 yanlışta 15 dk kilit, başarıda diğer oturumlar silinir, audit `user.password.change`), profil (`PATCH /me` ad + isteğe bağlı telefon; migration 0009 `users.phone`; `GET /me` phone+createdAt), aktif oturumlar (`GET /me/sessions`, `DELETE /me/sessions/:id`, `POST /me/sessions/revoke-others`; token dönmez, başkasının oturumu 404; son kullanım/user-agent verisi tutulmadığı için gösterilmez), yönetici kısayolları (`GET /admin/pending-counts`) (int test 8 yeni + web birim test; tarayıcıda gelişmiş görsel doğrulama yapılmadı)
+- [x] X-18 Hesap sayfası (`/hesap`): parola değiştirme (`POST /me/password`, 5 yanlışta 15 dk kilit, diğer oturumlar kapanır), profil (ad, telefon; `PATCH /me`), aktif oturumlar (`GET/DELETE /me/sessions`, `revoke-others`), yönetici kısayolları (`GET /admin/pending-counts`); migration 0009 (`users.phone`) (int test 8; tarayıcıda görsel doğrulama yapılmadı)
+- [x] X-19 Mezatta minimum sipariş kaldırıldı: mezat ilanında minimum sipariş = lotun tamamı (sunucu zorlar), ilan formlarında alan gizli, mezat detayında gösterilmez (int test)
