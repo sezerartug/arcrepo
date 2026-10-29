@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Get,
@@ -25,6 +25,7 @@ import {
   type CompanyAction,
 } from '../identity/index.js';
 import { ORDER_REF_PREFIX, OrdersService } from '../orders/index.js';
+import { AdminDirectoryService } from './admin-directory.service.js';
 import { DB, invalid, listAudit, notFound, validate } from '../platform/index.js';
 
 const uuid = (v: string): string => {
@@ -41,12 +42,23 @@ export class AdminController {
     private readonly catalog: CatalogService,
     private readonly auctions: AuctionsService,
     private readonly orders: OrdersService,
+    private readonly directory: AdminDirectoryService,
     @Inject(DB) private readonly db: Kysely<Database>,
   ) {}
 
   @Get('companies')
-  async listCompanies(@Query('status') status: unknown) {
-    return { items: await this.companies.list(status) };
+  listCompanies(@Query() q: Record<string, unknown>) {
+    return this.companies.list(q);
+  }
+
+  @Get('companies/:id')
+  companyDetail(@CurrentAuth() a: AuthContext, @Param('id') id: string) {
+    return this.directory.companyDetail(a, uuid(id));
+  }
+
+  @Get('users')
+  listUsers(@Query() q: Record<string, unknown>) {
+    return this.directory.listUsers(q);
   }
 
   @Post('companies/:id/:action')
@@ -64,6 +76,12 @@ export class AdminController {
   @Get('listings')
   listListings(@Query('status') status: unknown) {
     return this.catalog.adminList(status);
+  }
+
+  @Post('listings/:id/remove')
+  @HttpCode(200)
+  removeListing(@CurrentAuth() a: AuthContext, @Param('id') id: string, @Body() body: unknown) {
+    return this.catalog.adminRemove(a, uuid(id), body);
   }
 
   @Post('listings/:id/:decision')

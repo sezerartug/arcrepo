@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ApiError } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
@@ -91,7 +91,7 @@ export function Badge({
 
 const STATUS_LABELS: Record<string, [string, keyof typeof TONES]> = {
   pending: ['Onay bekliyor', 'warn'],
-  verified: ['Onaylı', 'ok'],
+  verified: ['Doğrulandı', 'ok'],
   rejected: ['Reddedildi', 'bad'],
   suspended: ['Askıda', 'bad'],
   pending_review: ['İncelemede', 'warn'],
@@ -102,16 +102,20 @@ const STATUS_LABELS: Record<string, [string, keyof typeof TONES]> = {
   live: ['Canlı', 'ok'],
   closed: ['Kapandı', 'neutral'],
   draft: ['Taslak', 'neutral'],
-  payment_pending: ['Ödeme bekleniyor', 'warn'],
+  payment_pending: ['Ödeme bekliyor', 'warn'],
   settled: ['Sonuçlandı', 'ok'],
   ended_no_sale: ['Satış olmadı', 'neutral'],
   cancelled: ['İptal', 'bad'],
-  awaiting_payment: ['Ödeme bekleniyor', 'warn'],
-  paid_escrow: ['Ödendi (emanette)', 'ok'],
+  awaiting_payment: ['Ödeme bekliyor', 'warn'],
+  paid_escrow: ['Emanette', 'ok'],
   shipped: ['Kargoda', 'ok'],
   delivered: ['Teslim edildi', 'ok'],
   completed: ['Tamamlandı', 'ok'],
   payment_failed: ['Ödeme başarısız', 'bad'],
+  held: ['Emanette', 'ok'],
+  refunded: ['İade edildi', 'neutral'],
+  applied: ['Siparişe sayıldı', 'ok'],
+  forfeited: ['Gelir kaydedildi', 'bad'],
 };
 
 // Auction statuses arrive upper-case (LIVE, SCHEDULED, ...); the table is keyed in lower case.

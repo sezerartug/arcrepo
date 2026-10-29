@@ -472,6 +472,48 @@ export class CatalogService {
     });
   }
 
+  // Admin takedown of any listing; refuses while an auction on it is still running or unsettled.
+  async adminRemove(admin: AuthContext, id: string, body: unknown) {
+    const reason = validate.str(validate.asObject(body ?? {}), 'reason', 3, 500);
+    return this.db.transaction().execute(async (trx) => {
+      const row = await trx
+        .selectFrom('listings')
+        .select(['id', 'company_id', 'status'])
+        .where('id', '=', id)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!row) throw notFound('Listing not found');
+      if (!canTransition(row.status, 'removed')) {
+        throw conflict('INVALID_TRANSITION', `A ${row.status} listing cannot be removed`);
+      }
+      const active = await trx
+        .selectFrom('auctions')
+        .select('id')
+        .where('listing_id', '=', id)
+        .where('status', 'in', ['SCHEDULED', 'LIVE', 'PAYMENT_PENDING'])
+        .executeTakeFirst();
+      if (active) {
+        throw conflict('AUCTION_ACTIVE', 'Cancel the listing auction before removing it');
+      }
+      await trx
+        .updateTable('listings')
+        .set({ status: 'removed', updated_at: sql<Date>`clock_timestamp()` })
+        .where('id', '=', id)
+        .execute();
+      await recordAudit(trx, {
+        actorType: 'admin',
+        actorId: admin.userId,
+        companyId: row.company_id,
+        action: 'listing.removed',
+        entityType: 'listing',
+        entityId: id,
+        reason,
+        data: { from: row.status, by: 'admin' },
+      });
+      return { id, status: 'removed' as const };
+    });
+  }
+
   // ---- images ---------------------------------------------------------------------------------------
 
   async addImage(actor: CompanyAuthContext, id: string, file: Buffer) {
