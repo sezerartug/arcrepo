@@ -530,6 +530,66 @@ export class CatalogService {
     });
   }
 
+  // Admin field edit (reason required). Unlike the owner's edit it keeps the status: the admin is
+  // already the moderator. A published auction listing stays locked (its auction row mirrors the
+  // quantity and price terms).
+  async adminUpdate(admin: AuthContext, id: string, body: unknown) {
+    const o = validate.asObject(body);
+    const reason = validate.str(o, 'reason', 3, 500);
+    const c = this.parseCommon(o, true);
+    if (Object.keys(c).length === 0) throw invalid('no updatable field supplied');
+    return this.db.transaction().execute(async (trx) => {
+      const row = await trx
+        .selectFrom('listings')
+        .select(['id', 'company_id', 'status', 'sale_type'])
+        .where('id', '=', id)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!row) throw notFound('Listing not found');
+      if (row.status === 'removed' || row.status === 'sold') {
+        throw conflict('INVALID_TRANSITION', `A ${row.status} listing cannot be edited`);
+      }
+      if (row.sale_type === 'auction' && row.status === 'published') {
+        throw conflict('AUCTION_LISTING_LOCKED', 'A published auction listing cannot be edited');
+      }
+      if (c.categoryId) {
+        const cat = await trx
+          .selectFrom('categories')
+          .select('id')
+          .where('id', '=', c.categoryId)
+          .executeTakeFirst();
+        if (!cat) throw invalid('categoryId does not exist');
+      }
+      await trx
+        .updateTable('listings')
+        .set({
+          ...(c.categoryId !== undefined && { category_id: c.categoryId }),
+          ...(c.title !== undefined && { title: c.title }),
+          ...(c.description !== undefined && { description: c.description }),
+          ...(c.attrs !== undefined && { attrs: JSON.stringify(c.attrs) }),
+          ...(c.unitPriceMinor !== undefined && { unit_price_minor: c.unitPriceMinor }),
+          ...(c.quantityBase !== undefined && { quantity_base: c.quantityBase }),
+          ...(c.minOrderBase !== undefined && { min_order_base: c.minOrderBase }),
+          ...(c.location !== undefined && { location: c.location }),
+          ...(c.deliveryTerms !== undefined && { delivery_terms: c.deliveryTerms }),
+          updated_at: sql<Date>`clock_timestamp()`,
+        })
+        .where('id', '=', id)
+        .execute();
+      await recordAudit(trx, {
+        actorType: 'admin',
+        actorId: admin.userId,
+        companyId: row.company_id,
+        action: 'admin.listing.update',
+        entityType: 'listing',
+        entityId: id,
+        reason,
+        data: { fields: Object.keys(c), status: row.status },
+      });
+      return this.toDto(await this.loadOrThrow(trx, id), admin);
+    });
+  }
+
   // Admin takedown of any listing; refuses while an auction on it is still running or unsettled.
   async adminRemove(admin: AuthContext, id: string, body: unknown) {
     const reason = validate.str(validate.asObject(body ?? {}), 'reason', 3, 500);

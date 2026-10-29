@@ -79,3 +79,82 @@ export type AdminCompanyDetail = {
   }[];
   audit: AdminAuditRow[];
 };
+
+export type AdminAuctionRow = {
+  id: string;
+  listingId: string;
+  title: string;
+  sellerCompanyId: string;
+  sellerName: string;
+  status: string;
+  startPriceMinor: string;
+  currentPriceMinor: string | null;
+  bidCount: number;
+  startsAt: string;
+  endsAt: string;
+  depositMinor: string;
+  heldDepositTotalMinor: string;
+};
+export type AdminAuctionList = Paged<AdminAuctionRow> & { serverNow: string };
+
+export type AdminAuctionDetail = {
+  serverNow: string;
+  auction: {
+    id: string;
+    listingId: string;
+    title: string;
+    sellerCompanyId: string;
+    sellerName: string;
+    status: string;
+    startPriceMinor: string;
+    minIncrementMinor: string;
+    reserveMinor: string | null;
+    currentPriceMinor: string | null;
+    bidCount: number;
+    depositMinor: string;
+    startsAt: string;
+    endsAt: string;
+    originalEndsAt: string;
+    extensionCount: number;
+    closedAt: string | null;
+    cancelReason: string | null;
+  };
+  bids: {
+    seq: number;
+    amountMinor: string;
+    acceptedAt: string;
+    companyId: string;
+    companyName: string;
+    userName: string;
+  }[];
+  attempts: {
+    id: string;
+    amountMinor: string;
+    reasonCode: string;
+    at: string;
+    companyName: string;
+    userName: string;
+  }[];
+  rejectionSummary: { reasonCode: string; count: number }[];
+  deposits: {
+    id: string;
+    companyId: string;
+    companyName: string;
+    amountMinor: string;
+    reference: string;
+    status: string;
+    createdAt: string;
+    confirmedAt: string | null;
+    settledAt: string | null;
+  }[];
+  events: { seq: number; type: string; payload: Record<string, unknown>; at: string }[];
+  result: {
+    outcome: 'sold' | 'no_sale';
+    winnerCompanyId: string | null;
+    winnerName: string | null;
+    finalPriceMinor: string | null;
+    totalMinor: string | null;
+    at: string;
+  } | null;
+  order: { id: string; status: string; totalMinor: string } | null;
+};

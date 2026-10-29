@@ -34,6 +34,8 @@ export type AuctionSummary = {
   endsAt: string;
   startsAt?: string;
   title?: string;
+  /** First listing image (`/uploads/...`), null when the listing has none. */
+  imageUrl?: string | null;
 };
 
 export type AuctionList = { serverNow: string; items: AuctionSummary[] };

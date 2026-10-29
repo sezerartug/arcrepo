@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { ActionButton } from '@/components/action-button';
 import { AdminAuditTable } from '@/components/admin-audit-table';
 import { AdminTabs } from '@/components/admin-tabs';
@@ -15,10 +15,16 @@ import {
 } from '@/components/common';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatTry } from '@/lib/api';
-import type { AdminAuditRow, AdminCompanyRow, AdminUserRow, Paged } from '@/lib/admin-types';
+import type {
+  AdminAuctionList,
+  AdminAuditRow,
+  AdminCompanyRow,
+  AdminUserRow,
+  Paged,
+} from '@/lib/admin-types';
 import { paymentKindLabel, saleTypeLabel } from '@/lib/labels';
 import { requireMe, serverGet, toQuery } from '@/lib/server-api';
-import type { AuctionList, Listing } from '@/lib/types';
+import type { Listing } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export const metadata = { title: 'Yönetim · ARC Global' };
@@ -78,9 +84,14 @@ const LISTING_FILTERS = [
   ['removed', 'Kaldırıldı'],
 ] as const;
 const AUCTION_FILTERS = [
-  ['live', 'Canlı'],
-  ['scheduled', 'Planlandı'],
-  ['closed', 'Kapandı'],
+  ['', 'Tümü'],
+  ['LIVE', 'Canlı'],
+  ['SCHEDULED', 'Planlandı'],
+  ['PAYMENT_PENDING', 'Ödeme bekliyor'],
+  ['SETTLED', 'Sonuçlandı'],
+  ['ENDED_NO_SALE', 'Satış olmadı'],
+  ['PAYMENT_FAILED', 'Ödeme başarısız'],
+  ['CANCELLED', 'İptal'],
 ] as const;
 
 function H2({ id, children }: { id: string; children: React.ReactNode }) {
@@ -352,8 +363,11 @@ async function ListingsTab({ sp }: { sp: SP }) {
 }
 
 async function AuctionsTab({ sp }: { sp: SP }) {
-  const current = AUCTION_FILTERS.find(([s]) => s === sp.status)?.[0] ?? 'live';
-  const res = await serverGet<AuctionList>(`/auctions?status=${current}`);
+  const page = Number(sp.page) > 0 ? Number(sp.page) : 1;
+  const current = AUCTION_FILTERS.find(([s]) => s === sp.status)?.[0] ?? '';
+  const res = await serverGet<AdminAuctionList>(
+    `/admin/auctions${toQuery({ status: current, q: sp.q, page: String(page) })}`,
+  );
   return (
     <section aria-labelledby="a-auctions">
       <H2 id="a-auctions">Mezatlar</H2>
@@ -361,44 +375,70 @@ async function AuctionsTab({ sp }: { sp: SP }) {
         label="Mezat durumu"
         items={AUCTION_FILTERS}
         current={current}
-        href={(k) => `/admin?tab=mezatlar&status=${k}`}
+        href={(k) => `/admin${toQuery({ tab: 'mezatlar', status: k, q: sp.q })}`}
       />
+      <form method="get" className="mb-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+        <input type="hidden" name="tab" value="mezatlar" />
+        {current ? <input type="hidden" name="status" value={current} /> : null}
+        <Field label="Ara" htmlFor="q">
+          <input
+            id="q"
+            name="q"
+            defaultValue={sp.q}
+            className={inputCls}
+            placeholder="İlan başlığı veya satıcı"
+          />
+        </Field>
+        <Button type="submit" variant="outline">
+          Ara
+        </Button>
+      </form>
       {!res.ok ? (
         <LoadError error={res.error} />
       ) : res.data.items.length === 0 ? (
-        <Empty>Bu durumda mezat yok.</Empty>
+        <Empty>Bu ölçütlerde mezat yok.</Empty>
       ) : (
-        <div className="space-y-2">
-          {res.data.items.map((a) => (
-            <Card key={a.id} className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="font-medium">
-                  <Link className="underline" href={`/mezat/${a.id}`}>
-                    {a.title ?? 'Mezat'}
-                  </Link>{' '}
-                  <StatusBadge status={a.status} />
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Güncel: {formatTry(a.currentPriceMinor ?? a.startPriceMinor)} · {a.bidCount ?? 0}{' '}
-                  teklif · Bitiş {fmt(a.endsAt)}
-                </p>
-              </div>
-              {a.status === 'LIVE' || a.status === 'SCHEDULED' ? (
-                <ActionButton
-                  path={`/admin/auctions/${a.id}/cancel`}
-                  label="Mezadı iptal et"
-                  askReason
-                  variant="destructive"
-                />
-              ) : null}
-            </Card>
-          ))}
-        </div>
+        <>
+          <div className="space-y-2">
+            {res.data.items.map((a) => (
+              <Card key={a.id} className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">
+                    <Link className="underline" href={`/admin/mezatlar/${a.id}`}>
+                      {a.title}
+                    </Link>{' '}
+                    <StatusBadge status={a.status} />
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    <Link className="underline" href={`/admin/sirketler/${a.sellerCompanyId}`}>
+                      {a.sellerName}
+                    </Link>{' '}
+                    · Güncel: {formatTry(a.currentPriceMinor ?? a.startPriceMinor)} · {a.bidCount}{' '}
+                    teklif · Bitiş {fmt(a.endsAt)} · Teminat toplamı{' '}
+                    {formatTry(a.heldDepositTotalMinor)}
+                  </p>
+                </div>
+                <Link
+                  href={`/admin/mezatlar/${a.id}`}
+                  className="inline-flex h-8 items-center rounded-lg border px-3 text-sm hover:bg-muted"
+                >
+                  İzle
+                </Link>
+              </Card>
+            ))}
+          </div>
+          <Pagination
+            page={page}
+            total={res.data.total}
+            href={(p) =>
+              `/admin${toQuery({ tab: 'mezatlar', status: current, q: sp.q, page: String(p) })}`
+            }
+          />
+        </>
       )}
     </section>
   );
 }
-
 async function PaymentsTab() {
   const [payments, companies] = await Promise.all([
     serverGet<AdminPayment[] | { items: AdminPayment[] }>('/admin/payments?status=pending'),

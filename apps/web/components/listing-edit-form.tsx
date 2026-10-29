@@ -42,9 +42,12 @@ function qtyToInput(base: number | string, basePerUnit: number): string {
 export function ListingEditForm({
   listing,
   categories,
+  admin = false,
 }: {
   listing: Listing;
   categories: Category[];
+  /** Admin edit: PATCH /admin/listings/:id with a required reason; the status is kept. */
+  admin?: boolean;
 }) {
   const router = useRouter();
   const [categoryId, setCategoryId] = useState(listing.categoryId ?? categories[0]?.id ?? '');
@@ -73,10 +76,14 @@ export function ListingEditForm({
       setError('Minimum sipariş miktarı geçersiz.');
       return;
     }
+    if (admin && str('reason').length < 3) {
+      setError('Düzenleme nedeni zorunludur (en az 3 karakter).');
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      await request('/api', `/listings/${listing.id}`, {
+      await request('/api', admin ? `/admin/listings/${listing.id}` : `/listings/${listing.id}`, {
         method: 'PATCH',
         json: {
           categoryId: cat.id,
@@ -88,9 +95,10 @@ export function ListingEditForm({
           ...(minOrder ? { minOrderBase: minOrder } : {}),
           location: str('location'),
           deliveryTerms: str('deliveryTerms'),
+          ...(admin ? { reason: str('reason') } : {}),
         },
       });
-      router.push('/satici');
+      router.push(admin ? '/admin?tab=ilanlar' : '/satici');
       router.refresh();
     } catch (err) {
       setError(errorMessage(err));
@@ -204,12 +212,30 @@ export function ListingEditForm({
           />
         </Field>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Kaydettiğinizde ilan yeniden yönetici incelemesine gider.
-      </p>
+      {admin ? (
+        <Field
+          label="Düzenleme nedeni (zorunlu)"
+          htmlFor="reason"
+          hint="Denetim kaydına yazılır; ilan yayın durumunu korur."
+        >
+          <textarea
+            id="reason"
+            name="reason"
+            required
+            minLength={3}
+            maxLength={500}
+            rows={2}
+            className={inputCls + ' h-auto py-2'}
+          />
+        </Field>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Kaydettiğinizde ilan yeniden yönetici incelemesine gider.
+        </p>
+      )}
       {error ? <ErrorBox message={error} /> : null}
       <Button type="submit" disabled={busy}>
-        {busy ? 'Kaydediliyor…' : 'Kaydet ve incelemeye gönder'}
+        {busy ? 'Kaydediliyor…' : admin ? 'Kaydet' : 'Kaydet ve incelemeye gönder'}
       </Button>
     </form>
   );

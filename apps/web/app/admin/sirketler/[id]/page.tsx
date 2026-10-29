@@ -205,7 +205,7 @@ export default async function AdminCompanyPage({ params }: { params: Promise<{ i
               <Card key={a.id} className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="font-medium">
-                    <Link className="underline" href={`/mezat/${a.id}`}>
+                    <Link className="underline" href={`/admin/mezatlar/${a.id}`}>
                       {a.listingTitle}
                     </Link>{' '}
                     <StatusBadge status={a.status} />

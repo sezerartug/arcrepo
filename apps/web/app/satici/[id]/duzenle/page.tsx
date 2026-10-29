@@ -31,23 +31,30 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
     typeof i !== 'string' && i.id && i.url ? [{ id: i.id, url: i.url }] : [],
   );
   const adminOnly = isAdmin && !isOwner;
+  // Admin edit follows the same lock: sold/removed listings and published auctions stay fixed.
+  const adminEditable =
+    adminOnly && !closed && !(listing.saleType === 'auction' && listing.status === 'published');
   return (
     <div className="space-y-8">
       <PageTitle
         sub={
           adminOnly
-            ? `${listing.sellerName ?? 'Şirket'} adına görselleri yönetin`
+            ? `${listing.sellerName ?? 'Şirket'} adına ilanı düzenleyin`
             : 'Değişiklikler yeniden yönetici incelemesine gönderilir'
         }
       >
         İlanı düzenle
       </PageTitle>
-      {editable ? (
-        <ListingEditForm listing={listing} categories={flattenCategories(tree)} />
+      {editable || adminEditable ? (
+        <ListingEditForm
+          listing={listing}
+          categories={flattenCategories(tree)}
+          admin={adminEditable}
+        />
       ) : (
         <Empty>
           {adminOnly
-            ? 'İlan alanları yalnızca satıcı şirket tarafından düzenlenir; yönetici olarak görselleri değiştirebilirsiniz.'
+            ? 'Bu ilanın alanları mevcut durumunda düzenlenemez (yayındaki mezat ilanı veya kapalı ilan); yönetici olarak görselleri değiştirebilirsiniz.'
             : 'Bu ilan mevcut durumunda düzenlenemez.'}
         </Empty>
       )}

@@ -15,7 +15,7 @@ export async function listAuctions(db: Kysely<Database>, status: unknown) {
   let q = db
     .selectFrom('auctions as a')
     .innerJoin('listings as l', 'l.id', 'a.listing_id')
-    .select([
+    .select((eb) => [
       'a.id',
       'a.listing_id',
       'l.title',
@@ -27,6 +27,14 @@ export async function listAuctions(db: Kysely<Database>, status: unknown) {
       'a.starts_at',
       'a.ends_at',
       'a.deposit_minor',
+      eb
+        .selectFrom('listing_images as i')
+        .select('i.file_name')
+        .whereRef('i.listing_id', '=', 'a.listing_id')
+        .orderBy('i.position')
+        .orderBy('i.id')
+        .limit(1)
+        .as('image_file'),
     ])
     .limit(100);
   const group = typeof status === 'string' ? LIVE_GROUPS[status] : undefined;
@@ -52,6 +60,7 @@ export async function listAuctions(db: Kysely<Database>, status: unknown) {
       startsAt: r.starts_at,
       endsAt: r.ends_at,
       depositMinor: r.deposit_minor,
+      imageUrl: r.image_file ? `/uploads/${r.image_file}` : null,
     })),
   };
 }

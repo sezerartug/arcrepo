@@ -30,4 +30,7 @@ MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; s
 - Tüm komutlar kökten; DB integration testleri `pnpm --filter @arc/api test:int` (ilk çalışma yavaş).
 
 ## Yönetici adına ilan + görsel yönetimi
-- `POST /admin/listings` {companyId, ...} (AD, Idempotency-Key): doğrulanmış şirket adına ilan, doğrudan `published` (mezat: `createAuctionFromListing`), audit `admin.listing.create`. `POST /listings/:id/images` sahip veya admin; `DELETE /listings/:id/images/:imageId` (dosya diskten silinir, audit `listing.image.removed`). Web: `/admin/ilan-ekle` (+ `?companyId=`), `ListingImageGallery` düzenleme ekranında. Admin ilan ALANLARINI düzenleyemez (PATCH yalnız sahip), yalnız görselleri.
+- `POST /admin/listings` {companyId, ...} (AD, Idempotency-Key): doğrulanmış şirket adına ilan, doğrudan `published` (mezat: `createAuctionFromListing`), audit `admin.listing.create`. `POST /listings/:id/images` sahip veya admin; `DELETE /listings/:id/images/:imageId` (dosya diskten silinir, audit `listing.image.removed`). Web: `/admin/ilan-ekle` (+ `?companyId=`), `ListingImageGallery` düzenleme ekranında. Admin ilan alanlarını `PATCH /admin/listings/:id` ile düzenler (zorunlu `reason`, durum korunur, audit `admin.listing.update`; yayındaki mezat ilanı `AUCTION_LISTING_LOCKED`); web: `/satici/[id]/duzenle` admin kipi.
+
+## Yönetici mezat izleme (X-06)
+- `GET /admin/auctions?status=&q=&page=` (durum büyük harf: LIVE…) ve `GET /admin/auctions/:id` (gerçek şirket+kullanıcı adları; `admin.auction.view` audit; `?poll=1` yoklamada audit yazmaz). Web: `/admin?tab=mezatlar`, `/admin/mezatlar/[id]` (`AdminAuctionMonitor`, 3 sn yoklama). `GET /auctions` artık `imageUrl` döner (mezat kartı görseli).

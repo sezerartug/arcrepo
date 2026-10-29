@@ -2,6 +2,9 @@
 
 const AUDIT_ACTIONS: Record<string, string> = {
   'admin.company.view': 'Şirket detayı görüntülendi',
+  'admin.auction.view': 'Mezat detayı görüntülendi',
+  'admin.listing.update': 'İlan alanları yönetici tarafından düzenlendi',
+  'admin.listing.create': 'Yönetici adına ilan oluşturuldu',
   'admin.company.verify': 'Şirket onaylandı',
   'admin.company.reject': 'Şirket reddedildi',
   'admin.company.suspend': 'Şirket askıya alındı',
@@ -69,3 +72,13 @@ export const saleTypeLabel = (t: string): string =>
 
 const PAYMENT_KINDS: Record<string, string> = { deposit: 'Teminat', order: 'Sipariş' };
 export const paymentKindLabel = (k: string): string => PAYMENT_KINDS[k] ?? k;
+
+const BID_REJECT_REASONS: Record<string, string> = {
+  BID_TOO_LOW: 'Tutar çok düşük',
+  BIDDER_NOT_ELIGIBLE: 'Teminat/yetki yok',
+  ALREADY_HIGH_BIDDER: 'Zaten en yüksek teklif sahibi',
+  BID_RATE_LIMITED: 'Hız sınırı aşıldı',
+  AUCTION_NOT_LIVE: 'Mezat canlı değil',
+  SELLER_CANNOT_BID: 'Satıcı kendi mezatına teklif veremez',
+};
+export const bidRejectLabel = (c: string): string => BID_REJECT_REASONS[c] ?? c;

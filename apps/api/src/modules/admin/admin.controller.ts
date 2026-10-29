@@ -6,6 +6,7 @@ import {
   HttpCode,
   Inject,
   Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -167,6 +168,26 @@ export class AdminController {
       return this.orders.confirmPayment(a, reference, validate.optBigint(o, 'amountMinor'));
     }
     throw notFound('Unknown payment reference');
+  }
+
+  @Get('auctions')
+  listAuctions(@Query() q: Record<string, unknown>) {
+    return this.directory.listAuctions(q);
+  }
+
+  @Get('auctions/:id')
+  auctionDetail(
+    @CurrentAuth() a: AuthContext,
+    @Param('id') id: string,
+    @Query('poll') poll: unknown,
+  ) {
+    // poll=1: live-refresh of an already audited page view; skips the duplicate audit entry.
+    return this.directory.auctionDetail(a, uuid(id), poll === '1');
+  }
+
+  @Patch('listings/:id')
+  updateListing(@CurrentAuth() a: AuthContext, @Param('id') id: string, @Body() body: unknown) {
+    return this.catalog.adminUpdate(a, uuid(id), body);
   }
 
   @Post('auctions/:id/cancel')

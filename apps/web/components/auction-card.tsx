@@ -1,6 +1,6 @@
 ﻿import Link from 'next/link';
 import { formatTry } from '@/lib/api';
-import type { AuctionSummary } from '@/lib/types';
+import { imageSrc, type AuctionSummary } from '@/lib/types';
 import { CardCountdown } from './card-countdown';
 import { StatusBadge } from './common';
 import { PlaceholderArt } from './illustrations';
@@ -9,7 +9,16 @@ export function AuctionCard({ auction }: { auction: AuctionSummary }) {
   const live = auction.status.toLowerCase() === 'live';
   return (
     <article className="group relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-all focus-within:ring-2 focus-within:ring-ring hover:-translate-y-0.5 hover:shadow-lg">
-      <PlaceholderArt category="mezat" className="h-20 w-full" />
+      {auction.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- uploads are served by the API, not optimizable
+        <img
+          src={imageSrc(auction.imageUrl)}
+          alt={auction.title ?? 'Mezat görseli'}
+          className="aspect-[16/9] w-full object-cover"
+        />
+      ) : (
+        <PlaceholderArt category="mezat" className="aspect-[16/9] w-full" />
+      )}
       <div className="space-y-2 p-4">
         <div className="flex items-center justify-between gap-2">
           <StatusBadge status={auction.status} />

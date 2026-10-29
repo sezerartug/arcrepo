@@ -165,5 +165,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] X-01 Admin: şirket/kullanıcı dizini + şirket detayı (üye, ilan, mezat, sipariş, denetim) + durum/ilan kaldırma/mezat iptal işlemleri + Türkçe etiketler (int test; tarayıcıda elle denenmedi)
 - [x] X-02 Yönetici doğrulanmış şirket adına ilan/mezat açar (doğrudan yayın, audit) (int test)
 - [x] X-03 İlan görseli ekle/sil (sahip + yönetici), görsel yoksa yer tutucu (int test; tarayıcıda elle denenmedi)
-- [ ] X-04 Mezat kartı ilan görselini kullanmıyor (hep yer tutucu) — KISMİ
-- [ ] X-05 Yönetici ilan alanlarını düzenleyebilsin mi? — ürün sahibi kararı bekliyor
+- [x] X-04 Mezat kartı/listesi ilan görselini kullanır (`GET /auctions` `imageUrl`; yoksa yer tutucu) (int test; tarayıcıda elle denenmedi)
+- [x] X-05 Yönetici ilan alanlarını düzenleyebilir — karar: evet (X-07)
+- [x] X-06 Yönetici mezat izleme: `GET /admin/auctions` + `/admin/auctions/:id` (gerçek teklif veren şirket/kullanıcı, reddedilen denemeler, teminat, olaylar, sonuç/sipariş; `admin.auction.view` audit), web `/admin?tab=mezatlar` + `/admin/mezatlar/[id]` (3 sn yoklama, mezat iptali) (int test; tarayıcıda elle denenmedi)
+- [x] X-07 Yönetici ilan alanı düzenleme: `PATCH /admin/listings/:id` (zorunlu neden, `admin.listing.update` audit, durum korunur; yayındaki mezat ilanı `AUCTION_LISTING_LOCKED`) + düzenleme ekranında neden kutusu (int test; tarayıcıda elle denenmedi)
