@@ -150,6 +150,14 @@ export default async function AdminCompanyPage({ params }: { params: Promise<{ i
       </Section>
 
       <Section id="c-listings" title={`İlanlar (${String(listings.length)})`}>
+        {c.status === 'verified' ? (
+          <Link
+            href={`/admin/ilan-ekle?companyId=${c.id}`}
+            className="mb-2 inline-flex h-8 items-center rounded-lg border px-3 text-sm hover:bg-muted"
+          >
+            Bu şirket adına ilan ekle
+          </Link>
+        ) : null}
         {listings.length === 0 ? (
           <Empty>İlan yok.</Empty>
         ) : (
@@ -165,14 +173,22 @@ export default async function AdminCompanyPage({ params }: { params: Promise<{ i
                   </p>
                 </div>
                 {l.status !== 'removed' && l.status !== 'sold' ? (
-                  <AdminActionDialog
-                    path={`/admin/listings/${l.id}/remove`}
-                    label="İlanı kaldır"
-                    title="İlan yayından kaldırılsın mı?"
-                    description="Bu işlem geri alınamaz."
-                    reason="required"
-                    variant="destructive"
-                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/satici/${l.id}/duzenle`}
+                      className="inline-flex h-8 items-center rounded-lg border px-3 text-sm hover:bg-muted"
+                    >
+                      Düzenle
+                    </Link>
+                    <AdminActionDialog
+                      path={`/admin/listings/${l.id}/remove`}
+                      label="İlanı kaldır"
+                      title="İlan yayından kaldırılsın mı?"
+                      description="Bu işlem geri alınamaz."
+                      reason="required"
+                      variant="destructive"
+                    />
+                  </div>
                 ) : null}
               </Card>
             ))}

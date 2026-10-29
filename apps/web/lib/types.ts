@@ -47,6 +47,8 @@ export type ListingAuction = {
   endsAt: string;
 };
 
+export type ListingImageRef = string | { id?: string; url?: string; path?: string };
+
 export type Listing = {
   id: string;
   title: string;
@@ -65,7 +67,7 @@ export type Listing = {
   status: string;
   sellerName?: string;
   companyId?: string;
-  images?: (string | { path: string })[];
+  images?: ListingImageRef[];
   auction?: ListingAuction | null;
   isFavorite?: boolean;
 };
@@ -131,8 +133,8 @@ export type Order = {
 
 export type Member = { id?: string; email: string; fullName: string; role: string };
 
-export function imageSrc(img: string | { path: string }): string {
-  const p = typeof img === 'string' ? img : img.path;
+export function imageSrc(img: ListingImageRef): string {
+  const p = typeof img === 'string' ? img : (img.url ?? img.path ?? '');
   if (p.startsWith('http') || p.startsWith('/api/')) return p;
   return `/api/uploads/${p.replace(/^\/?(uploads\/)?/, '')}`;
 }

@@ -55,6 +55,16 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
         </div>
 
         <ListingImage listing={listing} className="aspect-[16/10] w-full rounded-xl object-cover" />
+        {(isOwn || me?.user.isAdmin) &&
+        listing.status !== 'removed' &&
+        listing.status !== 'sold' ? (
+          <Link
+            href={`/satici/${listing.id}/duzenle`}
+            className="inline-flex h-8 items-center rounded-lg border px-3 text-sm hover:bg-muted"
+          >
+            Düzenle / görseller
+          </Link>
+        ) : null}
         {(listing.images?.length ?? 0) > 1 ? (
           <ul className="flex gap-2 overflow-x-auto" aria-label="Diğer görseller">
             {(listing.images ?? []).slice(1).map((img) => (

@@ -230,3 +230,128 @@ describe('admin listing removal', () => {
     expect(blocked.body.error.code).toBe('AUCTION_ACTIVE');
   });
 });
+
+describe('admin creates listings on behalf of a company', () => {
+  const PNG = Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    Buffer.alloc(64, 1),
+  ]);
+  const form = () => {
+    const f = new FormData();
+    f.append('file', new Blob([new Uint8Array(PNG)], { type: 'image/png' }), 'a.png');
+    return f;
+  };
+
+  it('publishes directly (fixed + auction), audits, and rejects unverified companies and non-admins', async () => {
+    const seller = await verified('Adminadina');
+    const fixed = await admin.post(
+      '/admin/listings',
+      { ...listingBody(categoryId), companyId: seller.companyId },
+      idem(),
+    );
+    expect(fixed.status).toBe(201);
+    expect(fixed.body).toMatchObject({ status: 'published', companyId: seller.companyId });
+    const audit = await t.db
+      .selectFrom('audit_log')
+      .selectAll()
+      .where('entity_id', '=', fixed.body.id)
+      .where('action', '=', 'admin.listing.create')
+      .executeTakeFirstOrThrow();
+    expect(audit.actor_type).toBe('admin');
+    expect(audit.company_id).toBe(seller.companyId);
+
+    const au = await admin.post(
+      '/admin/listings',
+      {
+        ...listingBody(categoryId, {
+          saleType: 'auction',
+          auction: {
+            startPriceMinor: '2450000',
+            minIncrementMinor: '10000',
+            startsAt: new Date(Date.now() - 60_000).toISOString(),
+            endsAt: new Date(Date.now() + 3_600_000).toISOString(),
+          },
+        }),
+        companyId: seller.companyId,
+      },
+      idem(),
+    );
+    expect(au.status).toBe(201);
+    const auction = await t.db
+      .selectFrom('auctions')
+      .select(['status', 'seller_company_id'])
+      .where('listing_id', '=', au.body.id)
+      .executeTakeFirstOrThrow();
+    expect(auction).toEqual({ status: 'LIVE', seller_company_id: seller.companyId });
+
+    const pending = await registerCompany(t.client(), 'Onaysiz');
+    const bad = await admin.post(
+      '/admin/listings',
+      { ...listingBody(categoryId), companyId: pending.company.id },
+      idem(),
+    );
+    expect(bad.status).toBe(409);
+    expect(
+      (
+        await admin.post(
+          '/admin/listings',
+          { ...listingBody(categoryId), companyId: crypto.randomUUID() },
+          idem(),
+        )
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await seller.c.post(
+          '/admin/listings',
+          { ...listingBody(categoryId), companyId: seller.companyId },
+          idem(),
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await t
+          .client()
+          .post(
+            '/admin/listings',
+            { ...listingBody(categoryId), companyId: seller.companyId },
+            idem(),
+          )
+      ).status,
+    ).toBe(401);
+  });
+
+  it('image add/delete: owner or admin only, other companies get 403', async () => {
+    const a = await verified('Gorselsahip');
+    const b = await verified('Gorselyabanci');
+    const created = await a.c.post('/listings', listingBody(categoryId), idem());
+    const id = created.body.id;
+    await admin.post(`/admin/listings/${id}/approve`, {});
+
+    const own = await a.c.req('POST', `/listings/${id}/images`, form());
+    expect(own.status).toBe(201);
+    const byAdmin = await admin.req('POST', `/listings/${id}/images`, form());
+    expect(byAdmin.status).toBe(201);
+    expect((await b.c.req('POST', `/listings/${id}/images`, form())).status).toBe(403);
+    expect((await b.c.req('DELETE', `/listings/${id}/images/${own.body.id}`)).status).toBe(403);
+    expect((await t.client().req('DELETE', `/listings/${id}/images/${own.body.id}`)).status).toBe(
+      401,
+    );
+
+    expect((await a.c.req('DELETE', `/listings/${id}/images/${own.body.id}`)).status).toBe(200);
+    expect((await t.client().req('GET', own.body.url)).status).toBe(404);
+    expect((await a.c.req('DELETE', `/listings/${id}/images/${own.body.id}`)).status).toBe(404);
+    expect((await admin.req('DELETE', `/listings/${id}/images/${byAdmin.body.id}`)).status).toBe(
+      200,
+    );
+    expect((await t.client().get(`/listings/${id}`)).body.images).toHaveLength(0);
+    const log = await t.db
+      .selectFrom('audit_log')
+      .select('actor_type')
+      .where('entity_id', '=', id)
+      .where('action', '=', 'listing.image.removed')
+      .execute();
+    expect(log.map((l) => l.actor_type).sort()).toEqual(['admin', 'user']);
+  });
+});

@@ -28,3 +28,6 @@ MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; s
 - Dosya aktarımında (flash/OneDrive) dosyalar NUL'a dönebilir; `git status` ile kontrol et, `git checkout HEAD -- <dosya>`.
 - `.env*` okunmaz/yazılmaz (settings engeli); yeni env değişkeni → `.env.example`'ı kullanıcı elle günceller veya `cp`.
 - Tüm komutlar kökten; DB integration testleri `pnpm --filter @arc/api test:int` (ilk çalışma yavaş).
+
+## Yönetici adına ilan + görsel yönetimi
+- `POST /admin/listings` {companyId, ...} (AD, Idempotency-Key): doğrulanmış şirket adına ilan, doğrudan `published` (mezat: `createAuctionFromListing`), audit `admin.listing.create`. `POST /listings/:id/images` sahip veya admin; `DELETE /listings/:id/images/:imageId` (dosya diskten silinir, audit `listing.image.removed`). Web: `/admin/ilan-ekle` (+ `?companyId=`), `ListingImageGallery` düzenleme ekranında. Admin ilan ALANLARINI düzenleyemez (PATCH yalnız sahip), yalnız görselleri.

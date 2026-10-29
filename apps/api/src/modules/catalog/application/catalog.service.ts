@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Inject, Injectable } from '@nestjs/common';
 import { Kysely, sql, type Transaction } from 'kysely';
@@ -314,7 +314,45 @@ export class CatalogService {
     );
   }
 
-  private async create(trx: Kysely<Database>, actor: CompanyAuthContext, input: unknown) {
+  // Platform admin creates a listing on behalf of a verified company; it is published directly (no
+  // moderation) and onPublished runs in the same transaction (e.g. to create the auction row).
+  adminCreateIdempotent(
+    admin: AuthContext,
+    key: string,
+    body: unknown,
+    onPublished?: OnListingApproved,
+  ) {
+    return withIdempotency(
+      this.db,
+      { userId: admin.userId, key, scope: 'POST /admin/listings', body },
+      async (trx) => {
+        const o = validate.asObject(body);
+        const companyId = validate.uuidField(o, 'companyId');
+        const company = await trx
+          .selectFrom('companies')
+          .select(['id', 'status'])
+          .where('id', '=', companyId)
+          .executeTakeFirst();
+        if (!company) throw notFound('Company not found');
+        if (company.status !== 'verified') {
+          throw conflict(
+            'COMPANY_NOT_VERIFIED',
+            'Listings can only be created for verified companies',
+          );
+        }
+        return { status: 201, body: await this.create(trx, admin, o, { companyId, onPublished }) };
+      },
+    );
+  }
+
+  private async create(
+    trx: Kysely<Database>,
+    actor: AuthContext,
+    input: unknown,
+    admin?: { companyId: string; onPublished: OnListingApproved | undefined },
+  ) {
+    const companyId = admin ? admin.companyId : actor.company?.id;
+    if (!companyId) throw forbidden('NO_COMPANY', 'No company');
     const o = validate.asObject(input);
     const c = this.parseCommon(o, false);
     const saleType: SaleType = validate.oneOf(o, 'saleType', ['fixed', 'auction'] as const);
@@ -347,7 +385,8 @@ export class CatalogService {
     const created = await trx
       .insertInto('listings')
       .values({
-        company_id: actor.company.id,
+        company_id: companyId,
+        ...(admin && { status: 'published' as const }),
         category_id: need(c.categoryId),
         title: need(c.title),
         description: c.description ?? '',
@@ -364,14 +403,33 @@ export class CatalogService {
       .returning('id')
       .executeTakeFirstOrThrow();
     await recordAudit(trx, {
-      actorType: 'user',
+      actorType: admin ? 'admin' : 'user',
       actorId: actor.userId,
-      companyId: actor.company.id,
-      action: 'listing.created',
+      companyId,
+      action: admin ? 'admin.listing.create' : 'listing.created',
       entityType: 'listing',
       entityId: created.id,
-      data: { saleType, unitPriceMinor: need(c.unitPriceMinor).toString() },
+      data: {
+        saleType,
+        unitPriceMinor: need(c.unitPriceMinor).toString(),
+        ...(admin && { companyId, onBehalfOfCompany: true }),
+      },
     });
+    if (admin?.onPublished) {
+      await admin.onPublished(trx, {
+        id: created.id,
+        companyId,
+        quantityBase: need(c.quantityBase),
+        basePerUnit: (
+          await trx
+            .selectFrom('categories')
+            .select('base_per_unit')
+            .where('id', '=', need(c.categoryId))
+            .executeTakeFirstOrThrow()
+        ).base_per_unit,
+        auctionDraft: draft,
+      });
+    }
     return this.toDto(await this.loadOrThrow(trx, created.id), actor);
   }
 
@@ -516,7 +574,53 @@ export class CatalogService {
 
   // ---- images ---------------------------------------------------------------------------------------
 
-  async addImage(actor: CompanyAuthContext, id: string, file: Buffer) {
+  // Owner (verified company) or platform admin. Same BOLA semantics as lockOwned for non-admins.
+  private async lockForImages(trx: Kysely<Database>, actor: AuthContext, id: string) {
+    if (actor.isAdmin) {
+      const row = await trx
+        .selectFrom('listings')
+        .select(['id', 'company_id', 'status', 'sale_type'])
+        .where('id', '=', id)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!row) throw notFound('Listing not found');
+      return row;
+    }
+    if (actor.company?.status !== 'verified') {
+      throw forbidden('COMPANY_NOT_VERIFIED', 'A verified company is required');
+    }
+    return this.lockOwned(trx, { ...actor, company: actor.company }, id);
+  }
+
+  async removeImage(actor: AuthContext, id: string, imageId: string) {
+    const fileName = await this.db.transaction().execute(async (trx) => {
+      const row = await this.lockForImages(trx, actor, id);
+      if (row.status === 'removed' || row.status === 'sold') {
+        throw conflict('INVALID_TRANSITION', `A ${row.status} listing cannot be changed`);
+      }
+      const img = await trx
+        .deleteFrom('listing_images')
+        .where('id', '=', imageId)
+        .where('listing_id', '=', id)
+        .returning('file_name')
+        .executeTakeFirst();
+      if (!img) throw notFound('Image not found');
+      await recordAudit(trx, {
+        actorType: actor.isAdmin ? 'admin' : 'user',
+        actorId: actor.userId,
+        companyId: row.company_id,
+        action: 'listing.image.removed',
+        entityType: 'listing',
+        entityId: id,
+        data: { imageId },
+      });
+      return img.file_name;
+    });
+    await unlink(path.join(this.uploadDir, fileName)).catch(() => undefined);
+    return { id: imageId, deleted: true as const };
+  }
+
+  async addImage(actor: AuthContext, id: string, file: Buffer) {
     if (file.length === 0) throw invalid('file is empty');
     if (file.length > MAX_IMAGE_BYTES) {
       throw new AppError(413, 'PAYLOAD_TOO_LARGE', 'Image must be at most 2 MB');
@@ -529,7 +633,7 @@ export class CatalogService {
         'Only jpeg, png or webp images are accepted',
       );
     return this.db.transaction().execute(async (trx: Transaction<Database>) => {
-      const row = await this.lockOwned(trx, actor, id);
+      const row = await this.lockForImages(trx, actor, id);
       if (row.status === 'removed' || row.status === 'sold') {
         throw conflict('INVALID_TRANSITION', `A ${row.status} listing cannot be changed`);
       }

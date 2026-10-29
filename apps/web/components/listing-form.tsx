@@ -18,7 +18,14 @@ function parseAttrs(text: string): Record<string, string> {
   return out;
 }
 
-export function ListingForm({ categories }: { categories: Category[] }) {
+/** adminCompanyId set: a platform admin creates the listing on behalf of that company (published directly). */
+export function ListingForm({
+  categories,
+  adminCompanyId,
+}: {
+  categories: Category[];
+  adminCompanyId?: string;
+}) {
   const [saleType, setSaleType] = useState<'fixed' | 'auction'>('fixed');
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? '');
   const [busy, setBusy] = useState(false);
@@ -87,23 +94,28 @@ export function ListingForm({ categories }: { categories: Category[] }) {
     setBusy(true);
     setError(null);
     try {
-      const created = await request<{ id: string }>('/api', '/listings', {
-        method: 'POST',
-        idempotent: true,
-        json: {
-          categoryId: cat.id,
-          title: str('title'),
-          description: str('description'),
-          attrs: parseAttrs(str('attrs')),
-          saleType,
-          unitPriceMinor: unitPrice,
-          quantityBase: qty,
-          ...(minOrder ? { minOrderBase: minOrder } : {}),
-          location: str('location'),
-          deliveryTerms: str('deliveryTerms'),
-          ...(auction ? { auction } : {}),
+      const created = await request<{ id: string }>(
+        '/api',
+        adminCompanyId ? '/admin/listings' : '/listings',
+        {
+          method: 'POST',
+          idempotent: true,
+          json: {
+            ...(adminCompanyId ? { companyId: adminCompanyId } : {}),
+            categoryId: cat.id,
+            title: str('title'),
+            description: str('description'),
+            attrs: parseAttrs(str('attrs')),
+            saleType,
+            unitPriceMinor: unitPrice,
+            quantityBase: qty,
+            ...(minOrder ? { minOrderBase: minOrder } : {}),
+            location: str('location'),
+            deliveryTerms: str('deliveryTerms'),
+            ...(auction ? { auction } : {}),
+          },
         },
-      });
+      );
       const failed: string[] = [];
       for (const file of files) {
         const body = new FormData();
@@ -118,7 +130,9 @@ export function ListingForm({ categories }: { categories: Category[] }) {
       setDone(
         failed.length
           ? `İlan oluşturuldu ancak bazı görseller yüklenemedi (${failed.join('; ')}).`
-          : 'İlan oluşturuldu ve incelemeye gönderildi.',
+          : adminCompanyId
+            ? 'İlan şirket adına oluşturuldu ve doğrudan yayına alındı.'
+            : 'İlan oluşturuldu ve incelemeye gönderildi.',
       );
     } catch (err) {
       setError(errorMessage(err));

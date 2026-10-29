@@ -1,14 +1,17 @@
-﻿import {
+import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   Inject,
   Param,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { Kysely } from 'kysely';
 import type { Database } from '../../db/schema.js';
 import {
@@ -26,7 +29,14 @@ import {
 } from '../identity/index.js';
 import { ORDER_REF_PREFIX, OrdersService } from '../orders/index.js';
 import { AdminDirectoryService } from './admin-directory.service.js';
-import { DB, invalid, listAudit, notFound, validate } from '../platform/index.js';
+import {
+  DB,
+  invalid,
+  listAudit,
+  notFound,
+  requireIdempotencyKey,
+  validate,
+} from '../platform/index.js';
 
 const uuid = (v: string): string => {
   if (!validate.isUuid(v)) throw notFound();
@@ -76,6 +86,33 @@ export class AdminController {
   @Get('listings')
   listListings(@Query('status') status: unknown) {
     return this.catalog.adminList(status);
+  }
+
+  // Admin creates a listing (and its auction, if any) on behalf of a verified company; published directly.
+  @Post('listings')
+  async createListing(
+    @CurrentAuth() a: AuthContext,
+    @Body() body: unknown,
+    @Headers('idempotency-key') key: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.catalog.adminCreateIdempotent(
+      a,
+      requireIdempotencyKey(key),
+      body,
+      async (trx, l) => {
+        if (!l.auctionDraft) return;
+        await createAuctionFromListing(trx, {
+          listingId: l.id,
+          companyId: l.companyId,
+          quantityBase: l.quantityBase,
+          basePerUnit: l.basePerUnit,
+          draft: l.auctionDraft,
+        });
+      },
+    );
+    res.status(result.status);
+    return result.body;
   }
 
   @Post('listings/:id/remove')

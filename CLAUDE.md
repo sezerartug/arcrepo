@@ -47,7 +47,8 @@ Kökten çalıştır (Node ≥24, pnpm `packageManager` alanından). Tek paket i
 ## Token disiplini
 - Görevler arasında `/clear`. Uzun oturumda `/compact` + neyin korunacağını yaz.
 - Uzun çıktılı işleri (test koşturma, geniş arama, log okuma) `test-runner` subagent'ına devret.
-- Plan/mimari: güçlü model. Uygulama: Sonnet. Basit subagent: Haiku.
+- Model politikası (2026-10-29, ürün sahibi): Fable ASLA kullanılmaz; en üst model Opus 5.5, Opus 5 kullanılmaz. Varsayılan: uygulama Sonnet, basit/okuma işleri Haiku; Opus 5.5 yalnızca para/mezat/ödeme çekirdeğinde gerçekten gerektiğinde. Alt ajan açarken `model` açıkça verilir.
+- Her bitirilen iş `docs/ROADMAP.md`'de işaretlenir (doğrulandıysa `[x]`, kısmen ise "KISMİ" notu) ve aynı turda commit edilir.
 - Dosyanın tamamını değil ilgili aralığı oku. `node_modules`, `dist`, lockfile ve üretilmiş dosyaları okuma.
 - Bu dosyayı kısa tut (<150 satır). Uzun talimat → skill veya `docs/`.
 

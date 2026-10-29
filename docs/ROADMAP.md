@@ -160,3 +160,10 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P6-10 Kademeli açılış (feature flag) + yakın izleme
 - [ ] P6-11 Lansman sonrası retro + v2 backlog (otomatik teklif, mobil vb.)
 - [ ] P6-G1 KAPI: SLO'lar karşılanıyor; runbook'lar tatbik edildi; sızma testi Kritik/Yüksek bulgusu yok; geri dönüş planı denendi
+
+## MVP sonrası eklenen işler (2026-10-29, ürün sahibi isteği)
+- [x] X-01 Admin: şirket/kullanıcı dizini + şirket detayı (üye, ilan, mezat, sipariş, denetim) + durum/ilan kaldırma/mezat iptal işlemleri + Türkçe etiketler (int test; tarayıcıda elle denenmedi)
+- [x] X-02 Yönetici doğrulanmış şirket adına ilan/mezat açar (doğrudan yayın, audit) (int test)
+- [x] X-03 İlan görseli ekle/sil (sahip + yönetici), görsel yoksa yer tutucu (int test; tarayıcıda elle denenmedi)
+- [ ] X-04 Mezat kartı ilan görselini kullanmıyor (hep yer tutucu) — KISMİ
+- [ ] X-05 Yönetici ilan alanlarını düzenleyebilsin mi? — ürün sahibi kararı bekliyor

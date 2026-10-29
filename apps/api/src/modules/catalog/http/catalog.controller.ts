@@ -110,9 +110,9 @@ export class CatalogController {
   }
 
   @Post('listings/:id/images')
-  @UseGuards(CompanyGuard)
+  @UseGuards(AuthGuard)
   async addImage(
-    @CurrentCompanyAuth() a: CompanyAuthContext,
+    @CurrentAuth() a: AuthContext,
     @Param('id') listingId: string,
     @Req() req: Request,
   ) {
@@ -121,6 +121,16 @@ export class CatalogController {
     const file = parseMultipartFile(raw, req.headers['content-type'] ?? '');
     if (!file) throw new AppError(422, 'VALIDATION_ERROR', 'multipart field "file" is required');
     return this.catalog.addImage(a, lid, file);
+  }
+
+  @Delete('listings/:id/images/:imageId')
+  @UseGuards(AuthGuard)
+  removeImage(
+    @CurrentAuth() a: AuthContext,
+    @Param('id') listingId: string,
+    @Param('imageId') imageId: string,
+  ) {
+    return this.catalog.removeImage(a, id(listingId), id(imageId));
   }
 
   @Get('uploads/:file')

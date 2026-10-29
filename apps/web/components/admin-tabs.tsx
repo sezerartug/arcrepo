@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 export const ADMIN_TABS = [
@@ -9,6 +9,7 @@ export const ADMIN_TABS = [
   ['mezatlar', 'Mezatlar', '/admin?tab=mezatlar'],
   ['havaleler', 'Havaleler', '/admin?tab=havaleler'],
   ['denetim', 'Denetim', '/admin?tab=denetim'],
+  ['ilan-ekle', 'İlan ekle', '/admin/ilan-ekle'],
 ] as const;
 
 export function AdminTabs({ current }: { current: string }) {
