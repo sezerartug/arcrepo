@@ -236,8 +236,15 @@ describe('connection loss mid-transaction', () => {
     }
     expect(killed).toBeGreaterThan(0); // the test really cut connections
     // the pool recovers: a clean bid right after the cuts is accepted
-    const recovery = await placeBid(bidders[0]!.c, id, 900_000n);
-    expect(recovery.status).toBe(201);
+    // (the current high bidder is correctly refused with ALREADY_HIGH_BIDDER, so try each bidder)
+    let recovered = false;
+    for (const b of bidders) {
+      if ((await placeBid(b.c, id, 900_000n)).status === 201) {
+        recovered = true;
+        break;
+      }
+    }
+    expect(recovered).toBe(true);
     accepted.push(900_000n);
 
     const rows = await t.db
