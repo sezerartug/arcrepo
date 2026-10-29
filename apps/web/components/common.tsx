@@ -70,7 +70,7 @@ export function Empty({ children }: { children: ReactNode }) {
 
 const TONES: Record<string, string> = {
   ok: 'bg-success/10 text-success',
-  warn: 'bg-brand/20 text-brand-foreground',
+  warn: 'bg-brand/20 text-brand-text',
   bad: 'bg-destructive/10 text-destructive',
   neutral: 'bg-muted text-muted-foreground',
 };

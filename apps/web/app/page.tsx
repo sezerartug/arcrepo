@@ -1,16 +1,11 @@
 import Link from 'next/link';
-import { Empty, LoadError, ctaCls } from '@/components/common';
+import { Empty, LoadError } from '@/components/common';
 import { ListingCard } from '@/components/listing-card';
 import { AuctionCard } from '@/components/auction-card';
-import { CATEGORY_KINDS, CategoryIcon, HeroArt } from '@/components/illustrations';
+import { TopCategoryIcon } from '@/components/illustrations/category-icons';
+import { HeroSlider } from '@/components/hero-slider';
 import { loadCategories, serverGet } from '@/lib/server-api';
-import {
-  flattenCategories,
-  withUnits,
-  type AuctionList,
-  type Category,
-  type ListingPage,
-} from '@/lib/types';
+import { withUnits, type AuctionList, type ListingPage } from '@/lib/types';
 
 const TRUST = [
   {
@@ -39,16 +34,6 @@ const STEPS = [
   { title: 'Güvenle teslim alın', text: 'Ödeme emanette kalır, teslimat onayıyla satıcıya geçer.' },
 ];
 
-// Filters by category id when the tile's label matches a category; otherwise falls back to text search.
-function categoryHref(tree: Category[], label: string): string {
-  const match = flattenCategories(tree).find(
-    (c) => c.name.toLocaleLowerCase('tr') === label.toLocaleLowerCase('tr'),
-  );
-  return match
-    ? `/ilanlar?categoryId=${encodeURIComponent(match.id)}`
-    : `/ilanlar?q=${encodeURIComponent(label)}`;
-}
-
 export default async function HomePage() {
   const [listings, auctions, cats] = await Promise.all([
     serverGet<ListingPage>('/listings?sort=newest'),
@@ -58,31 +43,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-10">
-      <section className="hero-gradient relative overflow-hidden rounded-3xl text-primary-foreground shadow-lg">
-        <div className="grid items-center gap-6 px-6 py-12 sm:px-10 lg:grid-cols-[1.2fr_1fr] lg:py-16">
-          <div>
-            <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-5xl">
-              İnşaat malzemesinde şirketler arası güvenli ticaret
-            </h1>
-            <p className="mt-4 max-w-xl text-lg text-primary-foreground/85">
-              Çelik ve yapı malzemelerini sabit fiyatla satın alın veya canlı mezatta teklif verin.
-              Ödemeniz teslimata kadar emanette (escrow) güvende kalır.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/ilanlar" className={`${ctaCls} !h-11 !px-6 !text-base shadow-md`}>
-                İlanlara göz at
-              </Link>
-              <Link
-                href="/kayit"
-                className="inline-flex h-11 items-center rounded-lg border border-primary-foreground/40 px-6 text-base font-medium outline-none hover:bg-primary-foreground/10 focus-visible:ring-3 focus-visible:ring-brand"
-              >
-                Şirketinizi kaydedin
-              </Link>
-            </div>
-          </div>
-          <HeroArt className="mx-auto hidden h-auto w-full max-w-md lg:block" />
-        </div>
-      </section>
+      <HeroSlider categories={cats} />
       <section aria-label="Güven" className="grid gap-3 sm:grid-cols-3">
         {TRUST.map((t) => (
           <div
@@ -116,20 +77,41 @@ export default async function HomePage() {
           Kategoriler
         </h2>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {CATEGORY_KINDS.map((k) => (
-            <li key={k.kind}>
+          {cats.map((c) => (
+            <li key={c.id}>
               <Link
-                href={categoryHref(cats, k.label)}
-                className="group flex flex-col items-center gap-2 rounded-2xl border bg-card p-4 text-center shadow-sm outline-none transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
+                href={`/ilanlar?categoryId=${encodeURIComponent(c.id)}`}
+                className="group flex h-full flex-col items-center gap-2 rounded-2xl border bg-card p-4 text-center shadow-sm outline-none transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <CategoryIcon
-                  kind={k.kind}
+                <TopCategoryIcon
+                  slug={c.slug}
                   className="size-10 text-primary group-hover:text-brand"
                 />
-                <span className="text-sm font-medium">{k.label}</span>
+                <span className="text-sm font-medium">{c.name}</span>
               </Link>
             </li>
           ))}
+          <li>
+            <Link
+              href="/ilanlar?condition=ikinci_el"
+              className="group flex h-full flex-col items-center gap-2 rounded-2xl border border-brand/60 bg-brand/10 p-4 text-center shadow-sm outline-none transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <svg
+                viewBox="0 0 32 32"
+                className="size-10 text-primary group-hover:text-brand"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M6 16a10 10 0 0 1 17-7l3 3M26 16a10 10 0 0 1-17 7l-3-3M26 5v7h-7M6 27v-7h7" />
+              </svg>
+              <span className="text-sm font-medium">İkinci El</span>
+            </Link>
+          </li>
         </ul>
       </section>
       <section aria-labelledby="live-auctions">

@@ -89,7 +89,7 @@ export function NotificationBell() {
     <div ref={root} className="relative">
       <button
         type="button"
-        className="relative rounded-lg p-2 text-primary-foreground/90 hover:bg-primary-foreground/10 hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-brand outline-none"
+        className="relative rounded-lg p-2 text-chrome-foreground/90 hover:bg-chrome-foreground/10 hover:text-chrome-foreground focus-visible:ring-2 focus-visible:ring-brand outline-none"
         aria-label={count > 0 ? `Bildirimler, ${String(count)} okunmamış` : 'Bildirimler'}
         aria-expanded={open}
         aria-haspopup="true"

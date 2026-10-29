@@ -1,6 +1,6 @@
 ﻿import Link from 'next/link';
 import { formatQty, formatTry } from '@/lib/api';
-import { imageSrc, type Listing } from '@/lib/types';
+import { CONDITION_LABELS, imageSrc, type Listing } from '@/lib/types';
 import { Badge } from './common';
 import { CardCountdown } from './card-countdown';
 import { PlaceholderArt } from './illustrations';
@@ -27,6 +27,11 @@ export function ListingCard({ listing }: { listing: Listing }) {
         {isAuction ? (
           <span className="absolute top-2 left-2 rounded-full bg-brand px-2.5 py-1 text-xs font-bold text-brand-foreground shadow">
             MEZAT
+          </span>
+        ) : null}
+        {listing.condition === 'ikinci_el' || listing.condition === 'hurda' ? (
+          <span className="absolute top-2 right-2 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground shadow">
+            {CONDITION_LABELS[listing.condition]}
           </span>
         ) : null}
       </div>

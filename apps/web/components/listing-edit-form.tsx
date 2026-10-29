@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { parseQtyToBase, parseTryToMinor, request } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
-import type { Category, Listing } from '@/lib/types';
+import { flattenCategories, leafOptions, topOf, type Category, type Listing } from '@/lib/types';
+import { CategoryPicker, ConditionSelect, attrsPlaceholder } from './category-picker';
 import { ErrorBox, Field, inputCls } from './common';
 
 function attrsToText(attrs: Listing['attrs']): string {
@@ -50,10 +51,14 @@ export function ListingEditForm({
   admin?: boolean;
 }) {
   const router = useRouter();
-  const [categoryId, setCategoryId] = useState(listing.categoryId ?? categories[0]?.id ?? '');
+  const firstTop = categories[0];
+  const [categoryId, setCategoryId] = useState(
+    listing.categoryId ?? (firstTop ? (leafOptions(firstTop)[0]?.id ?? '') : ''),
+  );
+  const [condition, setCondition] = useState<string>(listing.condition ?? 'yeni');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const cat = categories.find((c) => c.id === categoryId);
+  const cat = flattenCategories(categories).find((c) => c.id === categoryId);
   const unit = cat?.unit ?? 'birim';
   const isAuction = listing.saleType === 'auction';
 
@@ -87,6 +92,7 @@ export function ListingEditForm({
         method: 'PATCH',
         json: {
           categoryId: cat.id,
+          condition,
           title: str('title'),
           description: str('description'),
           attrs: parseAttrs(str('attrs')),
@@ -118,22 +124,17 @@ export function ListingEditForm({
           className={inputCls}
         />
       </Field>
-      <Field label="Kategori" htmlFor="category">
-        <select
-          id="category"
-          className={inputCls}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <CategoryPicker
+          tree={categories}
           value={categoryId}
-          onChange={(e) => {
-            setCategoryId(e.target.value);
+          onChange={(id) => {
+            setCategoryId(id);
+            if (topOf(categories, id)?.slug === 'hurda-geri-donusum') setCondition('hurda');
           }}
-        >
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name} ({c.unit})
-            </option>
-          ))}
-        </select>
-      </Field>
+        />
+        <ConditionSelect value={condition} onChange={setCondition} />
+      </div>
       <Field label="Açıklama" htmlFor="description">
         <textarea
           id="description"
@@ -149,6 +150,7 @@ export function ListingEditForm({
           id="attrs"
           name="attrs"
           rows={3}
+          placeholder={attrsPlaceholder(categories, categoryId)}
           defaultValue={attrsToText(listing.attrs)}
           className={inputCls + ' h-auto py-2'}
         />

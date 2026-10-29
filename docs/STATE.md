@@ -45,3 +45,10 @@ MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; s
 
 ## Mali rapor (X-12)
 - Salt okunur: `GET /admin/finance/summary?range=|from=&to=` (+ `orders.csv`, `payouts.csv`; CSV `;` ayraçlı, BOM'lu, audit `admin.finance.export`). Aralık metrikleri (komisyon, forfeit, ciro, iade, itiraz) tarihle süzülür; bakiyeler (escrow, hakediş, teminat, bank_clearing) her zaman anlık. `consistency.ok` = ledger toplamı 0 ve escrow = açık siparişlerin toplamı. Kod: `modules/admin/admin-finance.service.ts`; web: `components/admin-finance-report.tsx`.
+
+## Kategori ağacı + ikinci el (X-13)
+- Migration 0008: 7 üst kategori (İnşaat Malzemeleri [Çelik>demir/profil/sac/boru, Çimento, Agrega, Tuğla/Blok, Yalıtım], Makine ve Ekipman, İş Makineleri, Hurda ve Geri Dönüşüm, El Aletleri ve Hırdavat, Fabrika ve Depo Ekipmanları, Proje ve İş İhaleleri); slug anahtarlı upsert, mevcut kimlikler korunur. Birim 'iş' (hizmet). `listings.condition` (yeni|ikinci_el|hurda). `GET /listings?categoryId=` (alt soylar dahil) ve `?condition=`. Web: `CategoryPicker` (ana>alt), `/ilanlar?condition=ikinci_el` kısayolu. Test yardımcısı `seedCategory` varsayılan slug'ı `test-demir` (migration slug'larıyla çakışmasın).
+
+
+## Hero slider + tema (X-14, X-15)
+- Hero: `components/hero-slider.tsx` (istemci; kategori ağacını prop alır, birincil bağlantı kategori ADIYLA çözülür) + `components/illustrations/hero-scenes.tsx`. Tema: `lib/theme.ts` (anahtar `arc-theme`, <head> betiği) + `components/theme-toggle.tsx`; renkler `globals.css` içinde `[data-theme='dark']`. Üst menü/alt bilgi/hero `bg-chrome text-chrome-foreground` (her iki temada koyu lacivert); `text-brand-text` = turuncu vurgu metni. Yeni arayüzde sabit renk (bg-white, #hex) kullanma, token kullan.

@@ -138,7 +138,7 @@ export function AuctionPanel({
           <dt className="text-muted-foreground">
             {status === 'scheduled' ? 'Başlamasına' : 'Kalan süre'}
           </dt>
-          <dd className="font-mono text-3xl font-extrabold text-brand-foreground" aria-live="off">
+          <dd className="font-mono text-3xl font-extrabold text-brand-text" aria-live="off">
             {status === 'scheduled'
               ? formatRemaining(toStart)
               : live

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { parseQtyToBase, parseTryToMinor, request } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
-import type { Category } from '@/lib/types';
+import { flattenCategories, leafOptions, topOf, type Category } from '@/lib/types';
+import { CategoryPicker, ConditionSelect, attrsPlaceholder } from './category-picker';
 import { ErrorBox, Field, inputCls } from './common';
 
 const MAX_IMAGE = 2 * 1024 * 1024;
@@ -27,11 +28,15 @@ export function ListingForm({
   adminCompanyId?: string;
 }) {
   const [saleType, setSaleType] = useState<'fixed' | 'auction'>('fixed');
-  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? '');
+  const firstTop = categories[0];
+  const [categoryId, setCategoryId] = useState(
+    firstTop ? (leafOptions(firstTop)[0]?.id ?? '') : '',
+  );
+  const [condition, setCondition] = useState('yeni');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
-  const cat = categories.find((c) => c.id === categoryId);
+  const cat = flattenCategories(categories).find((c) => c.id === categoryId);
   const unit = cat?.unit ?? 'birim';
 
   async function submit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -103,6 +108,7 @@ export function ListingForm({
           json: {
             ...(adminCompanyId ? { companyId: adminCompanyId } : {}),
             categoryId: cat.id,
+            condition,
             title: str('title'),
             description: str('description'),
             attrs: parseAttrs(str('attrs')),
@@ -152,22 +158,15 @@ export function ListingForm({
         <input id="title" name="title" required minLength={5} className={inputCls} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Kategori" htmlFor="category">
-          <select
-            id="category"
-            className={inputCls}
-            value={categoryId}
-            onChange={(e) => {
-              setCategoryId(e.target.value);
-            }}
-          >
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.unit})
-              </option>
-            ))}
-          </select>
-        </Field>
+        <CategoryPicker
+          tree={categories}
+          value={categoryId}
+          onChange={(id) => {
+            setCategoryId(id);
+            if (topOf(categories, id)?.slug === 'hurda-geri-donusum') setCondition('hurda');
+          }}
+        />
+        <ConditionSelect value={condition} onChange={setCondition} />
         <Field label="Satış türü" htmlFor="saleType">
           <select
             id="saleType"
@@ -191,12 +190,14 @@ export function ListingForm({
           className={inputCls + ' h-auto py-2'}
         />
       </Field>
-      <Field
-        label="Özellikler"
-        htmlFor="attrs"
-        hint="Her satıra bir özellik: “Çap: 12 mm”, “Kalite: B500C”"
-      >
-        <textarea id="attrs" name="attrs" rows={3} className={inputCls + ' h-auto py-2'} />
+      <Field label="Özellikler" htmlFor="attrs" hint="Her satıra bir özellik: “Anahtar: değer”">
+        <textarea
+          id="attrs"
+          name="attrs"
+          rows={3}
+          placeholder={attrsPlaceholder(categories, categoryId)}
+          className={inputCls + ' h-auto py-2'}
+        />
       </Field>
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label={priceLabel} htmlFor="unitPrice">

@@ -2,7 +2,7 @@ import { Empty, Field, LoadError, PageTitle, Pagination, inputCls } from '@/comp
 import { ListingCard } from '@/components/listing-card';
 import { Button } from '@/components/ui/button';
 import { loadCategories, serverGet, toQuery } from '@/lib/server-api';
-import { flattenCategories, withUnits, type ListingPage } from '@/lib/types';
+import { CONDITION_LABELS, withUnits, type Category, type ListingPage } from '@/lib/types';
 
 type SP = Record<string, string | undefined>;
 
@@ -14,6 +14,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
   const query = {
     q: sp.q,
     categoryId: sp.categoryId,
+    condition: sp.condition,
     saleType: sp.saleType,
     minPrice: toMinor(sp.minPrice),
     maxPrice: toMinor(sp.maxPrice),
@@ -25,7 +26,6 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
     serverGet<ListingPage>(`/listings${toQuery(query)}`),
     loadCategories(),
   ]);
-  const cats = flattenCategories(tree);
   const href = (p: number) => `/ilanlar${toQuery({ ...sp, page: String(p) })}`;
 
   return (
@@ -51,9 +51,30 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
               className={inputCls}
             >
               <option value="">Tümü</option>
-              {cats.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
+              {tree.map((top) => (
+                <optgroup key={top.id} label={top.name}>
+                  <option value={top.id}>Tüm {top.name}</option>
+                  {descendants(top.children ?? [], 1).map(({ node, depth }) => (
+                    <option key={node.id} value={node.id}>
+                      {'  '.repeat(depth)}
+                      {node.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </Field>
+          <Field label="Durum" htmlFor="condition">
+            <select
+              id="condition"
+              name="condition"
+              defaultValue={sp.condition ?? ''}
+              className={inputCls}
+            >
+              <option value="">Tümü</option>
+              {(Object.keys(CONDITION_LABELS) as (keyof typeof CONDITION_LABELS)[]).map((k) => (
+                <option key={k} value={k}>
+                  {CONDITION_LABELS[k]}
                 </option>
               ))}
             </select>
@@ -126,6 +147,10 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
       </div>
     </>
   );
+}
+
+function descendants(nodes: Category[], depth: number): { node: Category; depth: number }[] {
+  return nodes.flatMap((node) => [{ node, depth }, ...descendants(node.children ?? [], depth + 1)]);
 }
 
 // Filter inputs are TL; the API expects kuruş. Invalid input is dropped.

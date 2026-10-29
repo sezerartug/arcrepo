@@ -2,11 +2,12 @@ import Link from 'next/link';
 import { ActionButton } from '@/components/action-button';
 import { AuctionPanel } from '@/components/auction-panel';
 import { BuyForm } from '@/components/buy-form';
-import { Card, LoadError, StatusBadge } from '@/components/common';
+import { Badge, Card, LoadError, StatusBadge } from '@/components/common';
 import { ListingImage } from '@/components/listing-card';
 import { formatQty, formatTry } from '@/lib/api';
 import { getMe, loadCategories, serverGet } from '@/lib/server-api';
 import {
+  CONDITION_LABELS,
   imageSrc,
   withUnits,
   type AuctionList,
@@ -44,6 +45,9 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
         <div>
           <div className="mb-2 flex items-center gap-2">
             <StatusBadge status={listing.status} />
+            {listing.condition === 'ikinci_el' || listing.condition === 'hurda' ? (
+              <Badge tone="warn">{CONDITION_LABELS[listing.condition]}</Badge>
+            ) : null}
             {listing.categoryName ? (
               <span className="text-sm text-muted-foreground">{listing.categoryName}</span>
             ) : null}

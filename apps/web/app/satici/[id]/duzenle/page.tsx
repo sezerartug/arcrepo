@@ -2,7 +2,7 @@ import { Empty, LoadError, PageTitle } from '@/components/common';
 import { ListingEditForm } from '@/components/listing-edit-form';
 import { ListingImageGallery } from '@/components/listing-image-gallery';
 import { loadCategories, requireMe, serverGet } from '@/lib/server-api';
-import { flattenCategories, withUnits, type Listing } from '@/lib/types';
+import { withUnits, type Listing } from '@/lib/types';
 
 export const metadata = { title: 'İlanı düzenle · ARC Global' };
 
@@ -46,11 +46,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
         İlanı düzenle
       </PageTitle>
       {editable || adminEditable ? (
-        <ListingEditForm
-          listing={listing}
-          categories={flattenCategories(tree)}
-          admin={adminEditable}
-        />
+        <ListingEditForm listing={listing} categories={tree} admin={adminEditable} />
       ) : (
         <Empty>
           {adminOnly

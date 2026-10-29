@@ -7,9 +7,10 @@ import { clientApi } from '@/lib/api';
 import type { Me } from '@/lib/types';
 import { Logo } from './illustrations';
 import { NotificationBell } from './notification-bell';
+import { ThemeToggle } from './theme-toggle';
 
 const linkCls =
-  'rounded-lg px-3 py-1.5 text-sm font-medium text-primary-foreground/90 transition-colors hover:bg-primary-foreground/10 hover:text-primary-foreground focus-visible:ring-2 focus-visible:ring-brand outline-none';
+  'rounded-lg px-3 py-1.5 text-sm font-medium text-chrome-foreground/90 transition-colors hover:bg-chrome-foreground/10 hover:text-chrome-foreground focus-visible:ring-2 focus-visible:ring-brand outline-none';
 
 export function SiteHeader() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-primary text-primary-foreground shadow-md">
+    <header className="sticky top-0 z-40 bg-chrome text-chrome-foreground shadow-md">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3">
         <Link
           href="/"
@@ -44,9 +45,12 @@ export function SiteHeader() {
         >
           <Logo className="h-8 w-auto" />
         </Link>
+        <div className="ml-auto md:hidden">
+          <ThemeToggle />
+        </div>
         <button
           type="button"
-          className="ml-auto rounded-lg p-2 hover:bg-primary-foreground/10 focus-visible:ring-2 focus-visible:ring-brand outline-none md:hidden"
+          className="rounded-lg p-2 hover:bg-chrome-foreground/10 focus-visible:ring-2 focus-visible:ring-brand outline-none md:hidden"
           aria-expanded={open}
           aria-controls="site-menu"
           aria-label="Menüyü aç/kapat"
@@ -78,6 +82,9 @@ export function SiteHeader() {
             <Link className={linkCls} href="/ilanlar">
               İlanlar
             </Link>
+            <Link className={linkCls} href="/ilanlar?condition=ikinci_el">
+              İkinci El
+            </Link>
             <Link className={linkCls} href="/mezatlar">
               Mezatlar
             </Link>
@@ -101,6 +108,9 @@ export function SiteHeader() {
             ) : null}
           </nav>
           <div className="flex flex-col gap-1 md:ml-auto md:flex-row md:items-center">
+            <div className="hidden md:block">
+              <ThemeToggle />
+            </div>
             {me ? (
               <>
                 <NotificationBell />
@@ -117,7 +127,7 @@ export function SiteHeader() {
                   Giriş
                 </Link>
                 <Link
-                  className="rounded-lg bg-brand px-4 py-1.5 text-sm font-semibold text-brand-foreground transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-primary-foreground outline-none"
+                  className="rounded-lg bg-brand px-4 py-1.5 text-sm font-semibold text-brand-foreground transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-chrome-foreground outline-none"
                   href="/kayit"
                 >
                   Kayıt ol

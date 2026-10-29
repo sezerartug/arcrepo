@@ -3,7 +3,7 @@ import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Inject, Injectable } from '@nestjs/common';
 import { Kysely, sql, type Transaction } from 'kysely';
-import type { Database, ListingStatus, SaleType } from '../../../db/schema.js';
+import type { Database, ListingCondition, ListingStatus, SaleType } from '../../../db/schema.js';
 import type { AuthContext, CompanyAuthContext } from '../../identity/index.js';
 import {
   AppError,
@@ -31,6 +31,7 @@ export type OnListingApproved = (trx: Kysely<Database>, listing: ApprovedListing
 const PAGE_SIZE = 20;
 const MAX_IMAGES = 8;
 const SORTS = ['newest', 'price_asc', 'price_desc', 'ending'] as const;
+const CONDITIONS = ['yeni', 'ikinci_el', 'hurda'] as const satisfies readonly ListingCondition[];
 
 const listingSelect = (db: Kysely<Database>) =>
   db
@@ -148,6 +149,7 @@ export class CatalogService {
         description: r.description,
         attrs: r.attrs,
         saleType: r.sale_type,
+        condition: r.condition,
         currency: r.currency,
         unitPriceMinor: r.unit_price_minor,
         quantityBase: r.quantity_base,
@@ -205,9 +207,18 @@ export class CatalogService {
     if (typeof query.categoryId === 'string' && query.categoryId !== '') {
       if (!validate.isUuid(query.categoryId)) throw invalid('categoryId must be a UUID');
       const cat = query.categoryId;
+      // A parent category also matches listings in any descendant (the tree is up to 3 levels deep).
       q = q.where(
-        sql<boolean>`(l.category_id = ${cat} or l.category_id in (select id from categories where parent_id = ${cat}))`,
+        sql<boolean>`l.category_id in (
+          with recursive sub as (
+            select id from categories where id = ${cat}
+            union all
+            select c2.id from categories c2 join sub on c2.parent_id = sub.id
+          ) select id from sub)`,
       );
+    }
+    if (query.condition !== undefined && query.condition !== '') {
+      q = q.where('l.condition', '=', validate.oneOf(query, 'condition', CONDITIONS));
     }
     if (query.saleType !== undefined && query.saleType !== '') {
       const saleType = validate.oneOf(query, 'saleType', ['fixed', 'auction'] as const);
@@ -278,6 +289,7 @@ export class CatalogService {
   private parseCommon(o: validate.Obj, partial: boolean) {
     const out: {
       categoryId?: string;
+      condition?: ListingCondition;
       title?: string;
       description?: string;
       attrs?: Record<string, unknown>;
@@ -289,6 +301,7 @@ export class CatalogService {
     } = {};
     const has = (k: string) => o[k] !== undefined;
     if (!partial || has('categoryId')) out.categoryId = validate.uuidField(o, 'categoryId');
+    if (has('condition')) out.condition = validate.oneOf(o, 'condition', CONDITIONS);
     if (!partial || has('title')) out.title = validate.str(o, 'title', 5, 140);
     if (has('description')) out.description = validate.str(o, 'description', 0, 4000);
     else if (!partial) out.description = '';
@@ -388,6 +401,7 @@ export class CatalogService {
         company_id: companyId,
         ...(admin && { status: 'published' as const }),
         category_id: need(c.categoryId),
+        condition: c.condition ?? 'yeni',
         title: need(c.title),
         description: c.description ?? '',
         attrs: JSON.stringify(c.attrs ?? {}),
@@ -474,6 +488,7 @@ export class CatalogService {
       }
       const patch = {
         ...(c.categoryId !== undefined && { category_id: c.categoryId }),
+        ...(c.condition !== undefined && { condition: c.condition }),
         ...(c.title !== undefined && { title: c.title }),
         ...(c.description !== undefined && { description: c.description }),
         ...(c.attrs !== undefined && { attrs: JSON.stringify(c.attrs) }),
@@ -564,6 +579,7 @@ export class CatalogService {
         .updateTable('listings')
         .set({
           ...(c.categoryId !== undefined && { category_id: c.categoryId }),
+          ...(c.condition !== undefined && { condition: c.condition }),
           ...(c.title !== undefined && { title: c.title }),
           ...(c.description !== undefined && { description: c.description }),
           ...(c.attrs !== undefined && { attrs: JSON.stringify(c.attrs) }),

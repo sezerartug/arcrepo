@@ -44,3 +44,13 @@ describe('RootLayout', () => {
     expect(violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
   });
 });
+
+describe('RootLayout (dark theme)', () => {
+  it('ships the pre-paint theme script and has no axe violations in dark mode', async () => {
+    expect(document.head.innerHTML).toContain('arc-theme');
+    document.documentElement.setAttribute('data-theme', 'dark');
+    const { violations } = await axe.run(document);
+    document.documentElement.removeAttribute('data-theme');
+    expect(violations.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+  });
+});

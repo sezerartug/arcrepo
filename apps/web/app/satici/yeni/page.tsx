@@ -1,7 +1,7 @@
 import { Empty, LoadError, PageTitle } from '@/components/common';
 import { ListingForm } from '@/components/listing-form';
 import { requireMe, serverGet } from '@/lib/server-api';
-import { flattenCategories, type Category } from '@/lib/types';
+import { type Category } from '@/lib/types';
 
 export const metadata = { title: 'Yeni ilan · ARC Global' };
 
@@ -18,11 +18,7 @@ export default async function NewListingPage() {
       <PageTitle sub="İlanınız yayınlanmadan önce yönetici tarafından incelenir">
         Yeni ilan
       </PageTitle>
-      {res.ok ? (
-        <ListingForm categories={flattenCategories(res.data)} />
-      ) : (
-        <LoadError error={res.error} />
-      )}
+      {res.ok ? <ListingForm categories={res.data} /> : <LoadError error={res.error} />}
     </>
   );
 }

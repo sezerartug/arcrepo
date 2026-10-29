@@ -25,8 +25,8 @@ export type CompanyStatus = 'pending' | 'verified' | 'rejected' | 'suspended';
 export type MemberRole = 'owner' | 'member';
 export type SaleType = 'fixed' | 'auction';
 export type ListingStatus = 'pending_review' | 'published' | 'rejected' | 'sold' | 'removed';
-export type Unit = 'ton' | 'torba' | 'm3' | 'adet' | 'palet';
-
+export type Unit = 'ton' | 'torba' | 'm3' | 'adet' | 'palet' | 'iş';
+export type ListingCondition = 'yeni' | 'ikinci_el' | 'hurda';
 export interface UsersTable {
   id: Generated<string>;
   email: string;
@@ -103,6 +103,7 @@ export interface ListingsTable {
   description: string;
   attrs: ColumnType<Record<string, unknown>, string, string>;
   sale_type: SaleType;
+  condition: Generated<ListingCondition>;
   currency: Generated<string>;
   unit_price_minor: ColumnType<bigint, bigint, bigint>;
   quantity_base: ColumnType<bigint, bigint, bigint>;

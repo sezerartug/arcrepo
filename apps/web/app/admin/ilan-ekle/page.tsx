@@ -5,7 +5,6 @@ import { ListingForm } from '@/components/listing-form';
 import { Button } from '@/components/ui/button';
 import type { AdminCompanyRow, Paged } from '@/lib/admin-types';
 import { loadCategories, requireMe, serverGet, toQuery } from '@/lib/server-api';
-import { flattenCategories } from '@/lib/types';
 
 export const metadata = { title: 'İlan ekle · Yönetim · ARC Global' };
 
@@ -52,7 +51,7 @@ export default async function AdminAddListingPage({
             Bu ilan şirket adına oluşturulur ve inceleme olmadan doğrudan yayına alınır; işlem
             denetim kaydına yazılır.
           </p>
-          <ListingForm categories={flattenCategories(tree)} adminCompanyId={companyId} />
+          <ListingForm categories={tree} adminCompanyId={companyId} />
         </div>
       );
     }

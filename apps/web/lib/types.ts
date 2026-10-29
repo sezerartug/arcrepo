@@ -71,6 +71,7 @@ export type Listing = {
   unit?: string;
   basePerUnit?: number;
   saleType: 'fixed' | 'auction';
+  condition?: Condition;
   unitPriceMinor: string;
   quantityBase: number | string;
   minOrderBase?: number | string | null;
@@ -167,6 +168,31 @@ export function imageSrc(img: ListingImageRef): string {
 
 export function flattenCategories(tree: Category[]): Category[] {
   return tree.flatMap((c) => (c.children?.length ? flattenCategories(c.children) : [c]));
+}
+
+export type Condition = 'yeni' | 'ikinci_el' | 'hurda';
+
+export const CONDITION_LABELS: Record<Condition, string> = {
+  yeni: 'Yeni',
+  ikinci_el: 'İkinci el',
+  hurda: 'Hurda',
+};
+
+/** Leaf categories under a top-level category, labelled with their path below it ("Çelik › Sac"). */
+export function leafOptions(top: Category): (Category & { label: string })[] {
+  const walk = (nodes: Category[], prefix: string): (Category & { label: string })[] =>
+    nodes.flatMap((c) =>
+      c.children?.length
+        ? walk(c.children, `${prefix}${c.name} › `)
+        : [{ ...c, label: `${prefix}${c.name}` }],
+    );
+  return top.children?.length ? walk(top.children, '') : [{ ...top, label: top.name }];
+}
+
+/** The top-level category that contains the given category id. */
+export function topOf(tree: Category[], id: string): Category | undefined {
+  const has = (c: Category): boolean => c.id === id || (c.children ?? []).some(has);
+  return tree.find(has);
 }
 
 /** Fills unit/basePerUnit from the category tree when the API omits them. */

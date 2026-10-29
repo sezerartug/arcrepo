@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Logo } from '@/components/illustrations';
 import { SiteHeader } from '@/components/site-header';
+import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import './globals.css';
 
@@ -17,7 +18,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="tr" className={cn('font-sans', geist.variable)}>
+    <html lang="tr" className={cn('font-sans', geist.variable)} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="flex min-h-svh flex-col antialiased">
         <a
           href="#main-content"
@@ -29,17 +33,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
           {children}
         </main>
-        <footer className="mt-8 bg-primary text-primary-foreground">
+        <footer className="mt-8 bg-chrome text-chrome-foreground">
           <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-3">
               <Logo className="h-8 w-auto" />
-              <p className="text-sm text-primary-foreground/80">
+              <p className="text-sm text-chrome-foreground/80">
                 Şirketler arası çelik ve yapı malzemesi ticareti; emanetli ödeme ve canlı mezat.
               </p>
             </div>
             <nav aria-label="Pazaryeri" className="space-y-2 text-sm">
               <h2 className="font-semibold">Pazaryeri</h2>
-              <ul className="space-y-1 text-primary-foreground/80">
+              <ul className="space-y-1 text-chrome-foreground/80">
                 <li>
                   <Link className="hover:underline" href="/ilanlar">
                     İlanlar
@@ -59,7 +63,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </nav>
             <nav aria-label="Hesap" className="space-y-2 text-sm">
               <h2 className="font-semibold">Hesap</h2>
-              <ul className="space-y-1 text-primary-foreground/80">
+              <ul className="space-y-1 text-chrome-foreground/80">
                 <li>
                   <Link className="hover:underline" href="/giris">
                     Giriş
@@ -79,12 +83,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </nav>
             <div className="space-y-2 text-sm">
               <h2 className="font-semibold">Güvence</h2>
-              <p className="text-primary-foreground/80">
+              <p className="text-chrome-foreground/80">
                 Ödeme teslimata kadar emanette kalır. Yalnızca doğrulanmış şirketler işlem yapar.
               </p>
             </div>
           </div>
-          <div className="border-t border-primary-foreground/15 py-4 text-center text-xs text-primary-foreground/70">
+          <div className="border-t border-chrome-foreground/15 py-4 text-center text-xs text-chrome-foreground/70">
             © 2026 ARC Global · B2B inşaat malzemesi pazaryeri
           </div>
         </footer>{' '}

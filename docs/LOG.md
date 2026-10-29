@@ -131,3 +131,6 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: typecheck, lint, format:check yeşil; test:unit yeşil; test:int 14 dosya / 103 test, 2 kez yeşil (yeni: user-suspend 5, notifications 9). 200 paralel teklif testi süresi değişmedi (~2,6–2,9 sn). Canlı API: askıya alma (eski çerez 401, login 403, kaldırma), sipariş akışında bildirimler; admin ve alıcı sayfaları 200.
 - Risk: zil/diyaloglar tarayıcıda elle tıklanmadı; bildirim metinlerinde ilan adı yalnız mezat sonucunda var; eski bildirimler için temizlik/saklama süresi yok; canlı denemede demo veride bir sipariş (kargolandı) kaldı.
 - Sonraki adım: e-posta bildirimi (P2-09 kalanı), tarayıcıda elle gezinti.
+
+## 2026-10-29 — X-13 çok sektörlü kategori ağacı + ikinci el
+- Migration 0008 (7 üst kategori slug upsert, birim 'iş', listings.condition), özyinelemeli categoryId süzgeci, condition süzgeci/doğrulama, web seçici/süzgeç/rozet/ana sayfa kutuları, 14 örnek ilan (seed dev DB'ye çalıştırıldı). Test: typecheck, lint, format, unit, int (112, 2 kez) yeşil; / /ilanlar /satici/yeni /admin/ilan-ekle 200. Risk: sabit nitelik şeması yok; hurda kategorisi için mevcut ilan yoktu (condition geri doldurma gerekmedi). Sonraki: tarayıcıda elle gezinti.

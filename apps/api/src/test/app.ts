@@ -119,7 +119,7 @@ export async function makeAdmin(db: Kysely<Database>, email = 'admin@arc.local')
   return email;
 }
 
-export async function seedCategory(db: Kysely<Database>, slug = 'insaat-demiri') {
+export async function seedCategory(db: Kysely<Database>, slug = 'test-demir') {
   const parent = await db
     .insertInto('categories')
     .values({

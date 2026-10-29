@@ -317,6 +317,247 @@ for (const [
   created += 1;
 }
 
+// Other sectors (categories come from migration 0008): [seller, category slug, title, description,
+// attrs, condition, TL per sales unit, units available, min order units, location]. Keyed by company + title.
+const sectorListings = [
+  [
+    0,
+    'cnc-makineleri',
+    'İkinci el Doosan DNM 500 CNC dik işleme merkezi',
+    'Bakımlı, fabrika servis kayıtlı. Yerinde çalışırken görülebilir.',
+    {
+      Marka: 'Doosan',
+      Model: 'DNM 500',
+      'Üretim yılı': 2016,
+      'Çalışma saati': 14500,
+      Güç: '15 kW',
+    },
+    'ikinci_el',
+    1_850_000,
+    1,
+    1,
+    'Gebze, Kocaeli',
+  ],
+  [
+    1,
+    'kaynak-makineleri',
+    'Kemppi FastMig X 450 MIG/MAG kaynak makinesi',
+    'Sıfır, faturalı, 2 yıl garantili. Su soğutmalı.',
+    { Marka: 'Kemppi', Model: 'FastMig X 450', 'Üretim yılı': 2026, Güç: '450 A' },
+    'yeni',
+    142_000,
+    4,
+    1,
+    'Aliağa, İzmir',
+  ],
+  [
+    1,
+    'jenerator',
+    'İkinci el 250 kVA Perkins dizel jeneratör',
+    'Kabinli, otomatik devreye girme panolu. Düşük saatli.',
+    {
+      Marka: 'Perkins',
+      Model: '1106A',
+      'Üretim yılı': 2019,
+      'Çalışma saati': 3200,
+      Güç: '250 kVA',
+    },
+    'ikinci_el',
+    485_000,
+    2,
+    1,
+    'Aliağa, İzmir',
+  ],
+  [
+    0,
+    'ekskavator',
+    'İkinci el CAT 320 GC paletli ekskavatör',
+    'Orijinal kova ve kırıcı hattı, periyodik bakımları yapılmış.',
+    {
+      Marka: 'Caterpillar',
+      Model: '320 GC',
+      'Üretim yılı': 2018,
+      'Çalışma saati': 8900,
+      Güç: '121 kW',
+    },
+    'ikinci_el',
+    4_200_000,
+    1,
+    1,
+    'Gebze, Kocaeli',
+  ],
+  [
+    1,
+    'forklift',
+    'İkinci el Toyota 3 ton dizel forklift',
+    'Üç kademeli mast, yan kaydırmalı, lastikleri yeni.',
+    { Marka: 'Toyota', Model: '8FD30', 'Üretim yılı': 2017, 'Çalışma saati': 6100, Güç: '3 ton' },
+    'ikinci_el',
+    650_000,
+    3,
+    1,
+    'Aliağa, İzmir',
+  ],
+  [
+    0,
+    'aluminyum-hurda',
+    'Temiz alüminyum profil talaşı ve hurdası',
+    'Boya ve yağdan arındırılmış, 6063 alaşım ağırlıklı.',
+    { 'Malzeme sınıfı': 'Alüminyum 6063', 'Saflık/ayıklama': 'Ayıklanmış, %98' },
+    'hurda',
+    62_000,
+    18,
+    3,
+    'Gebze, Kocaeli',
+  ],
+  [
+    1,
+    'demir-celik-hurdasi',
+    'HMS 1&2 demir çelik hurdası (kantar teslim)',
+    'Eritmeye uygun, kalın kesit, yabancı madde oranı düşük.',
+    { 'Malzeme sınıfı': 'HMS 1&2', 'Saflık/ayıklama': 'Ayıklanmış' },
+    'hurda',
+    14_800,
+    250,
+    25,
+    'Aliağa, İzmir',
+  ],
+  [
+    0,
+    'bakir-hurda',
+    'Bakır tel hurdası (kablo ayıklanmış, parlak)',
+    'Kaplamasız birinci sınıf bakır, kantarlı teslim.',
+    { 'Malzeme sınıfı': 'Bakır birinci sınıf', 'Saflık/ayıklama': '%99' },
+    'hurda',
+    395_000,
+    4,
+    1,
+    'Gebze, Kocaeli',
+  ],
+  [
+    1,
+    'elektrik-motorlari',
+    'ABB 15 kW 1500 d/dk 3 fazlı elektrik motoru',
+    'IE3 verim sınıfı, B3 ayaklı, sıfır ürün.',
+    { Marka: 'ABB', Model: 'M3BP 160', Güç: '15 kW', Devir: '1500 d/dk' },
+    'yeni',
+    28_500,
+    12,
+    1,
+    'Aliağa, İzmir',
+  ],
+  [
+    0,
+    'pompalar',
+    'Grundfos CR 15-5 çok kademeli santrifüj pompa',
+    'Paslanmaz gövde, 7,5 kW motorlu, sıfır.',
+    { Marka: 'Grundfos', Model: 'CR 15-5', Güç: '7,5 kW' },
+    'yeni',
+    74_500,
+    5,
+    1,
+    'Gebze, Kocaeli',
+  ],
+  [
+    0,
+    'raf-depolama',
+    'Ağır yük palet rafı 2700x1100 mm (kademeli)',
+    'Elektrostatik boya, kat başına 2.500 kg taşıma kapasitesi.',
+    { Marka: 'Özel imalat', 'Taşıma kapasitesi': '2500 kg/kat' },
+    'yeni',
+    3_850,
+    150,
+    10,
+    'Gebze, Kocaeli',
+  ],
+  [
+    1,
+    'konveyor-tasima',
+    'İkinci el 12 metre bantlı konveyör sistemi',
+    'Motor ve redüktör grubu dahil, çalışır durumda sökülmüş.',
+    { Marka: 'Mavi Konveyör', 'Üretim yılı': 2015, Güç: '5,5 kW' },
+    'ikinci_el',
+    96_000,
+    3,
+    1,
+    'Aliağa, İzmir',
+  ],
+  [
+    0,
+    'celik-imalat',
+    'Hafif çelik çatı imalat ve montaj paketi (500 m²)',
+    'Proje, imalat, boya ve montaj dahil anahtar teslim iş paketi.',
+    { Kapsam: 'Proje + imalat + montaj', Süre: '30 gün', Bölge: 'Marmara' },
+    'yeni',
+    1_450_000,
+    3,
+    1,
+    'Gebze, Kocaeli',
+  ],
+  [
+    1,
+    'proje-muhendislik',
+    'Çelik yapı statik proje ve mühendislik hizmeti',
+    'Deprem yönetmeliğine uygun hesap, ruhsat ve uygulama projeleri.',
+    { Kapsam: 'Statik hesap + uygulama projesi', Süre: '15 gün', Bölge: 'Ege ve Marmara' },
+    'yeni',
+    120_000,
+    10,
+    1,
+    'Aliağa, İzmir',
+  ],
+] as const;
+
+let sectorCreated = 0;
+for (const [
+  s,
+  slug,
+  title,
+  description,
+  attrs,
+  condition,
+  priceTl,
+  units,
+  minUnits,
+  location,
+] of sectorListings) {
+  const companyId = sellers[s];
+  const exists = await db
+    .selectFrom('listings')
+    .select('id')
+    .where('company_id', '=', companyId)
+    .where('title', '=', title)
+    .executeTakeFirst();
+  if (exists) continue;
+  const category = await db
+    .selectFrom('categories')
+    .select(['id', 'base_per_unit'])
+    .where('slug', '=', slug)
+    .executeTakeFirstOrThrow();
+  const base = BigInt(category.base_per_unit);
+  await db
+    .insertInto('listings')
+    .values({
+      company_id: companyId,
+      category_id: category.id,
+      condition,
+      title,
+      description,
+      attrs: JSON.stringify(attrs),
+      sale_type: 'fixed',
+      unit_price_minor: BigInt(priceTl) * 100n,
+      quantity_base: BigInt(units) * base,
+      min_order_base: BigInt(minUnits) * base,
+      location,
+      delivery_terms: 'Yerinde teslim, nakliye alıcıya aittir.',
+      auction_draft: null,
+      status: 'published',
+      review_reason: null,
+    })
+    .execute();
+  sectorCreated += 1;
+}
+
 // Demo auctions: one LIVE (ends in 20 minutes, with a hidden reserve) and one starting in 2 hours.
 // Created once per title; re-running the seed does not duplicate them (an ended demo auction stays ended).
 const minute = 60_000;
@@ -494,7 +735,7 @@ for (const def of orderDefs) {
 }
 
 console.log(
-  `seed done: ${String(created)} new listings (${String(listings.length)} defined), ${String(auctionsCreated)} new auctions, ${String(ordersCreated)} new orders.`,
+  `seed done: ${String(created)} new listings (${String(listings.length)} defined), ${String(sectorCreated)} new sector listings (${String(sectorListings.length)} defined),${String(auctionsCreated)} new auctions, ${String(ordersCreated)} new orders.`,
 );
 console.log(
   `admin: ${ADMIN.email} / ${ADMIN.password} · demo users (password ${DEMO_PASSWORD}): satici1@arc.local, satici2@arc.local, alici@arc.local`,

@@ -52,6 +52,104 @@ describe('categories', () => {
     const root = res.body.find((n: { id: string }) => n.id === parentId);
     expect(root.children[0]).toMatchObject({ id: categoryId, unit: 'ton', basePerUnit: 1000 });
   });
+
+  type CatNode = { id: string; slug: string; unit: string; children: CatNode[] };
+  const flat = (ns: CatNode[]): CatNode[] => ns.flatMap((n) => [n, ...flat(n.children)]);
+
+  it('ships the 7-sector tree with unique slugs and sector units', async () => {
+    const tree = (await t.client().get('/categories')).body as CatNode[];
+    const roots = new Map(tree.map((r) => [r.slug, r]));
+    const expected: Record<string, number> = {
+      'insaat-malzemeleri': 5,
+      'makine-ekipman': 8,
+      'is-makineleri': 8,
+      'hurda-geri-donusum': 8,
+      'el-aletleri-hirdavat': 8,
+      'fabrika-depo-ekipmanlari': 6,
+      'proje-is-ihaleleri': 5,
+    };
+    for (const [slug, n] of Object.entries(expected)) {
+      expect(roots.get(slug)?.children, slug).toHaveLength(n);
+    }
+    const all = flat(tree);
+    expect(new Set(all.map((n) => n.slug)).size).toBe(all.length);
+    const insaat = roots.get('insaat-malzemeleri');
+    const celik = insaat?.children.find((c) => c.slug === 'celik');
+    expect(celik?.children.map((c) => c.slug)).toEqual(['insaat-demiri', 'profil', 'sac', 'boru']);
+    expect(roots.get('proje-is-ihaleleri')?.unit).toBe('iş');
+    expect(roots.get('makine-ekipman')?.children[0]?.unit).toBe('adet');
+  });
+});
+
+describe('condition and hierarchical category filter', () => {
+  const slugId = async (slug: string) =>
+    (
+      await t.db
+        .selectFrom('categories')
+        .select('id')
+        .where('slug', '=', slug)
+        .executeTakeFirstOrThrow()
+    ).id;
+
+  it('defaults to yeni, accepts ikinci_el, rejects an invalid value and filters', async () => {
+    const { c } = await verifiedSeller('cond');
+    const makine = await slugId('cnc-makineleri');
+    const used = await publish(c, {
+      categoryId: makine,
+      title: 'İkinci el CNC dik işleme merkezi',
+      condition: 'ikinci_el',
+    });
+    const fresh = await publish(c, { categoryId: makine, title: 'Sıfır CNC torna tezgahı' });
+
+    expect((await c.get(`/listings/${fresh}`)).body.condition).toBe('yeni');
+    expect((await c.get(`/listings/${used}`)).body.condition).toBe('ikinci_el');
+    const bad = await c.post(
+      '/listings',
+      listingBody(makine, { condition: 'kullanilmis' }),
+      idem(),
+    );
+    expect(bad.status).toBe(422);
+
+    const ids = async (qs: string) =>
+      ((await t.client().get(`/listings?${qs}`)).body.items as { id: string }[]).map((i) => i.id);
+    const second = await ids('condition=ikinci_el');
+    expect(second).toContain(used);
+    expect(second).not.toContain(fresh);
+    expect(await ids('condition=yeni')).toContain(fresh);
+    expect((await t.client().get('/listings?condition=bogus')).status).toBe(422);
+
+    // Owner edit can change the condition; the listing goes back to review.
+    const patched = await c.req('PATCH', `/listings/${fresh}`, { condition: 'hurda' });
+    expect(patched.status).toBe(200);
+    expect(patched.body.condition).toBe('hurda');
+    expect((await c.req('PATCH', `/listings/${fresh}`, { condition: 'x' })).status).toBe(422);
+  });
+
+  it('a parent category returns listings of all descendants (3 levels)', async () => {
+    const { c } = await verifiedSeller('tree');
+    const demir = await publish(c, {
+      categoryId: await slugId('insaat-demiri'),
+      title: 'B500C Ø14 hiyerarşi testi',
+    });
+    const alu = await publish(c, {
+      categoryId: await slugId('aluminyum-hurda'),
+      title: 'Alüminyum talaş hiyerarşi testi',
+      condition: 'hurda',
+    });
+    const ids = async (cat: string) =>
+      (
+        (await t.client().get(`/listings?categoryId=${await slugId(cat)}`)).body.items as {
+          id: string;
+        }[]
+      ).map((i) => i.id);
+
+    for (const slug of ['insaat-demiri', 'celik', 'insaat-malzemeleri']) {
+      expect(await ids(slug), slug).toContain(demir);
+    }
+    expect(await ids('insaat-malzemeleri')).not.toContain(alu);
+    expect(await ids('hurda-geri-donusum')).toContain(alu);
+    expect(await ids('makine-ekipman')).not.toContain(alu);
+  });
 });
 
 describe('listing lifecycle and state machine', () => {
