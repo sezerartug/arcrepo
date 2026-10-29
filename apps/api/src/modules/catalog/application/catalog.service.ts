@@ -386,7 +386,8 @@ export class CatalogService {
     } else if (o.auction !== undefined && o.auction !== null) {
       throw invalid('auction is only allowed for saleType auction');
     }
-    const minOrder = c.minOrderBase ?? 1n;
+    // An auction sells the whole lot to one winner, so its minimum order is the lot itself.
+    const minOrder = saleType === 'auction' ? need(c.quantityBase) : (c.minOrderBase ?? 1n);
     if (minOrder > need(c.quantityBase)) throw invalid('minOrderBase cannot exceed quantityBase');
     const category = await trx
       .selectFrom('categories')

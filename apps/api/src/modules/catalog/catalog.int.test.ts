@@ -219,6 +219,7 @@ describe('listing lifecycle and state machine', () => {
     expect(noKey.body.error.code).toBe('IDEMPOTENCY_KEY_REQUIRED');
     const auction = await post({
       saleType: 'auction',
+      minOrderBase: '1', // ignored: an auction sells the whole lot
       auction: {
         startPriceMinor: '2000000',
         minIncrementMinor: '10000',
@@ -228,6 +229,7 @@ describe('listing lifecycle and state machine', () => {
       },
     });
     expect(auction.status).toBe(201);
+    expect(auction.body.minOrderBase).toBe(auction.body.quantityBase); // minimum order = whole lot
     expect(auction.body.auction.reserveMinor).toBe('2300000'); // owner sees the secret reserve
     const id = auction.body.id;
     await admin.post(`/admin/listings/${id}/approve`, {});

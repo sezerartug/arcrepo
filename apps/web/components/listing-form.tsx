@@ -212,9 +212,11 @@ export function ListingForm({
         <Field label={`Miktar (${unit})`} htmlFor="quantity">
           <input id="quantity" name="quantity" required inputMode="decimal" className={inputCls} />
         </Field>
-        <Field label={`Minimum sipariş (${unit})`} htmlFor="minOrder">
-          <input id="minOrder" name="minOrder" inputMode="decimal" className={inputCls} />
-        </Field>
+        {saleType === 'auction' ? null : (
+          <Field label={`Minimum sipariş (${unit})`} htmlFor="minOrder">
+            <input id="minOrder" name="minOrder" inputMode="decimal" className={inputCls} />
+          </Field>
+        )}
       </div>
       {saleType === 'auction' ? (
         <fieldset className="grid gap-4 rounded-xl border p-4 sm:grid-cols-2">

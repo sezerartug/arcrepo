@@ -182,17 +182,21 @@ export function ListingEditForm({
             className={inputCls}
           />
         </Field>
-        <Field label={`Minimum sipariş (${unit})`} htmlFor="minOrder">
-          <input
-            id="minOrder"
-            name="minOrder"
-            inputMode="decimal"
-            defaultValue={
-              listing.minOrderBase ? qtyToInput(listing.minOrderBase, listing.basePerUnit ?? 1) : ''
-            }
-            className={inputCls}
-          />
-        </Field>
+        {isAuction ? null : (
+          <Field label={`Minimum sipariş (${unit})`} htmlFor="minOrder">
+            <input
+              id="minOrder"
+              name="minOrder"
+              inputMode="decimal"
+              defaultValue={
+                listing.minOrderBase
+                  ? qtyToInput(listing.minOrderBase, listing.basePerUnit ?? 1)
+                  : ''
+              }
+              className={inputCls}
+            />
+          </Field>
+        )}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Konum" htmlFor="location">
