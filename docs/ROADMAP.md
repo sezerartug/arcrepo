@@ -1,4 +1,4 @@
-# ROADMAP.md — Tek doğruluk kaynağı (backlog + ilerleme)
+﻿# ROADMAP.md — Tek doğruluk kaynağı (backlog + ilerleme)
 
 Kural: Bir görev yalnızca **doğrulandığında** `[x]` olur (test/çıktı kanıtı `docs/LOG.md`'de). Görev ID'leri (`P4-03`) PRD, LOG, commit ve PR başlıklarında kullanılır.
 İlerleme özeti: `scripts/progress.sh` · Süre tahminleri 3–4 mühendis + Claude Code varsayımıyla planlama tahminidir; dış bağımlılıklar (hukuk, PSP, KYC) takvimi kaydırabilir.
@@ -124,7 +124,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P4-12 Kötüye kullanım: teklif hız sınırları, kendi ilanına teklif engeli, şişirme sinyalleri v1
 - [ ] P4-13 Audit: tüm yönetici müdahaleleri ve teklif iptali nedenleri
 - [ ] P4-14 Eşzamanlılık testleri: N paralel teklif, aynı tutar yarışı, kapanış-teklif yarışı
-- [ ] P4-15 Dayanıklılık testleri: süreç ortada ölür, DB bağlantısı kopar, worker çift çalışır, saat sapması
+- [x] P4-15 Dayanıklılık testleri: süreç ortada ölür, DB bağlantısı kopar, worker çift çalışır, saat sapması
 - [ ] P4-16 k6 yük testi (son 10 saniye yoğunluğu) + p95 hedefi
 - [ ] P4-17 Değişmez denetçisi işi (I1–I10) üretimde periyodik koşar ve alarm üretir
 - [ ] P4-18 Gözlemlenebilirlik: teklif gecikmesi, kilit bekleme, kapanış gecikmesi, ret nedenleri panosu + alarmlar

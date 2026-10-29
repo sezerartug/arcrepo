@@ -130,7 +130,7 @@ export function AuctionPanel({
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <dt className="text-muted-foreground">Güncel fiyat</dt>
-          <dd className="text-2xl font-bold text-primary">
+          <dd className="text-3xl font-extrabold tracking-tight text-primary">
             {formatTry(snap.currentPriceMinor ?? snap.startPriceMinor)}
           </dd>
         </div>
@@ -138,7 +138,7 @@ export function AuctionPanel({
           <dt className="text-muted-foreground">
             {status === 'scheduled' ? 'Başlamasına' : 'Kalan süre'}
           </dt>
-          <dd className="font-mono text-2xl font-bold" aria-live="off">
+          <dd className="font-mono text-3xl font-extrabold text-brand-foreground" aria-live="off">
             {status === 'scheduled'
               ? formatRemaining(toStart)
               : live

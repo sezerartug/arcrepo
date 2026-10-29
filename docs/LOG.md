@@ -112,3 +112,9 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: typecheck, lint, format:check yeşil; test:unit api 47 + web 11 + config 11; test:int 58 (200 paralel teklif: çift kazanan 0, ledger toplamı 0, tam sipariş akışı). API üzerinden uçtan uca demo akışı geçti.
 - Risk: tarayıcıda elle test yapılmadı; dayanıklılık/k6/kaos testleri yok; giriş rate limit yok; e-posta/telefon doğrulama yok; `secrets:scan` yerel DB URL'lerini işaretliyor (dev değerleri).
 - Sonraki adım: firma sunumu öncesi tarayıcı gezintisi; temiz demo için `pnpm db:stop`, `.data\pg` sil, `pnpm demo`.
+### 2026-10-29 — P4-15 + arayüz — Dayanıklılık testleri, modern arayüz, eksik özellikler
+- Yapılan: Giriş/kayıt hız sınırı (5 hata/15 dk), parola sıfırlama (MailPort konsol+dosya), ilan düzenleme ekranı, otomatik teslim onayı (7 gün), P4-15 dayanıklılık testleri (5), arayüz modernleştirme (kurumsal lacivert, SVG görseller, kategori `categoryId` filtresi). `db/client.ts`: havuz istemcisine hata dinleyicisi (işlem ortasında kopmada süreç çöküyordu).
+- Karar: ürün sahibi — giriş sınırı 5/15 dk, oto onay 7 gün, mezat varsayılanları aynen; e-posta/telefon doğrulama ve mesajlaşma ertelendi. Yeni kural: belirsizse tahmin etme, sor.
+- Doğrulama: typecheck, lint, format:check yeşil; test:unit 73 (api 51, web 11, config 11); test:int 68 (9 dosya).
+- Risk: görsel sonuç tarayıcıda gözle doğrulanmadı; saat sapması testi yok (saat yalnızca DB'den); k6 yük testi yok.
+- Sonraki adım: kullanıcı kararlarıyla e-posta/telefon doğrulama ve mesajlaşma; demo gezintisi.

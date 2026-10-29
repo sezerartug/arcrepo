@@ -1,7 +1,9 @@
-import Link from 'next/link';
-import { formatDate, formatQty, formatTry } from '@/lib/api';
+﻿import Link from 'next/link';
+import { formatQty, formatTry } from '@/lib/api';
 import { imageSrc, type Listing } from '@/lib/types';
 import { Badge } from './common';
+import { CardCountdown } from './card-countdown';
+import { PlaceholderArt } from './illustrations';
 
 export function ListingImage({ listing, className }: { listing: Listing; className?: string }) {
   const first = listing.images?.[0];
@@ -9,12 +11,8 @@ export function ListingImage({ listing, className }: { listing: Listing; classNa
     // eslint-disable-next-line @next/next/no-img-element -- uploads are served by the API, not optimizable
     <img src={imageSrc(first)} alt={listing.title} className={className} />
   ) : (
-    <div
-      role="img"
-      aria-label="Görsel yok"
-      className={`flex items-center justify-center bg-muted text-xs text-muted-foreground ${className ?? ''}`}
-    >
-      Görsel yok
+    <div role="img" aria-label="Görsel yok" className={className}>
+      <PlaceholderArt category={listing.categoryName} className="size-full" />
     </div>
   );
 }
@@ -23,8 +21,15 @@ export function ListingCard({ listing }: { listing: Listing }) {
   const unit = listing.unit ?? 'birim';
   const isAuction = listing.saleType === 'auction';
   return (
-    <article className="relative overflow-hidden rounded-xl border bg-card transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md">
-      <ListingImage listing={listing} className="aspect-[4/3] w-full object-cover" />
+    <article className="relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-all focus-within:ring-2 focus-within:ring-ring hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="relative">
+        <ListingImage listing={listing} className="aspect-[4/3] w-full object-cover" />
+        {isAuction ? (
+          <span className="absolute top-2 left-2 rounded-full bg-brand px-2.5 py-1 text-xs font-bold text-brand-foreground shadow">
+            MEZAT
+          </span>
+        ) : null}
+      </div>
       <div className="space-y-1 p-3">
         <div className="flex items-center justify-between gap-2">
           <Badge tone={isAuction ? 'warn' : 'neutral'}>{isAuction ? 'Mezat' : 'Sabit fiyat'}</Badge>
@@ -40,7 +45,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
             {listing.title}
           </Link>
         </h3>
-        <p className="text-lg font-semibold text-primary">
+        <p className="text-xl font-bold tracking-tight text-primary">
           {isAuction && listing.auction
             ? formatTry(listing.auction.startPriceMinor)
             : formatTry(listing.unitPriceMinor)}
@@ -50,8 +55,12 @@ export function ListingCard({ listing }: { listing: Listing }) {
           {listing.basePerUnit
             ? `Stok: ${formatQty(listing.quantityBase, listing.basePerUnit, unit)}`
             : null}
-          {isAuction && listing.auction ? ` · Bitiş: ${formatDate(listing.auction.endsAt)}` : null}
         </p>
+        {isAuction && listing.auction ? (
+          <div className="pt-1">
+            <CardCountdown endsAt={listing.auction.endsAt} />
+          </div>
+        ) : null}
       </div>
     </article>
   );

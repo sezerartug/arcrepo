@@ -34,7 +34,7 @@ export function Field({
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-xl border bg-card p-4 text-card-foreground', className)}>
+    <div className={cn('rounded-2xl border bg-card p-5 text-card-foreground shadow-sm', className)}>
       {children}
     </div>
   );
