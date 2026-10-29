@@ -1,6 +1,12 @@
-import fc from 'fast-check';
+﻿import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { ORDER_STATUSES, assertTransition, canTransition, commissionMinor } from './rules.js';
+import {
+  ORDER_STATUSES,
+  assertTransition,
+  canTransition,
+  commissionMinor,
+  splitDispute,
+} from './rules.js';
 
 describe('order state machine', () => {
   const allowed = new Set([
@@ -9,6 +15,9 @@ describe('order state machine', () => {
     'awaiting_payment>payment_failed',
     'paid_escrow>shipped',
     'shipped>delivered',
+    'shipped>disputed',
+    'disputed>completed',
+    'disputed>refunded',
     'delivered>completed',
   ]);
 
@@ -33,7 +42,7 @@ describe('order state machine', () => {
   });
 
   it('terminal states have no way out', () => {
-    for (const s of ['completed', 'cancelled', 'payment_failed'] as const) {
+    for (const s of ['completed', 'refunded', 'cancelled', 'payment_failed'] as const) {
       expect(ORDER_STATUSES.some((to) => canTransition(s, to))).toBe(false);
     }
   });
@@ -57,5 +66,40 @@ describe('commissionMinor', () => {
         expect(2n * c * 10_000n <= exactTimes2 + 10_000n).toBe(true);
       }),
     );
+  });
+});
+
+describe('splitDispute', () => {
+  it('takes commission on the kept amount only', () => {
+    // 24 500 000 total, 10 000 000 refunded: kept 14 500 000, 2 % = 290 000
+    expect(splitDispute(24_500_000n, 10_000_000n, 200)).toEqual({
+      refundMinor: 10_000_000n,
+      commissionMinor: 290_000n,
+      sellerPayoutMinor: 14_210_000n,
+    });
+    expect(splitDispute(1_000n, 1_000n, 200)).toEqual({
+      refundMinor: 1_000n,
+      commissionMinor: 0n,
+      sellerPayoutMinor: 0n,
+    });
+    expect(splitDispute(1_000n, 0n, 200).commissionMinor).toBe(commissionMinor(1_000n, 200));
+  });
+
+  it('always sums to the total and rejects out-of-range refunds', () => {
+    fc.assert(
+      fc.property(
+        fc.bigInt({ min: 1n, max: 10n ** 12n }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        fc.integer({ min: 0, max: 10_000 }),
+        (total, ratio, bps) => {
+          const refund = BigInt(Math.floor(Number(total) * ratio));
+          const s = splitDispute(total, refund > total ? total : refund, bps);
+          expect(s.refundMinor + s.commissionMinor + s.sellerPayoutMinor).toBe(total);
+          expect(s.sellerPayoutMinor >= 0n).toBe(true);
+        },
+      ),
+    );
+    expect(() => splitDispute(100n, 101n, 200)).toThrow(RangeError);
+    expect(() => splitDispute(100n, -1n, 200)).toThrow(RangeError);
   });
 });

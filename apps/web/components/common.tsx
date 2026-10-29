@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ApiError } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
@@ -112,6 +112,7 @@ const STATUS_LABELS: Record<string, [string, keyof typeof TONES]> = {
   delivered: ['Teslim edildi', 'ok'],
   completed: ['Tamamlandı', 'ok'],
   payment_failed: ['Ödeme başarısız', 'bad'],
+  disputed: ['İtirazlı', 'bad'],
   held: ['Emanette', 'ok'],
   refunded: ['İade edildi', 'neutral'],
   applied: ['Siparişe sayıldı', 'ok'],

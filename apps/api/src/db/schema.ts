@@ -259,7 +259,9 @@ export type OrderStatus =
   | 'delivered'
   | 'completed'
   | 'cancelled'
-  | 'payment_failed';
+  | 'payment_failed'
+  | 'disputed'
+  | 'refunded';
 
 export interface OrdersTable {
   id: Generated<string>;
@@ -274,6 +276,7 @@ export interface OrdersTable {
   commission_minor: bigint;
   deposit_applied_minor: ColumnType<bigint, bigint | undefined, never>;
   amount_due_minor: bigint;
+  refund_minor: ColumnType<bigint, bigint | undefined, bigint>;
   status: ColumnType<OrderStatus, OrderStatus, OrderStatus>;
   payment_reference: string;
   payment_due_at: ColumnType<Date, Date | RawBuilder<Date>, never>;
@@ -297,8 +300,23 @@ export interface OrderEventsTable {
   at: CreatedAt;
 }
 
+export interface OrderDisputesTable {
+  id: Generated<string>;
+  order_id: string;
+  opened_by_user_id: string;
+  reason: string;
+  status: ColumnType<'open' | 'resolved', 'open' | undefined, 'resolved'>;
+  resolution: ColumnType<'refund' | 'rejected' | null, never, 'refund' | 'rejected'>;
+  refund_minor: ColumnType<bigint | null, never, bigint | null>;
+  resolution_note: ColumnType<string | null, never, string>;
+  resolved_by_user_id: ColumnType<string | null, never, string>;
+  opened_at: CreatedAt;
+  resolved_at: ColumnType<Date | null, never, RawBuilder<Date>>;
+}
+
 export interface Database {
   orders: OrdersTable;
+  order_disputes: OrderDisputesTable;
   order_events: OrderEventsTable;
   audit_log: AuditLogTable;
   users: UsersTable;

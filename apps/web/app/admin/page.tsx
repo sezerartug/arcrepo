@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ActionButton } from '@/components/action-button';
 import { AdminAuditTable } from '@/components/admin-audit-table';
+import { AdminDisputeActions } from '@/components/admin-dispute-actions';
 import { AdminTabs } from '@/components/admin-tabs';
 import {
   Card,
@@ -19,6 +20,8 @@ import type {
   AdminAuctionList,
   AdminAuditRow,
   AdminCompanyRow,
+  AdminDisputeRow,
+  AdminOrderRow,
   AdminUserRow,
   Paged,
 } from '@/lib/admin-types';
@@ -92,6 +95,23 @@ const AUCTION_FILTERS = [
   ['ENDED_NO_SALE', 'Satış olmadı'],
   ['PAYMENT_FAILED', 'Ödeme başarısız'],
   ['CANCELLED', 'İptal'],
+] as const;
+
+const ORDER_FILTERS = [
+  ['', 'Tümü'],
+  ['awaiting_payment', 'Ödeme bekliyor'],
+  ['paid_escrow', 'Emanette'],
+  ['shipped', 'Kargoda'],
+  ['disputed', 'İtirazlı'],
+  ['completed', 'Tamamlandı'],
+  ['refunded', 'İade edildi'],
+  ['cancelled', 'İptal'],
+  ['payment_failed', 'Ödeme başarısız'],
+] as const;
+const DISPUTE_FILTERS = [
+  ['open', 'Açık'],
+  ['resolved', 'Sonuçlanan'],
+  ['all', 'Tümü'],
 ] as const;
 
 function H2({ id, children }: { id: string; children: React.ReactNode }) {
@@ -439,6 +459,172 @@ async function AuctionsTab({ sp }: { sp: SP }) {
     </section>
   );
 }
+async function OrdersTab({ sp }: { sp: SP }) {
+  const page = Number(sp.page) > 0 ? Number(sp.page) : 1;
+  const current = ORDER_FILTERS.find(([s]) => s === sp.status)?.[0] ?? '';
+  const res = await serverGet<Paged<AdminOrderRow>>(
+    `/admin/orders${toQuery({ status: current, q: sp.q, page: String(page) })}`,
+  );
+  return (
+    <section aria-labelledby="a-orders">
+      <H2 id="a-orders">Siparişler</H2>
+      <SubNav
+        label="Sipariş durumu"
+        items={ORDER_FILTERS}
+        current={current}
+        href={(k) => `/admin${toQuery({ tab: 'siparisler', status: k, q: sp.q })}`}
+      />
+      <form method="get" className="mb-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+        <input type="hidden" name="tab" value="siparisler" />
+        {current ? <input type="hidden" name="status" value={current} /> : null}
+        <Field label="Ara" htmlFor="q">
+          <input
+            id="q"
+            name="q"
+            defaultValue={sp.q}
+            className={inputCls}
+            placeholder="İlan, alıcı, satıcı veya referans"
+          />
+        </Field>
+        <Button type="submit" variant="outline">
+          Ara
+        </Button>
+      </form>
+      {!res.ok ? (
+        <LoadError error={res.error} />
+      ) : res.data.items.length === 0 ? (
+        <Empty>Bu ölçütlerde sipariş yok.</Empty>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <caption className="sr-only">Siparişler</caption>
+              <thead className="text-left text-muted-foreground">
+                <tr>
+                  <th scope="col" className="py-1">
+                    İlan
+                  </th>
+                  <th scope="col">Alıcı</th>
+                  <th scope="col">Satıcı</th>
+                  <th scope="col">Tutar</th>
+                  <th scope="col">Durum</th>
+                  <th scope="col">Tarih</th>
+                </tr>
+              </thead>
+              <tbody>
+                {res.data.items.map((o) => (
+                  <tr key={o.id} className="border-t align-top">
+                    <td className="py-1">
+                      <Link className="underline" href={`/siparisler/${o.id}`}>
+                        {o.listingTitle}
+                      </Link>
+                      {o.fromAuction ? <span className="text-xs"> (mezat)</span> : null}
+                    </td>
+                    <td>{o.buyerName}</td>
+                    <td>{o.sellerName}</td>
+                    <td>
+                      {formatTry(o.totalMinor)}
+                      {o.refundMinor !== '0' ? (
+                        <div className="text-xs text-muted-foreground">
+                          İade: {formatTry(o.refundMinor)}
+                        </div>
+                      ) : null}
+                    </td>
+                    <td>
+                      <StatusBadge status={o.status} />
+                    </td>
+                    <td>{fmt(o.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={page}
+            total={res.data.total}
+            href={(p) =>
+              `/admin${toQuery({ tab: 'siparisler', status: current, q: sp.q, page: String(p) })}`
+            }
+          />
+        </>
+      )}
+    </section>
+  );
+}
+
+async function DisputesTab({ sp }: { sp: SP }) {
+  const page = Number(sp.page) > 0 ? Number(sp.page) : 1;
+  const current = DISPUTE_FILTERS.find(([s]) => s === sp.status)?.[0] ?? 'open';
+  const res = await serverGet<Paged<AdminDisputeRow>>(
+    `/admin/disputes${toQuery({ status: current === 'all' ? '' : current, page: String(page) })}`,
+  );
+  return (
+    <section aria-labelledby="a-disputes">
+      <H2 id="a-disputes">İtirazlar</H2>
+      <p className="mb-2 text-xs text-muted-foreground">
+        Alıcı itirazı sırasında otomatik teslim onayı ve satıcı hakedişi durur. Karar: kısmi/tam
+        iade veya itirazı reddet.
+      </p>
+      <SubNav
+        label="İtiraz durumu"
+        items={DISPUTE_FILTERS}
+        current={current}
+        href={(k) => `/admin${toQuery({ tab: 'itirazlar', status: k })}`}
+      />
+      {!res.ok ? (
+        <LoadError error={res.error} />
+      ) : res.data.items.length === 0 ? (
+        <Empty>Bu durumda itiraz yok.</Empty>
+      ) : (
+        <>
+          <div className="space-y-2">
+            {res.data.items.map((d) => (
+              <Card key={d.id} className="space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-medium">
+                      <Link className="underline" href={`/siparisler/${d.orderId}`}>
+                        {d.listingTitle}
+                      </Link>{' '}
+                      <StatusBadge status={d.orderStatus} />
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Alıcı: {d.buyerName} · Satıcı: {d.sellerName} · Toplam{' '}
+                      {formatTry(d.totalMinor)}
+                      {d.fromAuction ? ' · Mezat siparişi' : ''} · Açılış {fmt(d.openedAt)}
+                    </p>
+                  </div>
+                  {d.status === 'open' ? (
+                    <AdminDisputeActions disputeId={d.id} totalMinor={d.totalMinor} />
+                  ) : null}
+                </div>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">İtiraz nedeni: </span>
+                  {d.reason}
+                </p>
+                {d.status === 'resolved' ? (
+                  <p className="text-sm">
+                    <span className="text-muted-foreground">Karar: </span>
+                    {d.resolution === 'refund'
+                      ? `İade (${formatTry(d.refundMinor)})`
+                      : 'İtiraz reddedildi'}{' '}
+                    · {d.resolutionNote} · {fmt(d.resolvedAt ?? undefined)}
+                  </p>
+                ) : null}
+              </Card>
+            ))}
+          </div>
+          <Pagination
+            page={page}
+            total={res.data.total}
+            href={(p) => `/admin${toQuery({ tab: 'itirazlar', status: current, page: String(p) })}`}
+          />
+        </>
+      )}
+    </section>
+  );
+}
+
 async function PaymentsTab() {
   const [payments, companies] = await Promise.all([
     serverGet<AdminPayment[] | { items: AdminPayment[] }>('/admin/payments?status=pending'),
@@ -568,6 +754,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <ListingsTab sp={sp} />
       ) : tab === 'mezatlar' ? (
         <AuctionsTab sp={sp} />
+      ) : tab === 'siparisler' ? (
+        <OrdersTab sp={sp} />
+      ) : tab === 'itirazlar' ? (
+        <DisputesTab sp={sp} />
       ) : tab === 'havaleler' ? (
         <PaymentsTab />
       ) : tab === 'denetim' ? (

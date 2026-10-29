@@ -21,6 +21,7 @@ import {
   type CompanyAuthContext,
 } from '../../identity/index.js';
 import { notFound, requireIdempotencyKey, validate } from '../../platform/index.js';
+import { DisputesService } from '../application/disputes.service.js';
 import { OrdersService } from '../application/orders.service.js';
 
 const id = (v: string): string => {
@@ -30,7 +31,10 @@ const id = (v: string): string => {
 
 @Controller()
 export class OrdersController {
-  constructor(private readonly orders: OrdersService) {}
+  constructor(
+    private readonly orders: OrdersService,
+    private readonly disputes: DisputesService,
+  ) {}
 
   @Post('listings/:id/buy')
   @UseGuards(CompanyGuard)
@@ -74,6 +78,48 @@ export class OrdersController {
   @UseGuards(CompanyGuard)
   confirmDelivery(@CurrentCompanyAuth() a: CompanyAuthContext, @Param('id') orderId: string) {
     return this.orders.confirmDelivery(a, id(orderId));
+  }
+
+  // Buyer objection while the order is shipped; stops auto-confirmation until an admin decides.
+  @Post('orders/:id/dispute')
+  @UseGuards(CompanyGuard)
+  async dispute(
+    @CurrentCompanyAuth() a: CompanyAuthContext,
+    @Param('id') orderId: string,
+    @Body() body: unknown,
+    @Headers('idempotency-key') key: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const r = await this.disputes.open(a, id(orderId), requireIdempotencyKey(key), body);
+    res.status(r.status);
+    return r.body;
+  }
+
+  @Get('admin/orders')
+  @UseGuards(AdminGuard)
+  adminOrders(@Query() q: Record<string, unknown>) {
+    return this.orders.adminList(q);
+  }
+
+  @Get('admin/disputes')
+  @UseGuards(AdminGuard)
+  adminDisputes(@Query() q: Record<string, unknown>) {
+    return this.disputes.adminList(q);
+  }
+
+  @Post('admin/disputes/:id/resolve')
+  @HttpCode(200)
+  @UseGuards(AdminGuard)
+  async resolveDispute(
+    @CurrentAuth() a: AuthContext,
+    @Param('id') disputeId: string,
+    @Body() body: unknown,
+    @Headers('idempotency-key') key: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const r = await this.disputes.resolve(a, id(disputeId), requireIdempotencyKey(key), body);
+    res.status(r.status);
+    return r.body;
   }
 
   // Buyer (breach) or platform admin (refund); the service decides by role.

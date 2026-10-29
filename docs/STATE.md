@@ -34,3 +34,8 @@ MVP tamam (yerel demo). Sıradaki: tarayıcıda elle gezinti + hata düzeltme; s
 
 ## Yönetici mezat izleme (X-06)
 - `GET /admin/auctions?status=&q=&page=` (durum büyük harf: LIVE…) ve `GET /admin/auctions/:id` (gerçek şirket+kullanıcı adları; `admin.auction.view` audit; `?poll=1` yoklamada audit yazmaz). Web: `/admin?tab=mezatlar`, `/admin/mezatlar/[id]` (`AdminAuctionMonitor`, 3 sn yoklama). `GET /auctions` artık `imageUrl` döner (mezat kartı görseli).
+
+## İtiraz / iade (X-08, X-09)
+- Alıcı yalnızca `shipped` iken `POST /orders/:id/dispute {reason ≥10}` (★) açar → `disputed` (OrderSweeper ve confirm-delivery çalışmaz: geçiş tablosunda disputed→delivered yok). Yönetici: `GET /admin/disputes?status=&page=`, `POST /admin/disputes/:id/resolve {outcome:'refund'|'reject', refundMinor?, note}` (★). `GET /admin/orders?status=&q=&page=`.
+- Muhasebe (tek journal `order.dispute_resolution`): escrow −total; bank_clearing +R; seller_payable +(K−komisyon(K)); platform_revenue +komisyon(K); K=total−R. R=total → `refunded` (satıcı/komisyon 0; mezat siparişinde teminat `refunded`, mezat yine SETTLED); aksi `completed`. `orders.refund_minor` ve `commission_minor` güncellenir; satıcı net = total − refund − commission.
+- Web: `/siparisler/[id]` "İtiraz aç" diyaloğu + itiraz kartı; `/admin?tab=itirazlar` ve `?tab=siparisler`. Destek talebi (ticket) akışı yok (P3-07 KISMİ).

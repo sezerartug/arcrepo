@@ -7,6 +7,8 @@ export const ADMIN_TABS = [
   ['kullanicilar', 'Kullanıcılar', '/admin?tab=kullanicilar'],
   ['ilanlar', 'İlanlar', '/admin?tab=ilanlar'],
   ['mezatlar', 'Mezatlar', '/admin?tab=mezatlar'],
+  ['siparisler', 'Siparişler', '/admin?tab=siparisler'],
+  ['itirazlar', 'İtirazlar', '/admin?tab=itirazlar'],
   ['havaleler', 'Havaleler', '/admin?tab=havaleler'],
   ['denetim', 'Denetim', '/admin?tab=denetim'],
   ['ilan-ekle', 'İlan ekle', '/admin/ilan-ekle'],

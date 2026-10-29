@@ -211,8 +211,36 @@ export class OrdersService implements AuctionOrderPort {
       .orderBy('at')
       .orderBy('id')
       .execute();
+    const dispute = await db
+      .selectFrom('order_disputes')
+      .select([
+        'id',
+        'status',
+        'reason',
+        'resolution',
+        'refund_minor',
+        'resolution_note',
+        'opened_at',
+        'resolved_at',
+      ])
+      .where('order_id', '=', id)
+      .orderBy('opened_at', 'desc')
+      .limit(1)
+      .executeTakeFirst();
     return {
       ...toView(r, viewerCompanyId, this.cfg.autoConfirmDays),
+      dispute: dispute
+        ? {
+            id: dispute.id,
+            status: dispute.status,
+            reason: dispute.reason,
+            resolution: dispute.resolution,
+            refundMinor: dispute.refund_minor,
+            resolutionNote: dispute.resolution_note,
+            openedAt: dispute.opened_at,
+            resolvedAt: dispute.resolved_at,
+          }
+        : null,
       history: history.map((h) => ({
         type: h.type,
         from: h.from_status,
@@ -554,7 +582,8 @@ export class OrdersService implements AuctionOrderPort {
         listingTitle: r.listing_title,
         totalMinor: r.total_minor,
         commissionMinor: r.commission_minor,
-        netMinor: r.total_minor - r.commission_minor,
+        netMinor: r.total_minor - r.refund_minor - r.commission_minor,
+        refundMinor: r.refund_minor,
         completedAt: r.completed_at,
       })),
     };
@@ -609,6 +638,54 @@ export class OrdersService implements AuctionOrderPort {
     };
   }
 
+  // Platform-wide order list for the admin panel (names, amounts, status). Read-only.
+  async adminList(params: { status?: unknown; q?: unknown; page?: unknown }) {
+    const page = validate.pageParam(params.page);
+    const q = typeof params.q === 'string' ? params.q.trim().slice(0, 100) : '';
+    const pattern = `%${q.replace(/[\\%_]/g, '\\$&')}%`;
+    const status =
+      typeof params.status === 'string' && params.status !== ''
+        ? validate.oneOf({ status: params.status }, 'status', STATUSES)
+        : undefined;
+    const filtered = this.base(this.db)
+      .$if(status !== undefined, (qb) => qb.where('o.status', '=', status as OrderStatus))
+      .$if(q !== '', (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb('l.title', 'ilike', pattern),
+            eb('b.legal_name', 'ilike', pattern),
+            eb('s.legal_name', 'ilike', pattern),
+            eb('o.payment_reference', 'ilike', pattern),
+          ]),
+        ),
+      );
+    const total = await this.db
+      .selectFrom(filtered.clearSelect().select('o.id').as('x'))
+      .select((eb) => eb.fn.countAll<string>().as('n'))
+      .executeTakeFirstOrThrow();
+    const rows = await filtered
+      .orderBy('o.created_at', 'desc')
+      .orderBy('o.id')
+      .limit(ADMIN_PAGE_SIZE)
+      .offset((page - 1) * ADMIN_PAGE_SIZE)
+      .execute();
+    return {
+      page,
+      total: Number(total.n),
+      items: rows.map((r) => ({
+        id: r.id,
+        listingTitle: r.listing_title,
+        buyerName: r.buyer_name,
+        sellerName: r.seller_name,
+        status: r.status,
+        totalMinor: r.total_minor,
+        refundMinor: r.refund_minor,
+        fromAuction: r.source_auction_id !== null,
+        createdAt: r.created_at,
+      })),
+    };
+  }
+
   // ---- helpers -----------------------------------------------------------------------------------
   private async lock(trx: Kysely<Database>, id: string): Promise<OrderRow> {
     const o = await trx
@@ -638,6 +715,7 @@ export class OrdersService implements AuctionOrderPort {
   }
 }
 
+const ADMIN_PAGE_SIZE = 20;
 const STATUSES = [
   'awaiting_payment',
   'paid_escrow',
@@ -646,6 +724,8 @@ const STATUSES = [
   'completed',
   'cancelled',
   'payment_failed',
+  'disputed',
+  'refunded',
 ] as const satisfies readonly OrderStatus[];
 
 interface ViewRow extends OrderRow {
@@ -672,6 +752,7 @@ function toView(r: ViewRow, viewerCompanyId: string, autoConfirmDays: number) {
     quantityBase: r.quantity_base,
     totalMinor: r.total_minor,
     depositAppliedMinor: r.deposit_applied_minor,
+    refundMinor: r.refund_minor,
     amountDueMinor: r.amount_due_minor,
     paymentDueAt: r.payment_due_at,
     trackingNote: r.tracking_note,
@@ -688,7 +769,7 @@ function toView(r: ViewRow, viewerCompanyId: string, autoConfirmDays: number) {
       ? { iban: DEMO_IBAN, paymentReference: r.payment_reference }
       : {
           commissionMinor: r.commission_minor,
-          netPayoutMinor: r.total_minor - r.commission_minor,
+          netPayoutMinor: r.total_minor - r.refund_minor - r.commission_minor,
         }),
   };
 }

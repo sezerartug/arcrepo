@@ -1,4 +1,5 @@
 import { ActionButton } from '@/components/action-button';
+import { OrderDisputeDialog } from '@/components/order-dispute-dialog';
 import { Card, LoadError, PageTitle, StatusBadge, statusLabel } from '@/components/common';
 import { formatDate, formatTry } from '@/lib/api';
 import { requireMe, serverGet } from '@/lib/server-api';
@@ -17,7 +18,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const isBuyer = o.buyerCompanyId === me.company?.id;
   const isSeller = o.sellerCompanyId === me.company?.id;
   const reached = STEPS.indexOf(o.status);
-  const terminal = ['cancelled', 'payment_failed'].includes(o.status);
+  const terminal = ['cancelled', 'payment_failed', 'disputed', 'refunded'].includes(o.status);
+  const d = o.dispute;
+  const hasRefund = Boolean(o.refundMinor && o.refundMinor !== '0');
 
   return (
     <div className="space-y-6">
@@ -65,6 +68,12 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <dd>{Number(o.quantityBase).toLocaleString('tr-TR')}</dd>
           <dt className="text-muted-foreground">Toplam (KDV hariç)</dt>
           <dd className="font-semibold">{formatTry(o.totalMinor)}</dd>
+          {hasRefund ? (
+            <>
+              <dt className="text-muted-foreground">İade edilen</dt>
+              <dd>{formatTry(o.refundMinor)}</dd>
+            </>
+          ) : null}
           {o.depositAppliedMinor && o.depositAppliedMinor !== '0' ? (
             <>
               <dt className="text-muted-foreground">Düşülen teminat</dt>
@@ -73,6 +82,40 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           ) : null}
         </dl>
       </Card>
+
+      {d ? (
+        <Card className="space-y-2" aria-label="İtiraz">
+          <h2 className="font-semibold text-primary">
+            İtiraz{' '}
+            <span className="text-sm font-normal">
+              {d.status === 'open'
+                ? '— inceleniyor'
+                : d.resolution === 'refund'
+                  ? '— iade kararı'
+                  : '— reddedildi'}
+            </span>
+          </h2>
+          <p className="text-sm">
+            <span className="text-muted-foreground">Neden ({formatDate(d.openedAt)}): </span>
+            {d.reason}
+          </p>
+          {d.status === 'open' ? (
+            <p className="text-sm text-muted-foreground">
+              İtiraz sonuçlanana kadar otomatik teslim onayı ve satıcı hakedişi durdurulmuştur.
+            </p>
+          ) : (
+            <p className="text-sm">
+              <span className="text-muted-foreground">
+                Karar{d.resolvedAt ? ` (${formatDate(d.resolvedAt)})` : ''}:{' '}
+              </span>
+              {d.resolution === 'refund'
+                ? `İade: ${formatTry(d.refundMinor)}`
+                : 'İtiraz reddedildi'}
+              {d.resolutionNote ? ` — ${d.resolutionNote}` : ''}
+            </p>
+          )}
+        </Card>
+      ) : null}
 
       {isBuyer && o.status === 'awaiting_payment' ? (
         <Card className="space-y-2">
@@ -119,6 +162,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             onDoneMessage="Teslim onaylandı; hakediş satıcıya aktarılacak."
           />
         ) : null}
+        {isBuyer && o.status === 'shipped' ? <OrderDisputeDialog orderId={o.id} /> : null}
       </div>
     </div>
   );

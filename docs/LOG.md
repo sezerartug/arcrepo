@@ -118,3 +118,10 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: typecheck, lint, format:check yeşil; test:unit 73 (api 51, web 11, config 11); test:int 68 (9 dosya).
 - Risk: görsel sonuç tarayıcıda gözle doğrulanmadı; saat sapması testi yok (saat yalnızca DB'den); k6 yük testi yok.
 - Sonraki adım: kullanıcı kararlarıyla e-posta/telefon doğrulama ve mesajlaşma; demo gezintisi.
+
+### 2026-10-29 — X-08 + X-09 — Sipariş itirazı / iade, admin sipariş listesi
+- Yapılan: migration 0006 (`order_disputes`, `orders.refund_minor`, durumlar `disputed`/`refunded`, geçiş tablosu shipped→disputed→completed|refunded); `DisputesService` (aç / çöz / admin listesi), `GET /admin/orders`; web: alıcı itiraz diyaloğu, itiraz kartı, admin "Siparişler" ve "İtirazlar" sekmeleri (TL→kuruş, tam iade kısayolu, not zorunlu).
+- Karar (ürün sahibi): itiraz yalnız alıcı + yalnız `shipped`; açıkken oto onay/teslim onayı/hakediş durur; yönetici kısmi/tam iade veya reddet. Kısmi iadede komisyon kalan tutar üzerinden. Tam iadede mezat teminatı alıcıya döner, mezat SETTLED.
+- Doğrulama: typecheck, lint, format:check yeşil; test:unit (api 10 dosya + yeni splitDispute testleri); test:int 12 dosya / 89 test, 2 kez yeşil (disputes.int.test.ts 10 test: yetki, durum, oto onay atlama, kısmi/tam/mezat iade, reddet, çift ve eşzamanlı resolve, geçersiz tutar, I7/I8). Canlı API'de itiraz→kısmi iade akışı denendi (9.150.000 → iade 2.287.500, komisyon 137.250, satıcı 6.725.250); admin ve alıcı/satıcı sayfaları 200.
+- Risk: arayüz tarayıcıda elle tıklanmadı (dev HTML gövdesi akışlı); itiraz için ek kanıt/dosya, satıcı yanıtı ve destek talebi yok; itiraz süresi sınırı yok (shipped süresince açık); iade gerçek bankaya gitmez (bank_clearing kaydı).
+- Sonraki adım: P3-07 kalan kısmı (destek talebi) ve tarayıcıda elle gezinti.

@@ -158,3 +158,33 @@ export type AdminAuctionDetail = {
   } | null;
   order: { id: string; status: string; totalMinor: string } | null;
 };
+
+export type AdminOrderRow = {
+  id: string;
+  listingTitle: string;
+  buyerName: string;
+  sellerName: string;
+  status: string;
+  totalMinor: string;
+  refundMinor: string;
+  fromAuction: boolean;
+  createdAt: string;
+};
+
+export type AdminDisputeRow = {
+  id: string;
+  orderId: string;
+  listingTitle: string;
+  buyerName: string;
+  sellerName: string;
+  totalMinor: string;
+  orderStatus: string;
+  fromAuction: boolean;
+  reason: string;
+  status: 'open' | 'resolved';
+  resolution: 'refund' | 'rejected' | null;
+  refundMinor: string | null;
+  resolutionNote: string | null;
+  openedAt: string;
+  resolvedAt: string | null;
+};

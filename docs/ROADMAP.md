@@ -100,7 +100,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P3-04 Webhook alıcısı: imza doğrulama, tekilleştirme, sırasız/gecikmeli olay toleransı
 - [x] P3-05 Ledger: komisyon, escrow tutma, serbest bırakma, iade girişleri + değişmez testleri
 - [x] P3-06 Teslimat/kargo durumu (manuel + 1 entegrasyon), teslim onayı, otomatik onay süresi
-- [ ] P3-07 İtiraz, iade ve destek talebi akışları
+- [ ] P3-07 İtiraz, iade ve destek talebi akışları — KISMİ: itiraz + iade yapıldı (X-08); destek talebi (ticket) akışı yok
 - [ ] P3-08 Satıcı hakediş/ödeme (alt üye işyeri) + günlük mutabakat işi — KISMİ (2026-10-29): sahte hakediş transferi + audit var; günlük mutabakat/alt üye işyeri yok
 - [ ] P3-09 Sabit fiyatlı satın alma uçtan uca (Playwright) — KISMİ (2026-10-29): API düzeyinde uçtan uca doğrulandı; Playwright testi yok
 - [ ] P3-10 Ödeme kaos testleri: webhook tekrarı/kaybı/gecikmesi, süreç çökmesi, çift tıklama — KISMİ (2026-10-29): çift tıklama/çift onay/kapanış çökmesi testleri var; webhook yok (sahte sağlayıcı)
@@ -169,3 +169,5 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] X-05 Yönetici ilan alanlarını düzenleyebilir — karar: evet (X-07)
 - [x] X-06 Yönetici mezat izleme: `GET /admin/auctions` + `/admin/auctions/:id` (gerçek teklif veren şirket/kullanıcı, reddedilen denemeler, teminat, olaylar, sonuç/sipariş; `admin.auction.view` audit), web `/admin?tab=mezatlar` + `/admin/mezatlar/[id]` (3 sn yoklama, mezat iptali) (int test; tarayıcıda elle denenmedi)
 - [x] X-07 Yönetici ilan alanı düzenleme: `PATCH /admin/listings/:id` (zorunlu neden, `admin.listing.update` audit, durum korunur; yayındaki mezat ilanı `AUCTION_LISTING_LOCKED`) + düzenleme ekranında neden kutusu (int test; tarayıcıda elle denenmedi)
+- [x] X-08 İtiraz/iade: alıcı `shipped` iken itiraz açar (`POST /orders/:id/dispute`, ★) → sipariş `disputed`, oto onay + teslim onayı + hakediş durur; yönetici `POST /admin/disputes/:id/resolve` ile kısmi/tam iade (`refundMinor`; komisyon kalan tutar üzerinden) veya reddet; tek ledger journal (`order.dispute_resolution`), mezat siparişinde tam iadede teminat `refunded` + mezat SETTLED; migration 0006 (`order_disputes`, `orders.refund_minor`, `disputed`/`refunded`); web: sipariş sayfasında "İtiraz aç" diyaloğu + durum/sonuç, `/admin` "İtirazlar" sekmesi (İade et / İtirazı reddet) (int test 10 + birim; tarayıcıda elle tıklanmadı)
+- [x] X-09 Yönetici sipariş listesi: `GET /admin/orders?status=&q=&page=` (alıcı/satıcı şirket, tutar, iade, durum) + `/admin?tab=siparisler` (int test; tarayıcıda elle tıklanmadı)

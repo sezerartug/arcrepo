@@ -108,6 +108,17 @@ export type DepositInstruction = {
   status: string;
 };
 
+export type OrderDispute = {
+  id: string;
+  status: 'open' | 'resolved';
+  reason: string;
+  resolution: 'refund' | 'rejected' | null;
+  refundMinor: string | null;
+  resolutionNote: string | null;
+  openedAt: string;
+  resolvedAt: string | null;
+};
+
 export type Order = {
   id: string;
   role?: 'buyer' | 'seller';
@@ -123,6 +134,9 @@ export type Order = {
   quantityBase: number | string;
   totalMinor: string;
   depositAppliedMinor?: string;
+  refundMinor?: string;
+  netPayoutMinor?: string;
+  dispute?: OrderDispute | null;
   amountDueMinor?: string;
   trackingNote?: string | null;
   autoConfirmAt?: string | null;
