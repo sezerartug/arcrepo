@@ -147,3 +147,9 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: typecheck, lint, test:unit yeşil; API kapalıyken `next build` + `next start` ile 25 sayfa/rol 200; yazma 403, login/rol çerezi çalışıyor. Tarayıcıda görsel doğrulama yapılmadı.
 - Risk: veri statik (tohum veri değişirse capture yeniden çalıştırılmalı); canlı mezat süresi sunum sırasında sabit kalır; demo adresi herkese açık olursa örnek şirket adları görünür.
 - Sonraki adım: Vercel'e yükleme (ürün sahibi), tarayıcıda gezinti.
+
+### 2026-10-30 — X-21 — Tarayıcıda görsel doğrulama
+- Yapılan: Yerel uygulama (`pnpm demo`) Playwright ile gezildi: ana sayfa (açık+koyu), slider otomatik geçişi, giriş, /hesap, /admin, mali rapor, /satici, mobil 390 px (yatay kaydırma yok). Bulgu: yönetim genel istatistiğinde `orders` altına karışan `escrowBalanceMinor` ham alan adı ve kuruş olarak görünüyordu; `statRows` `lib/admin-stats.ts`'e taşındı, bu anahtar "Emanet bakiyesi" + `formatTry` olur (önce başarısız test, sonra düzeltme).
+- Doğrulama: typecheck, lint yeşil; test:unit 102 (config 11, api 56, web 35). Mali rapor rakamları tutarlı (komisyon 2.450 + teminat 37.500 = banka mutabakat −39.950).
+- Risk: favicon yok (404); dar genişlikte üst menü satır kırılıyor; mezat izleme, itiraz, havale, denetim, ilan ekle ve alıcı akışı görsel olarak bakılmadı; Next dev rozeti ekran görüntülerinde göründü (canlıda çıkmaz).
+- Sonraki adım: kalan sayfaların görsel gezintisi, favicon, üst menü düzeni.

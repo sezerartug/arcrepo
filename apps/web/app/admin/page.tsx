@@ -14,9 +14,9 @@ import {
   Pagination,
   StatusBadge,
   inputCls,
-  statusLabel,
 } from '@/components/common';
 import { Button } from '@/components/ui/button';
+import { statRows } from '@/lib/admin-stats';
 import { formatDate, formatTry } from '@/lib/api';
 import type {
   AdminAuctionList,
@@ -61,25 +61,6 @@ type AuditApiRow = {
   entity_id?: string;
   actor_type?: string;
 };
-
-const TOP_LABELS: Record<string, string> = {
-  users: 'Kullanıcı',
-  companies: 'Şirket',
-  listings: 'İlan',
-  orders: 'Sipariş',
-};
-
-/** Flattens nested counters ({ companies: { verified: 1 } }) into "Şirket · Doğrulandı" rows. */
-function statRows(d: Record<string, unknown>): [string, string][] {
-  return Object.entries(d).flatMap(([k, v]) =>
-    v !== null && typeof v === 'object'
-      ? Object.entries(v as Record<string, unknown>).map(([k2, v2]): [string, string] => [
-          `${TOP_LABELS[k] ?? k} · ${statusLabel(k2)}`,
-          String(v2),
-        ])
-      : [[TOP_LABELS[k] ?? k, String(v)] as [string, string]],
-  );
-}
 
 const fmt = (s?: string) => (s ? formatDate(s) : '—');
 const list = <T,>(d: T[] | { items: T[] }): T[] => (Array.isArray(d) ? d : d.items);
