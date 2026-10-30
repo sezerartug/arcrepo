@@ -181,7 +181,9 @@ export function AuctionPanel({
         </p>
       ) : !canBid ? (
         <p className="text-sm text-muted-foreground">
-          Teklif vermek için şirketinizin onaylı olması gerekir.
+          {my?.isSeller
+            ? 'Kendi mezatınıza teklif veremezsiniz.'
+            : 'Teklif vermek için şirketinizin onaylı olması gerekir.'}
         </p>
       ) : (
         <>

@@ -153,3 +153,10 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: typecheck, lint yeşil; test:unit 102 (config 11, api 56, web 35). Mali rapor rakamları tutarlı (komisyon 2.450 + teminat 37.500 = banka mutabakat −39.950).
 - Risk: favicon yok (404); dar genişlikte üst menü satır kırılıyor; mezat izleme, itiraz, havale, denetim, ilan ekle ve alıcı akışı görsel olarak bakılmadı; Next dev rozeti ekran görüntülerinde göründü (canlıda çıkmaz).
 - Sonraki adım: kalan sayfaların görsel gezintisi, favicon, üst menü düzeni.
+
+### 2026-10-30 — X-22 — Görsel doğrulama turu 2
+- Yapılan: Playwright ile mezat izleme (özet, teklifler, teminat, olaylar), havaleler, itirazlar, denetim, alıcı siparişleri + sipariş detayı + canlı mezat sayfası gezildi. Bulgu: satıcı kendi mezat sayfasında "şirketinizin onaylı olması gerekir" görüyordu (API `isSeller:true` veriyordu, panel kullanmıyordu); mesaj satıcıya göre ayrıldı (önce başarısız test).
+- Altyapı notu: mezat izleme sayfası bir ara 500 verdi; neden uygulama değil, bellek baskısıyla kapanan arka plan oturumundan kalan, çıktı borusu kopuk `next dev` süreciydi (`write EPIPE` → render işçisi çöküyor). Süreç kapatılıp temiz başlatılınca düzeldi. Çalışma klasörü `.next/dev/logs` içindeyken `next dev` başlatılamaz (EBUSY).
+- Doğrulama: typecheck, lint yeşil; test:unit 104 (config 11, api 56, web 37).
+- Risk: görülmeyenler: favoriler, ilan ekle, şirket detayı, askıya alma. Yerel denetim kaydında benim demo betiğimin ürettiği yönetici okuma kayıtları var (30 Eki 09:04).
+- Sonraki adım: favicon, üst menü satır kırılması, sekme başlıkları, "Hakedişi aktar" yalnızca bakiyesi olana.
