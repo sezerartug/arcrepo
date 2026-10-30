@@ -38,7 +38,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 bg-chrome text-chrome-foreground shadow-md">
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3">
+      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3">
         <Link
           href="/"
           className="mr-4 rounded-lg focus-visible:ring-2 focus-visible:ring-brand outline-none"

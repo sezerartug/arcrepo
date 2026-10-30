@@ -165,3 +165,11 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Yapılan: ROADMAP baştan sona okundu, açık maddeler kanıtla karşılaştırıldı. `[x]` yapılanlar: P0-04 (X-01…X-22 protokolle yürüdü), P2-13 (satıcı paneli tarayıcıda görüldü; analitik P5-03'ün kapsamı). P4-11 notu güncellendi (görsel görüldü, teklif verme akışı elle denenmedi), `[ ]` kaldı.
 - İşaretlenmeyenler ve neden: P0-15/P1-20 (GLOSSARY.md dosyası yok), P0-13 (ADR tablosu hâlâ "varsayılan karar"), P0-09 (context7 bağlanmıyor, `/context` ölçümü yok), P2-14 (merkezi BOLA matrisi yok), P3-09 (Playwright uçtan uca testi yok).
 - Durum: 52 bitti / 87 açık (açıkların 24'ü KISMİ, 13'ü ertelendi/gereksiz). Not: X-18 iki kez yazılmış (satır 184 ve 185), silinmedi.
+
+### 2026-10-30 — X-23 — Arayüz yenileme ve kurumsal sayfalar
+- Yapılan: Slider fotoğraflı ve tam genişlik; içerik 1280 px, liste/yönetim sayfaları `wide` (1536 px); alt bilgi 4 sütun + iletişim; 8 yeni sayfa (Biz Kimiz, İletişim, Sektör rehberi, SSS, KVKK, Gizlilik+çerez, Kullanım şartları, Mezat kuralları); ana sayfada Sektörler (SVG sahne kartları) ve fotoğraflı tanıtım bandı.
+- Karar: fotoğraflar Unsplash bot doğrulaması yüzünden Pexels'ten alındı (doğrulama aşılmadı); şirket ünvanı gerçek, adres/telefon/e-posta/MERSİS/vergi/KEP yer tutucu (`lib/company.ts`, `.example` alan adı); mezat kuralları sayfası koddan doğrulandı (%5 teminat, 60 sn/10 uzatma/15 dk tavan, 48 sa ödeme, %2 komisyon, `ALREADY_HIGH_BIDDER`, satışsızda teminat iadesi).
+- Hata/ders: `100vw` tam genişlik yatay kaydırma doğuruyordu → `overflow-x: hidden` html üzerinde; `next dev` çıktı borusu kopunca `EPIPE` ile 500 veriyor → sunucu çıktısı dosyaya yönlendirilerek derlenmiş kipte (`next start`) çalıştırılıyor.
+- Doğrulama: typecheck, lint yeşil; test:unit 104. Görsel: ana sayfa, sektör kartları, Biz Kimiz görüldü.
+- Risk: hukuk metinleri taslak (ödeme/emanet işleyişi hedef işleyişi anlatır; gerçek PSP yok); yer tutucu iletişim bilgisi yayına gitmeden değişmeli; fotoğraf lisans/fotoğrafçı bilgileri her Pexels sayfasında tek tek doğrulanmadı; inşaat fotoğrafında küçük bir şantiye tabelası görünüyor; Vercel demosu henüz bu sürüme güncellenmedi.
+- Sonraki adım: kalan sayfaların görsel gezintisi, iletişim bilgilerinin gerçekleriyle değişmesi, hukuk incelemesi.

@@ -1,8 +1,9 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import { Empty, LoadError } from '@/components/common';
+import { Empty, LoadError, ctaCls } from '@/components/common';
 import { ListingCard } from '@/components/listing-card';
 import { AuctionCard } from '@/components/auction-card';
-import { TopCategoryIcon } from '@/components/illustrations/category-icons';
+import { SectorCards } from '@/components/sector-cards';
 import { HeroSlider } from '@/components/hero-slider';
 import { HomeSearch } from '@/components/home-search';
 import { HomeTabs } from '@/components/home-tabs';
@@ -38,46 +39,15 @@ export default async function HomePage({
       <HomeSearch categories={cats} />
       <TrustCenter />
       <section aria-labelledby="categories">
-        <h2 id="categories" className="mb-4 text-xl font-semibold text-primary">
-          Kategoriler
-        </h2>
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {cats.map((c) => (
-            <li key={c.id}>
-              <Link
-                href={`/ilanlar?categoryId=${encodeURIComponent(c.id)}`}
-                className="group flex h-full flex-col items-center gap-2 rounded-2xl border bg-card p-4 text-center shadow-sm outline-none transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <TopCategoryIcon
-                  slug={c.slug}
-                  className="size-10 text-primary group-hover:text-brand"
-                />
-                <span className="text-sm font-medium">{c.name}</span>
-              </Link>
-            </li>
-          ))}
-          <li>
-            <Link
-              href="/ilanlar?condition=ikinci_el"
-              className="group flex h-full flex-col items-center gap-2 rounded-2xl border border-brand/60 bg-brand/10 p-4 text-center shadow-sm outline-none transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <svg
-                viewBox="0 0 32 32"
-                className="size-10 text-primary group-hover:text-brand"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path d="M6 16a10 10 0 0 1 17-7l3 3M26 16a10 10 0 0 1-17 7l-3-3M26 5v7h-7M6 27v-7h7" />
-              </svg>
-              <span className="text-sm font-medium">İkinci El</span>
-            </Link>
-          </li>
-        </ul>
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 id="categories" className="text-xl font-semibold text-primary">
+            Sektörler
+          </h2>
+          <Link href="/ilanlar?condition=ikinci_el" className="text-sm underline">
+            İkinci el ilanlar
+          </Link>
+        </div>
+        <SectorCards categories={cats} />
       </section>
       <section aria-labelledby="live-auctions">
         <div className="mb-3 flex items-baseline justify-between">
@@ -137,7 +107,45 @@ export default async function HomePage({
             </li>
           ))}
         </ol>
-      </section>{' '}
+      </section>
+      <section
+        aria-labelledby="about"
+        className="full-bleed relative -mb-16 overflow-hidden text-chrome-foreground"
+      >
+        <div className="hero-gradient absolute inset-0" aria-hidden="true" />
+        <Image src="/photos/about-santiye.jpg" alt="" fill sizes="100vw" className="object-cover" />
+        <div
+          className="absolute inset-0 bg-linear-to-r from-chrome/95 via-chrome/80 to-chrome/40"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto w-full max-w-7xl px-4 py-16">
+          <h2 id="about" className="max-w-2xl text-2xl font-bold sm:text-4xl">
+            Çelik ve inşaat ticaretinde güvenilir ortağınız
+          </h2>
+          <p className="mt-3 max-w-2xl text-chrome-foreground/85">
+            ARC Global; doğrulanmış şirketleri, emanetli ödemeyi ve şeffaf mezatı tek platformda
+            birleştirir. Biz kimiz, nasıl çalışıyoruz ve çelik alırken nelere dikkat etmelisiniz,
+            öğrenin.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/hakkimizda" className={`${ctaCls} !h-11 !px-6 !text-base`}>
+              Biz kimiz
+            </Link>
+            <Link
+              href="/sektor-rehberi"
+              className="inline-flex h-11 items-center rounded-lg border border-chrome-foreground/40 px-6 text-base font-medium outline-none hover:bg-chrome-foreground/10 focus-visible:ring-3 focus-visible:ring-brand"
+            >
+              Sektör rehberi
+            </Link>
+            <Link
+              href="/iletisim"
+              className="inline-flex h-11 items-center rounded-lg border border-chrome-foreground/40 px-6 text-base font-medium outline-none hover:bg-chrome-foreground/10 focus-visible:ring-3 focus-visible:ring-brand"
+            >
+              İletişim
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

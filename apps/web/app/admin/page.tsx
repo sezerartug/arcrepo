@@ -739,7 +739,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const tab = sp.tab ?? 'genel';
 
   return (
-    <div className="space-y-2">
+    <div className="wide space-y-2">
       <PageTitle sub="Platform yönetimi">Yönetim paneli</PageTitle>
       <AdminTabs current={tab} />
       {tab === 'kullanicilar' ? (

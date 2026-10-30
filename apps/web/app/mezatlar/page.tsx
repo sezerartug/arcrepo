@@ -23,7 +23,7 @@ export default async function AuctionsPage({
   const res = await serverGet<AuctionList>(`/auctions?status=${current}`);
 
   return (
-    <>
+    <div className="wide">
       <PageTitle sub="Teminat yatırarak canlı mezatlara katılın">Mezatlar</PageTitle>
       <nav aria-label="Mezat durumu" className="mb-4 flex gap-2">
         {TABS.map(([s, label]) => (
@@ -51,6 +51,6 @@ export default async function AuctionsPage({
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }

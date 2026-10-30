@@ -12,7 +12,7 @@ export default async function OrdersPage() {
   const orders = res.ok ? (Array.isArray(res.data) ? res.data : res.data.items) : [];
 
   return (
-    <>
+    <div className="wide">
       <PageTitle>Siparişler</PageTitle>
       {!res.ok ? (
         <LoadError error={res.error} />
@@ -60,6 +60,6 @@ export default async function OrdersPage() {
           </table>
         </div>
       )}
-    </>
+    </div>
   );
 }

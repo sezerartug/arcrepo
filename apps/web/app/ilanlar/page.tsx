@@ -29,7 +29,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
   const href = (p: number) => `/ilanlar${toQuery({ ...sp, page: String(p) })}`;
 
   return (
-    <>
+    <div className="wide">
       <PageTitle sub="Yayındaki tüm ilanlar">İlanlar</PageTitle>
       <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
         <form method="get" className="space-y-3" aria-label="İlan filtreleri">
@@ -145,7 +145,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
           )}
         </section>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -52,7 +52,7 @@ export default async function SellerPage() {
   const items = res.ok ? withUnits(Array.isArray(res.data) ? res.data : res.data.items, cats) : [];
 
   return (
-    <>
+    <div className="wide">
       <SellerSummaryCards summary={summary} />
       <div id="ilanlarim" className="flex items-start justify-between gap-4">
         <PageTitle sub="İlanlarınız ve durumları">İlanlarım</PageTitle>
@@ -169,6 +169,6 @@ export default async function SellerPage() {
           </>
         )}
       </section>
-    </>
+    </div>
   );
 }

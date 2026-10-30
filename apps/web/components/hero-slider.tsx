@@ -1,18 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import type { KeyboardEvent, ReactNode, TouchEvent } from 'react';
+import type { KeyboardEvent, TouchEvent } from 'react';
 import { ctaCls } from '@/components/common';
-import { HeroArt } from '@/components/illustrations';
-import {
-  HardwareSceneArt,
-  HeavyMachineSceneArt,
-  MachinerySceneArt,
-  ProjectSceneArt,
-  ScrapSceneArt,
-  WarehouseSceneArt,
-} from '@/components/illustrations/hero-scenes';
 import type { Category } from '@/lib/types';
 
 const INTERVAL_MS = 6000;
@@ -24,7 +16,8 @@ type Slide = {
   cta: string;
   /** Category name (root or child) the primary button filters by; null keeps the plain list. */
   category: string | null;
-  Art: (props: { className?: string }) => ReactNode;
+  /** Background photo under `public/photos` (decorative, the text carries the meaning). */
+  photo: string;
 };
 
 const SLIDES: Slide[] = [
@@ -33,49 +26,49 @@ const SLIDES: Slide[] = [
     text: 'Çelik ve yapı malzemelerini sabit fiyatla satın alın veya canlı mezatta teklif verin. Ödemeniz teslimata kadar emanette (escrow) güvende kalır.',
     cta: 'İlanlara göz at',
     category: 'İnşaat Malzemeleri',
-    Art: HeroArt,
+    photo: '/photos/slide-insaat.jpg',
   },
   {
     title: 'Makine ve ekipmanda güvenilir ticaret',
     text: 'CNC tezgâhlarından robotik hatlara kadar sanayi makinelerini sabit fiyatla alın veya mezatta teklif verin. Ödeme teslimata kadar emanette kalır.',
     cta: 'Makine ilanlarına göz at',
     category: 'Makine ve Ekipman',
-    Art: MachinerySceneArt,
+    photo: '/photos/slide-makine.jpg',
   },
   {
     title: 'İş makinelerinde şeffaf, güvenli alım satım',
     text: 'Ekskavatör, yükleyici ve daha fazlası: doğrulanmış şirketlerin ilanlarını inceleyin, canlı mezatla en iyi fiyatı yakalayın.',
     cta: 'İş makinelerine göz at',
     category: 'İş Makineleri',
-    Art: HeavyMachineSceneArt,
+    photo: '/photos/slide-is-makineleri.jpg',
   },
   {
     title: 'Hurda ve geri dönüşümde adil fiyat',
     text: 'Demir, alüminyum, bakır ve daha fazlası: balya hurdayı tonaj bazlı satın alın ya da mezata çıkarın, ödemeniz emanette güvende.',
     cta: 'Hurda ilanlarına göz at',
     category: 'Hurda ve Geri Dönüşüm',
-    Art: ScrapSceneArt,
+    photo: '/photos/slide-hurda.jpg',
   },
   {
     title: 'El aletleri ve hırdavatta toptan avantaj',
     text: 'Dişli, rulman, pompa ve motor gibi yedek parça ve el aletlerini şirketler arası güvenle tedarik edin.',
     cta: 'Hırdavat ilanlarına göz at',
     category: 'El Aletleri ve Hırdavat',
-    Art: HardwareSceneArt,
+    photo: '/photos/slide-hirdavat.jpg',
   },
   {
     title: 'Fabrika ve depo ekipmanlarında ikinci el fırsatlar',
     text: 'Raf sistemleri, konveyörler ve forkliftler: tesisinizi doğrulanmış satıcılardan donatın veya atıl ekipmanınızı satın.',
     cta: 'Depo ekipmanlarına göz at',
     category: 'Fabrika ve Depo Ekipmanları',
-    Art: WarehouseSceneArt,
+    photo: '/photos/slide-fabrika.jpg',
   },
   {
     title: 'Proje ve iş ihalelerinde doğru ortak',
     text: 'Çelik konstrüksiyon, kalıp ve mühendislik işlerini şirketler arası şeffaf teklif süreciyle yürütün.',
     cta: 'Proje ilanlarına göz at',
     category: 'Proje ve İş İhaleleri',
-    Art: ProjectSceneArt,
+    photo: '/photos/slide-proje.jpg',
   },
 ];
 
@@ -193,7 +186,7 @@ export function HeroSlider({ categories }: { categories: Category[] }) {
       role="region"
       aria-roledescription="carousel"
       aria-label="Sektörler"
-      className="hero-gradient relative overflow-hidden rounded-3xl text-chrome-foreground shadow-lg ring-1 ring-chrome-foreground/10"
+      className="hero-gradient full-bleed relative -mt-8 overflow-hidden text-chrome-foreground"
       onMouseEnter={() => {
         setHover(true);
       }}
@@ -219,9 +212,21 @@ export function HeroSlider({ categories }: { categories: Category[] }) {
               role="group"
               aria-roledescription="slide"
               aria-label={`${String(i + 1)} / ${String(count)}`}
-              className={`col-start-1 row-start-1 grid items-center gap-6 px-6 pt-10 pb-20 transition-opacity duration-700 motion-reduce:transition-none sm:px-10 lg:grid-cols-[1.2fr_1fr] lg:pt-14 lg:pb-20 ${active ? 'visible opacity-100' : 'invisible opacity-0'}`}
+              className={`relative col-start-1 row-start-1 flex min-h-[30rem] items-center transition-opacity duration-700 motion-reduce:transition-none lg:min-h-[36rem] ${active ? 'visible opacity-100' : 'invisible opacity-0'}`}
             >
-              <div>
+              <Image
+                src={s.photo}
+                alt=""
+                fill
+                priority={i === 0}
+                sizes="100vw"
+                className="object-cover"
+              />
+              <div
+                className="absolute inset-0 bg-linear-to-r from-chrome/95 via-chrome/75 to-chrome/25"
+                aria-hidden="true"
+              />
+              <div className="relative mx-auto w-full max-w-7xl px-4 pt-14 pb-24">
                 {i === 0 ? (
                   <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-5xl">
                     {s.title}
@@ -247,12 +252,11 @@ export function HeroSlider({ categories }: { categories: Category[] }) {
                   </Link>
                 </div>
               </div>
-              <s.Art className="mx-auto h-auto max-h-56 w-full max-w-md lg:max-h-none" />
             </div>
           );
         })}
       </div>
-      <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 px-6 pb-5 sm:px-10">
+      <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-7xl items-center gap-2 px-4 pb-6">
         <button
           type="button"
           className={ctrlCls}

@@ -144,10 +144,22 @@
   }
   html {
     @apply font-sans;
+    /* full-bleed sections use 100vw, which includes the scrollbar width */
+    overflow-x: hidden;
   }
 }
 
 @layer components {
+  /* Breakouts from the centered 80rem page container (see app/layout.tsx). */
+  .full-bleed {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+  }
+  .wide {
+    --wide: min(100vw - 2rem, 96rem);
+    width: var(--wide);
+    margin-inline: calc(50% - var(--wide) / 2);
+  }
   .hero-gradient {
     background:
       radial-gradient(60rem 30rem at 85% -10%, oklch(0.45 0.12 255 / 0.6), transparent 60%),
