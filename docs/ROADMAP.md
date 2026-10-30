@@ -35,7 +35,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P0-01 Git deposu oluşturuldu, kit eklendi, ilk commit; ana dal koruması ve zorunlu PR/inceleme açık — KISMİ (2026-10-29): git deposu + commit geçmişi var (yerel); uzak depo, dal koruması ve zorunlu PR yok
 - [ ] P0-02 Claude Code güncel sürüm; varsayılan model Sonnet; `/usage` ve `/context` çalışıyor; (API kullanılıyorsa) workspace harcama limiti tanımlı
 - [ ] P0-03 Üçüncü taraf eklentiler (BMAD, Ponytail, Matt Pocock, resmi dizin) için şirket güvenlik onayı alındı; sürümler sabitlendi — ERTELENDİ (2026-10-27): P0-05…P0-08 eklentileri kurulmuyor; yerleşik `/code-review`, `/simplify`, `/security-review` kullanılıyor
-- [ ] P0-04 CLAUDE.md kuru çalıştırma: küçük bir görevde dört çalışma ilkesi + bitirme protokolü uygulandı
+- [x] P0-04 CLAUDE.md kuru çalıştırma: küçük bir görevde dört çalışma ilkesi + bitirme protokolü uygulandı — kanıt (2026-10-30): X-01…X-22 görevlerinin hepsi bu protokolle yürüdü (plan → önce test → typecheck/lint/test → ROADMAP + LOG + commit; `docs/LOG.md`)
 - [ ] P0-05 BMAD v6.12 (kararlı) kuruldu; yalnızca planlama akışı etkin; `bmad-help` doğrulandı
 - [ ] P0-06 Matt Pocock skill'leri (seçili): `setup-matt-pocock-skills`, `grill-with-docs`, `tdd`, `diagnosing-bugs`, `code-review`, `improve-codebase-architecture` kuruldu ve `setup` çalıştırıldı
 - [ ] P0-07 Ponytail kuruldu; mod kuralı (çekirdek: lite, CRUD/UI: full) doğrulandı
@@ -86,7 +86,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [ ] P2-10 Mesajlaşma (iletişim bilgisi maskeleme, spam sınırı, engelleme/şikayet)
 - [ ] P2-11 Şikayet akışı + moderasyon kuyruğu + admin paneli v0 (audit'li) — KISMİ (2026-10-29): admin moderasyon + audit var; şikayet akışı yok
 - [ ] P2-12 Satıcı onboarding + KYC akışı + satıcı profili/doğrulama durumu — KISMİ (2026-10-29): MVP kapsamı vergi no format kontrolü + admin onayı var; KYC/belge doğrulama yok
-- [ ] P2-13 Satıcı paneli: ilanlarım, durum değişiklikleri, görseller — KISMİ (2026-10-29): ilan listesi/durum/düzenleme/hakediş var; satıcı analitiği yok
+- [x] P2-13 Satıcı paneli: ilanlarım, durum değişiklikleri, görseller — doğrulandı (2026-10-30): ilan listesi/durum/düzenleme/görsel + özet kartları + hakediş var; tarayıcıda gözle görüldü (X-22). Satıcı analitiği bu maddenin değil P5-03'ün kapsamı
 - [ ] P2-14 Tüm uç noktalar için BOLA/yetki test matrisi tamam
 - [ ] P2-15 Panolar: arama gecikmesi, görsel işleme kuyruğu, kuyruk derinliği, hata oranı — ERTELENDİ (2026-10-29): panolar gözlemlenebilirlik (P1-13) ile birlikte
 - [ ] P2-16 Yük testi: arama ve ilan detay p95 hedefi doğrulandı
@@ -120,7 +120,7 @@ MVP sonrası sıra: mesajlaşma/bildirim (P2-10, P2-09) → telefon/KYC/MFA (P2-
 - [x] P4-08 Teklif güvencesi (ön provizyon/depozito) ve teklif yetkinliği kontrolleri
 - [x] P4-09 Kazanan ödeme penceresi + başarısız ödeme politikası (OPEN-AU kararına göre)
 - [x] P4-10 Kazanan → sipariş entegrasyonu (tek sipariş garantisi; ledger/escrow ile tutarlı)
-- [ ] P4-11 Canlı artırma arayüzü (sunucu ofsetli geri sayım, bekleyen/ret durumları, erişilebilirlik) — KISMİ (2026-10-29): arayüz var (yoklama, sunucu saati ofseti); tarayıcıda gözle doğrulanmadı
+- [ ] P4-11 Canlı artırma arayüzü (sunucu ofsetli geri sayım, bekleyen/ret durumları, erişilebilirlik) — KISMİ (2026-10-29): arayüz var (yoklama, sunucu saati ofseti); tarayıcıda gözle görüldü (X-22: geri sayım, teklif geçmişi, kapalı durum mesajları); teklif verme ve teminat akışı elle denenmedi
 - [ ] P4-12 Kötüye kullanım: teklif hız sınırları, kendi ilanına teklif engeli, şişirme sinyalleri v1 — KISMİ (2026-10-29): teklif hız sınırı + kendi ilanına teklif engeli var; şişirme sinyalleri yok
 - [x] P4-13 Audit: tüm yönetici müdahaleleri ve teklif iptali nedenleri
 - [x] P4-14 Eşzamanlılık testleri: N paralel teklif, aynı tutar yarışı, kapanış-teklif yarışı

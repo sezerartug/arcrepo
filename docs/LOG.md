@@ -160,3 +160,8 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: typecheck, lint yeşil; test:unit 104 (config 11, api 56, web 37).
 - Risk: görülmeyenler: favoriler, ilan ekle, şirket detayı, askıya alma. Yerel denetim kaydında benim demo betiğimin ürettiği yönetici okuma kayıtları var (30 Eki 09:04).
 - Sonraki adım: favicon, üst menü satır kırılması, sekme başlıkları, "Hakedişi aktar" yalnızca bakiyesi olana.
+
+### 2026-10-30 — ROADMAP gözden geçirme
+- Yapılan: ROADMAP baştan sona okundu, açık maddeler kanıtla karşılaştırıldı. `[x]` yapılanlar: P0-04 (X-01…X-22 protokolle yürüdü), P2-13 (satıcı paneli tarayıcıda görüldü; analitik P5-03'ün kapsamı). P4-11 notu güncellendi (görsel görüldü, teklif verme akışı elle denenmedi), `[ ]` kaldı.
+- İşaretlenmeyenler ve neden: P0-15/P1-20 (GLOSSARY.md dosyası yok), P0-13 (ADR tablosu hâlâ "varsayılan karar"), P0-09 (context7 bağlanmıyor, `/context` ölçümü yok), P2-14 (merkezi BOLA matrisi yok), P3-09 (Playwright uçtan uca testi yok).
+- Durum: 52 bitti / 87 açık (açıkların 24'ü KISMİ, 13'ü ertelendi/gereksiz). Not: X-18 iki kez yazılmış (satır 184 ve 185), silinmedi.
