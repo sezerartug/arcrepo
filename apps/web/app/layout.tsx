@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { DemoBanner } from '@/components/demo-banner';
 import { Logo } from '@/components/illustrations';
 import { SiteHeader } from '@/components/site-header';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           İçeriğe geç
         </a>
+        <DemoBanner />
         <SiteHeader />
         <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
           {children}

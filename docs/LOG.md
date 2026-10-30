@@ -141,3 +141,9 @@ Her görev bitişinde bir giriş eklenir (CLAUDE.md "Bitirme protokolü"). Amaç
 - Doğrulama: typecheck, lint, format:check yeşil; test:unit 100 (api 56, web 33, config 11); test:int 120 (gerçek PostgreSQL). Tarayıcı görsel doğrulaması yapılmadı.
 - Risk: para koduna bağımsız inceleme yapılmadı (P4-19); bellek içi hız sınırları API yeniden başlayınca sıfırlanır; secrets:scan yerel dev DB URL'lerini bulgu sayıyor; ROADMAP'te 21 madde bu ölçekte gereksiz/ertelenmiş olarak notlandı.
 - Sonraki adım: ürün sahibi seçimi (STATE.md "Sıradaki").
+### 2026-10-30 — X-20 — Vercel demo sürümü
+- Yapılan: Demo kipi (`NEXT_PUBLIC_DEMO_MODE=1`): `serverGet` ve `/api/*` (rewrite → `app/demo-api`) gerçek API yerine `lib/demo/mock-api.ts` üzerinden `snapshot.json` sunar. Anlık görüntü `node apps/web/scripts/capture-demo.mjs` ile (`pnpm demo` çalışırken) 4 rol için alınır; elle açılmış `Matkap` deneme ilanı çıkarıldı. Rol çubuğu (`arc-demo-role` çerezi), `/ilanlar` süzgeçleri yerelde, yazma isteği 403 `DEMO_MODE`.
+- Karar: tohum mezatlar saatler önce bittiği için demoda canlı + sentetik teklifli gösterilir (süre her istekte ileri kayar); bu yalnız demo katmanındadır, gerçek akış değişmedi. Vercel: Root Directory `apps/web`, `vercel.json` build komutuna bayrağı ekler.
+- Doğrulama: typecheck, lint, test:unit yeşil; API kapalıyken `next build` + `next start` ile 25 sayfa/rol 200; yazma 403, login/rol çerezi çalışıyor. Tarayıcıda görsel doğrulama yapılmadı.
+- Risk: veri statik (tohum veri değişirse capture yeniden çalıştırılmalı); canlı mezat süresi sunum sırasında sabit kalır; demo adresi herkese açık olursa örnek şirket adları görünür.
+- Sonraki adım: Vercel'e yükleme (ürün sahibi), tarayıcıda gezinti.

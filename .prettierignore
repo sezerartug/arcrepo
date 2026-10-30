@@ -1,3 +1,4 @@
 pnpm-lock.yaml
 # Hand-written prose and tables; reflowing them only adds diff noise.
 **/*.md
+apps/web/lib/demo/snapshot.json

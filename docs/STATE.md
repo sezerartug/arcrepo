@@ -59,3 +59,6 @@ MVP + yönetim/itiraz/bildirim/mali rapor/çok sektörlü kategori/slider/koyu m
 
 ## Hesap sayfası (X-18)
 - Migration 0009 `users.phone`. `AuthContext` artık `sessionId/phone/createdAt` taşır. `AuthService`: `changePassword` (limiter `passwordChange` kullanıcı başına 5/15 dk, bellek içi), `updateProfile`, `listSessions`, `revokeSession`, `revokeOtherSessions`. Admin: `GET /admin/pending-counts` (`AdminDirectoryService.pendingCounts`). Web: `components/account-forms.tsx`, `admin-shortcuts.tsx`, `lib/account.ts` (doğrulama + bölüm mantığı).
+
+## Vercel demo (X-20)
+- `NEXT_PUBLIC_DEMO_MODE=1` → API/DB yok; `apps/web/lib/demo/{mock-api.ts,snapshot.json}`, `app/demo-api`, `components/demo-banner.tsx`. Anlık görüntüyü yenile: `pnpm demo` çalışırken `node apps/web/scripts/capture-demo.mjs`. Yerelde dene: `NEXT_PUBLIC_DEMO_MODE=1` ile `pnpm --filter @arc/web build` + `next start`. Vercel: Root Directory `apps/web` (vercel.json build komutu bayrağı ekler).

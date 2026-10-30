@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ApiError, request } from './api';
+import { DEMO_ROLE_COOKIE, handleDemo, isDemoMode, parseRole } from './demo/mock-api';
 import type { Me } from './types';
 
 const API_ORIGIN = process.env.API_URL ?? 'http://127.0.0.1:3001';
@@ -10,7 +11,14 @@ export type Result<T> = { ok: true; data: T } | { ok: false; error: ApiError };
 /** Server-component GET that forwards the session cookie and never throws. */
 export async function serverGet<T>(path: string): Promise<Result<T>> {
   // Outside try: cookies() signals "dynamic rendering" by throwing, which must not be swallowed.
-  const cookie = (await cookies()).toString();
+  const jar = await cookies();
+  if (isDemoMode) {
+    const r = handleDemo('GET', path, parseRole(jar.get(DEMO_ROLE_COOKIE)?.value), undefined);
+    if (r.status === 200) return { ok: true, data: r.body as T };
+    const e = (r.body as { error: { code: string; message: string } }).error;
+    return { ok: false, error: new ApiError(r.status, e.code, e.message) };
+  }
+  const cookie = jar.toString();
   try {
     const data = await request<T>(API_ORIGIN, path, { headers: cookie ? { cookie } : {} });
     return { ok: true, data };
