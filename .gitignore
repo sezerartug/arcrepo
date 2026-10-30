@@ -33,3 +33,7 @@ desktop.ini
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# screenshots and logs written by the browser tooling
+shots/
+.playwright-mcp/
